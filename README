@@ -1,0 +1,9 @@
+AVP64: An ARMv8 Virtual Platform
+
+This repository contains an ARMv8 multi-core virtual platform.
+It was build at the Institute for Communication Techonlogies and Embedded Systems at RTWH Aachen University.
+The following target software configurations were tested (see config/):
+- CoreMark
+- Dhrystone
+- Linux single- and dualcore
+- Xen single- and dualcore

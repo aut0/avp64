@@ -1,0 +1,7 @@
+BUILD/
+.settings/
+.cproject
+.project
+gdbscript*
+.idea
+/build/
