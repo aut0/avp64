@@ -12,6 +12,7 @@
 
 #include "vcml.h"
 #include "avp64/arm64_cpu.h"
+#include "nvdla.h"
 
 namespace avp64 {
 
@@ -41,6 +42,8 @@ namespace avp64 {
         vcml::property<vcml::range> addr_sdhci;
         vcml::property<vcml::range> addr_simdev;
         vcml::property<vcml::range> addr_hwrng;
+        vcml::property<vcml::range> addr_nvdla_config_if;
+        vcml::property<vcml::range> addr_nvdla_extmem;
 
         vcml::property<int> irq_uart0;
         vcml::property<int> irq_uart1;
@@ -48,6 +51,7 @@ namespace avp64 {
         vcml::property<int> irq_uart3;
         vcml::property<int> irq_ethoc;
         vcml::property<int> irq_sdhci;
+        vcml::property<int> irq_nvdla;
         vcml::property<int> irq_gt_hyp;
         vcml::property<int> irq_gt_virt;
         vcml::property<int> irq_gt_ns;
@@ -80,6 +84,8 @@ namespace avp64 {
         vcml::generic::sdhci    m_sdhci;
         vcml::generic::simdev   m_simdev;
         vcml::generic::hwrng    m_hwrng;
+        xonx::nvdla             m_nvdla;
+        vcml::generic::memory   m_nvdla_extmem;
 
         sc_core::sc_signal<bool> m_irq_uart0;
         sc_core::sc_signal<bool> m_irq_uart1;
@@ -87,6 +93,7 @@ namespace avp64 {
         sc_core::sc_signal<bool> m_irq_uart3;
         sc_core::sc_signal<bool> m_irq_ethoc;
         sc_core::sc_signal<bool> m_irq_sdhci;
+        sc_core::sc_signal<bool> m_irq_nvdla;
 
         sc_core::sc_signal<clock_t> m_sig_clock;
         sc_core::sc_signal<bool> m_sig_reset;
