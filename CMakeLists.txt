@@ -30,12 +30,18 @@ if(NOT EXISTS ${VCML_HOME})
     set(VCML_HOME ${CMAKE_CURRENT_SOURCE_DIR}/deps/vcml)
 endif()
 
+set(VCML-NVDLA_HOME $ENV{VCML-NVDLA_HOME})
+if(NOT EXISTS ${VCML-NVDLA_HOME})
+    set(VCML-NVDLA_HOME ${CMAKE_CURRENT_SOURCE_DIR}/deps/vcml-nvdla)
+endif()
+
 message(STATUS "Found OCX at " ${OCX_HOME})
 message(STATUS "Found OCX-QEMU-ARM at " ${OCX_QEMU_ARM_HOME})
 message(STATUS "Found VCML at " ${VCML_HOME})
 
 add_subdirectory(${OCX_QEMU_ARM_HOME} ocx-qemu-arm)
 add_subdirectory(${VCML_HOME} vcml)
+add_subdirectory(${VCML-NVDLA_HOME} EXCLUDE_FORM_ALL)
 
 set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -51,6 +57,7 @@ add_executable(avp64 ${sources})
 target_include_directories(avp64 PRIVATE ${inc})
 
 target_link_libraries(avp64 vcml)
+target_link_libraries(avp64 vcml-nvdla)
 target_link_libraries(avp64 ${CMAKE_DL_LIBS})
 target_link_libraries(avp64 -pthread -lelf)
 

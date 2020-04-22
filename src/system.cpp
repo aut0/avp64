@@ -85,6 +85,8 @@ namespace avp64 {
         m_sdhci.CLOCK.bind(m_sig_clock);
         m_simdev.CLOCK.bind(m_sig_clock);
         m_hwrng.CLOCK.bind(m_sig_clock);
+        m_nvdla.CLOCK.bind(m_sig_clock);
+        m_nvdla_extmem.CLOCK.bind(m_sig_clock);
 
         // Reset
         for (auto cpu : m_cpus) {
@@ -103,6 +105,8 @@ namespace avp64 {
         m_sdhci.RESET.bind(m_sig_reset);
         m_simdev.RESET.bind(m_sig_reset);
         m_hwrng.RESET.bind(m_sig_reset);
+        m_nvdla.RESET.bind(m_sig_reset);
+        m_nvdla_extmem.RESET.bind(m_sig_reset);
 
         // Bus bindings
         for (auto cpu : m_cpus) {
@@ -124,6 +128,10 @@ namespace avp64 {
         m_bus.bind(m_gic.VCPUIF.IN, addr_gic_vcpuif);
         m_bus.bind(m_simdev.IN, addr_simdev);
         m_bus.bind(m_hwrng.IN, addr_hwrng);
+        m_bus.bind(m_nvdla.CONFIG_IF, addr_nvdla_config_if);
+        m_bus.bind(m_nvdla.SRAM_IF);
+        m_bus.bind(m_nvdla.DBB_IF);
+        m_bus.bind(m_nvdla_extmem.IN, addr_nvdla_extmem);
 
         // Bind SDHCI and SDCARD
         m_sdhci.SD_OUT.bind(m_sdcard.SD_IN);
@@ -135,6 +143,7 @@ namespace avp64 {
         m_uart3.IRQ.bind(m_irq_uart3);
         m_ethoc.IRQ.bind(m_irq_ethoc);
         m_sdhci.IRQ.bind(m_irq_sdhci);
+        m_nvdla.IRQ.bind(m_irq_nvdla);
         for (unsigned int cpu = 0; cpu < nrcpu; cpu++) {
             m_gic.IRQ_OUT[cpu].bind(*m_irq_percpu[cpu]);
             m_gic.FIQ_OUT[cpu].bind(*m_fiq_percpu[cpu]);
@@ -151,6 +160,7 @@ namespace avp64 {
         m_gic.SPI_IN[irq_uart3].bind(m_irq_uart3);
         m_gic.SPI_IN[irq_ethoc].bind(m_irq_ethoc);
         m_gic.SPI_IN[irq_sdhci].bind(m_irq_sdhci);
+        m_gic.SPI_IN[irq_nvdla].bind(m_irq_nvdla);
 }
 
     system::system(const sc_core::sc_module_name& nm):
@@ -175,12 +185,15 @@ namespace avp64 {
         addr_sdhci("addr_sdhci", vcml::range(AVP64_SDHCI_ADDR, AVP64_SDHCI_HIGH)),
         addr_simdev("addr_simdev", vcml::range(AVP64_SIMDEV_ADDR, AVP64_SIMDEV_HIGH)),
         addr_hwrng("addr_hwrng", vcml::range(AVP64_HWRNG_ADDR, AVP64_HWRNG_HIGH)),
+        addr_nvdla_config_if("addr_nvdla_config_if", vcml::range(AVP64_NVDLA_ADDR, AVP64_NVDLA_HIGH)),
+        addr_nvdla_extmem("addr_nvdla_extmem", vcml::range(AVP64_NVDLAEXTMEM_ADDR, AVP64_NVDLAEXTMEM_HIGH)),
         irq_uart0("irq_uart0", AVP64_IRQ_UART0),
         irq_uart1("irq_uart1", AVP64_IRQ_UART1),
         irq_uart2("irq_uart2", AVP64_IRQ_UART2),
         irq_uart3("irq_uart3", AVP64_IRQ_UART3),
         irq_ethoc("irq_ethoc", AVP64_IRQ_ETHOC),
         irq_sdhci("irq_sdhci", AVP64_IRQ_SDHCI),
+        irq_nvdla("irq_nvdla", AVP64_IRQ_NVDLA),
         irq_gt_hyp("irq_gt_hyp", AVP64_IRQ_GT_HYP),
         irq_gt_virt("irq_gt_virt", AVP64_IRQ_GT_VIRT),
         irq_gt_ns("irq_gt_ns", AVP64_IRQ_GT_NS),
@@ -200,6 +213,8 @@ namespace avp64 {
         m_sdhci("sdhci"),
         m_simdev("simdev"),
         m_hwrng("hwrng"),
+        m_nvdla("nvdla"),
+        m_nvdla_extmem("nvdla-extmem", 0x40000000),
         m_irq_uart0("m_irq_uart0"),
         m_irq_uart1("m_irq_uart1"),
         m_irq_uart2("m_irq_uart2"),
