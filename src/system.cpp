@@ -11,6 +11,8 @@
 #include "avp64/system.h"
 #include "avp64/config.h"
 
+#define SAFE_DELETE(p)       do { if (p) delete    (p); (p) = NULL; } while (0)
+
 #define AVP64_ARM64_CPU_IRQ  (0)
 #define AVP64_ARM64_CPU_FIQ  (1)
 #define AVP64_ARM64_CPU_VIRQ (2)

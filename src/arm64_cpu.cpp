@@ -15,14 +15,14 @@ namespace avp64 {
         tlm::tlm_dmi dmi;
         vcml::u64 page_size = m_cpu->get_page_size();
         if (m_cpu->INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND, dmi)) {
-            return dmi.get_dmi_ptr() + page_paddr;
+            return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
         } else {
             tlm::tlm_generic_payload tx;
             tx.set_address(page_paddr);
             tx.set_read();
             if (m_cpu->INSN->get_direct_mem_ptr(tx, dmi)) {
                 m_cpu->INSN.map_dmi(dmi);
-                return dmi.get_dmi_ptr() + page_paddr;
+                return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
             } else {
                 return nullptr;
             }
@@ -33,14 +33,14 @@ namespace avp64 {
         tlm::tlm_dmi dmi;
         vcml::u64 page_size = m_cpu->get_page_size();
         if (m_cpu->INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND, dmi)) {
-            return dmi.get_dmi_ptr() + page_paddr;
+            return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
         } else {
             tlm::tlm_generic_payload tx;
             tx.set_address(page_paddr);
             tx.set_write();
             if (m_cpu->INSN->get_direct_mem_ptr(tx, dmi)) {
                 m_cpu->INSN.map_dmi(dmi);
-                return dmi.get_dmi_ptr() + page_paddr;
+                return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
             } else {
                 return nullptr;
             }
@@ -59,7 +59,8 @@ namespace avp64 {
             resp = m_cpu->DATA.read(tx.addr, tx.data, tx.size, info);
         else
             resp = m_cpu->DATA.write(tx.addr, tx.data, tx.size, info);
-        if(vcml::is_thread()) {
+        // FIXME this is an ugly hack to sync
+        if (vcml::is_thread()) {
             sc_core::wait(sc_core::SC_ZERO_TIME);
             sc_core::wait(sc_core::SC_ZERO_TIME);
         }
@@ -287,7 +288,7 @@ namespace avp64 {
             ss << (*it)->basename() << "_trigger";
             int index = std::distance(timer_events.begin(), it);
             sc_core::sc_spawn(
-                    sc_core::sc_bind(&arm64_cpu::timer_irq_trigger, this, index),
+                    sc_bind(&arm64_cpu::timer_irq_trigger, this, index),
                     sc_core::sc_gen_unique_name(ss.str().c_str()),
                     opts.get()
             );

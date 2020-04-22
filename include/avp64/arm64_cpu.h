@@ -10,7 +10,7 @@
 #ifndef AVP_ARM64_CPU_H
 #define AVP_ARM64_CPU_H
 
-#include "avp64/common.h"
+#include "vcml.h"
 #include "ocx/ocx.h"
 
 namespace avp64 {
@@ -31,32 +31,32 @@ namespace avp64 {
         arm64_cpu *m_cpu;
         std::vector<std::shared_ptr<arm64_cpu>> m_syscall_subscriber;
     public:
-        ocx::u8* get_page_ptr_r(ocx::u64 page_paddr);
-        ocx::u8* get_page_ptr_w(ocx::u64 page_paddr);
+        virtual ocx::u8* get_page_ptr_r(ocx::u64 page_paddr) override;
+        virtual ocx::u8* get_page_ptr_w(ocx::u64 page_paddr) override;
 
-        ocx::response transport(const ocx::transaction& tx);
-        void signal(ocx::u64 sigid, bool set);
+        virtual ocx::response transport(const ocx::transaction& tx) override;
+        virtual void signal(ocx::u64 sigid, bool set) override;
 
-        void broadcast_syscall(int callno, void* arg);
+        virtual void broadcast_syscall(int callno, void* arg) override;
 
-        ocx::u64 get_time_ps();
-        const char* get_param(const char* name);
+        virtual ocx::u64 get_time_ps() override;
+        virtual const char* get_param(const char* name) override;
 
-        void notify(ocx::u64 eventid, ocx::u64 time_ps);
-        void cancel(ocx::u64 eventid);
+        virtual void notify(ocx::u64 eventid, ocx::u64 time_ps) override;
+        virtual void cancel(ocx::u64 eventid) override;
 
-        void hint(ocx::hint_kind kind);
+        virtual void hint(ocx::hint_kind kind) override;
 
-        void handle_begin_basic_block(ocx::u64 vaddr);
-        bool handle_breakpoint(ocx::u64 vaddr);
-        bool handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr);
+        virtual void handle_begin_basic_block(ocx::u64 vaddr) override;
+        virtual bool handle_breakpoint(ocx::u64 vaddr) override;
+        virtual bool handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) override;
 
         void inject_cpu(arm64_cpu *cpu);
         void add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu);
 
         arm64_cpu_env();
         arm64_cpu_env(const arm64_cpu_env&) = delete;
-        ~arm64_cpu_env();
+        virtual ~arm64_cpu_env();
     };
 
     class arm64_cpu : public vcml::processor {
@@ -88,7 +88,7 @@ namespace avp64 {
         vcml::out_port_list<bool> TIMER_IRQ_OUT;
         std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
-        vcml::u64 cycle_count() const override;
+        virtual vcml::u64 cycle_count() const override;
         virtual std::string disassemble(vcml::u64&, unsigned char*) override;
         virtual vcml::u64 get_program_counter() override;
         virtual vcml::u64 get_stack_pointer() override;
@@ -102,8 +102,8 @@ namespace avp64 {
         arm64_cpu() = delete;
         arm64_cpu(const arm64_cpu &) = delete;
         arm64_cpu(const sc_core::sc_module_name &name, vcml::u64 procid, vcml::u64 coreid);
-        ~arm64_cpu();
+        virtual ~arm64_cpu();
     };
-
-}
+    
+} // namespace avp64
 #endif

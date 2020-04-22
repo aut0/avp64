@@ -10,7 +10,7 @@
 #ifndef AVP64_SYSTEM_H
 #define AVP64_SYSTEM_H
 
-#include "avp64/common.h"
+#include "vcml.h"
 #include "avp64/arm64_cpu.h"
 
 namespace avp64 {
@@ -102,6 +102,7 @@ namespace avp64 {
 
         void construct_system_arm64();
     };
-}
+    
+} //namespace avp64
 
 #endif //AVP64_SYSTEM_H
