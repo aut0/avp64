@@ -60,7 +60,16 @@ Run the platform using a [config](config/) file:
 <install-dir>/bin/avp64 -f <install-dir>/config/<config-file>
 ```
 For more details on run parameters please look [here](https://github.com/janweinstock/vcml).  
-Tested software which belongs to the provided [configuration files](config/) can be found [here](https://github.com/aut0/avp64_sw).
+
+To install tested software which belongs to the provided [configuration files](config/), follow the installation guide of [avp64_sw](https://github.com/aut0/avp64_sw).  
+After the installation, set the enviroment variable `AVP64_SW` to the path of the `avp64_sw` repository:  
+```
+export AVP64_SW=<software-repository>
+```
+Execute the setup script, which is in `avp64/`, to copy and integrate the installed software:  
+```
+./setup.sh
+```
 
 ----
 ## Maintaining Multiple Builds
