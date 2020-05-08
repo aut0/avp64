@@ -60,7 +60,7 @@ namespace avp64 {
         else
             resp = m_cpu->DATA.write(tx.addr, tx.data, tx.size, info);
         // FIXME this is an ugly hack to sync
-        if (vcml::is_thread()) {
+        if (!tx.is_debug && vcml::is_thread()) {
             sc_core::wait(sc_core::SC_ZERO_TIME);
             sc_core::wait(sc_core::SC_ZERO_TIME);
         }
