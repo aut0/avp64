@@ -145,7 +145,7 @@ namespace avp64 {
     }
 
     bool arm64_cpu_env::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) {
-        throw std::logic_error("Not implemented");
+        m_cpu->gdb_notify(vcml::debugging::GDBSIG_TRAP);
         return true;
     }
 
@@ -211,23 +211,33 @@ namespace avp64 {
         return m_core->remove_breakpoint(addr);
     }
 
-    bool arm64_cpu::gdb_insert_watchpoint(const vcml::range& mem, vcml::vcml_access acs) {
-        if (acs==vcml::vcml_access::VCML_ACCESS_WRITE || acs==vcml::vcml_access::VCML_ACCESS_READ){
-            bool isrw = (acs==vcml::vcml_access::VCML_ACCESS_WRITE) ? true : false;
-            return  m_core->add_watchpoint(mem.start, mem.length(), isrw);
-        } else{
-            vcml::log_error("Unsupported watchpoint");
-            return false;
+    bool arm64_cpu::gdb_insert_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
+        switch (acs) {
+            case vcml::vcml_access::VCML_ACCESS_READ:
+                return m_core->add_watchpoint(mem.start, mem.length(), false);
+            case vcml::vcml_access::VCML_ACCESS_WRITE:
+                return m_core->add_watchpoint(mem.start, mem.length(), true);
+            case vcml::vcml_access::VCML_ACCESS_READ_WRITE:
+                return m_core->add_watchpoint(mem.start, mem.length(), true) &&
+                       m_core->add_watchpoint(mem.start, mem.length(), false);
+            default:
+                vcml::log_error("Unsupported watchpoint");
+                return false;
         }
     }
 
-    bool arm64_cpu::gdb_remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) {
-        if (acs==vcml::vcml_access::VCML_ACCESS_WRITE || acs==vcml::vcml_access::VCML_ACCESS_READ){
-            bool isrw = (acs==vcml::vcml_access::VCML_ACCESS_WRITE) ? true : false;
-            return  m_core->remove_watchpoint(mem.start, mem.length(), isrw);
-        } else{
-            vcml::log_error("Unsupported remove watchpoint");
-            return false;
+    bool arm64_cpu::gdb_remove_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
+        switch (acs) {
+            case vcml::vcml_access::VCML_ACCESS_READ:
+                return m_core->remove_watchpoint(mem.start, mem.length(), false);
+            case vcml::vcml_access::VCML_ACCESS_WRITE:
+                return m_core->remove_watchpoint(mem.start, mem.length(), true);
+            case vcml::vcml_access::VCML_ACCESS_READ_WRITE:
+                return m_core->remove_watchpoint(mem.start, mem.length(), true) &&
+                       m_core->remove_watchpoint(mem.start, mem.length(), false);
+            default:
+                vcml::log_error("Unsupported watchpoint");
+                return false;
         }
     }
 
