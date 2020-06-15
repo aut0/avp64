@@ -59,11 +59,6 @@ namespace avp64 {
             resp = m_cpu->DATA.read(tx.addr, tx.data, tx.size, info);
         else
             resp = m_cpu->DATA.write(tx.addr, tx.data, tx.size, info);
-        // FIXME this is an ugly hack to sync
-        if (!tx.is_debug && vcml::is_thread()) {
-            sc_core::wait(sc_core::SC_ZERO_TIME);
-            sc_core::wait(sc_core::SC_ZERO_TIME);
-        }
         switch (resp) {
             case tlm::TLM_OK_RESPONSE:
                 return ocx::RESP_OK;
