@@ -170,8 +170,10 @@ namespace avp64 {
     }
 
     void arm64_cpu::simulate(unsigned int cycles) {
-        ocx::u64 ran_cycles = m_core->step(cycles);
-        m_cycle_count += ran_cycles;
+        // insn_count() is only reset at the beginning of step(), but not at the end,
+        // so the number of cycles can only be summed up in the following quantum
+        m_cycle_count += m_core->insn_count();
+        m_core->step(cycles);
     }
 
     vcml::u64 arm64_cpu::gdb_num_registers() {
@@ -237,7 +239,7 @@ namespace avp64 {
     }
 
     vcml::u64 arm64_cpu::cycle_count() const {
-        return m_cycle_count;
+        return m_cycle_count + m_core->insn_count();
     }
     std::string arm64_cpu::disassemble(vcml::u64&, unsigned char*) {
         //FIXME
