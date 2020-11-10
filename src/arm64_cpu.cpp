@@ -114,6 +114,7 @@ namespace avp64 {
     void arm64_cpu_env::hint(ocx::hint_kind kind) {
         switch (kind) {
             case ocx::HINT_WFI: {
+                m_cpu->sync();
                 sc_core::sc_event_or_list list;
                 for (auto it : m_cpu->IRQ) {
                     list |= it.second->posedge_event();
@@ -121,8 +122,14 @@ namespace avp64 {
                     if (it.second->read())
                         return;
                 }
-                vcml::log_debug("waiting for interrupt");
+                sc_core::sc_time before_wait = sc_core::sc_time_stamp();
                 sc_core::wait(list);
+                VCML_ERROR_ON(m_cpu->local_time_stamp() != sc_core::sc_time_stamp(), "core not synchronized");
+                sc_core::sc_time after_wait = sc_core::sc_time_stamp();
+                sc_core::sc_time delta = after_wait - before_wait;
+                m_cpu->m_sleep_cycles += delta / m_cpu->clock_cycle();
+                m_cpu->m_total_cycles += delta / m_cpu->clock_cycle();
+                m_cpu->m_core->stop();
                 break;
             }
             default:
@@ -152,8 +159,9 @@ namespace avp64 {
         m_syscall_subscriber.push_back(cpu);
     }
 
-    arm64_cpu_env::arm64_cpu_env() :
-        m_cpu(nullptr) {
+    arm64_cpu_env::arm64_cpu_env()
+        : m_cpu(nullptr)
+        , m_syscall_subscriber() {
         // Nothing to do
     }
 
@@ -172,7 +180,7 @@ namespace avp64 {
     void arm64_cpu::simulate(unsigned int cycles) {
         // insn_count() is only reset at the beginning of step(), but not at the end,
         // so the number of cycles can only be summed up in the following quantum
-        m_cycle_count += m_core->insn_count();
+        m_run_cycles += m_core->insn_count();
         m_core->step(cycles);
     }
 
@@ -239,8 +247,16 @@ namespace avp64 {
     }
 
     vcml::u64 arm64_cpu::cycle_count() const {
-        return m_cycle_count + m_core->insn_count();
+        return m_run_cycles + m_core->insn_count();
     }
+
+    void arm64_cpu::update_local_time(sc_core::sc_time &local_time) {
+        vcml::u64 cycles = cycle_count() + m_sleep_cycles;
+        VCML_ERROR_ON(cycles < m_total_cycles, "cycle count goes down");
+        local_time += clock_cycles(cycles - m_total_cycles);
+        m_total_cycles = cycles;
+    }
+
     std::string arm64_cpu::disassemble(vcml::u64&, unsigned char*) {
         //FIXME
         throw std::logic_error("Not implemented");
@@ -303,14 +319,16 @@ namespace avp64 {
         vcml::processor::end_of_elaboration();
     }
 
-    arm64_cpu::arm64_cpu(const sc_core::sc_module_name &nm, vcml::u64 procid, vcml::u64 coreid) :
-            vcml::processor(nm),
-            m_core(nullptr),
-            m_core_id(coreid),
-            m_env(),
-            m_cycle_count(0),
-            TIMER_IRQ_OUT("TIMER_IRQ_OUT"),
-            timer_events(4) {
+    arm64_cpu::arm64_cpu(const sc_core::sc_module_name &nm, vcml::u64 procid, vcml::u64 coreid)
+        : vcml::processor(nm)
+        , m_core(nullptr)
+        , m_core_id(coreid)
+        , m_env()
+        , m_run_cycles(0)
+        , m_sleep_cycles(0)
+        , m_total_cycles(0)
+        , TIMER_IRQ_OUT("TIMER_IRQ_OUT")
+        , timer_events(4) {
         m_ocx_handle = dlopen("libocx-qemu-arm.so", RTLD_LAZY);
         if (!m_ocx_handle)
             VCML_ERROR("Could not load libocx-qemu-arm.so: %s", dlerror());

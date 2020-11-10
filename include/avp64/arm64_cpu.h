@@ -60,11 +60,14 @@ namespace avp64 {
     };
 
     class arm64_cpu : public vcml::processor {
+        friend arm64_cpu_env;
     private:
         ocx::core *m_core;
         vcml::u64 m_core_id;
         arm64_cpu_env m_env;
-        vcml::u64 m_cycle_count;
+        vcml::u64 m_run_cycles;
+        vcml::u64 m_sleep_cycles;
+        vcml::u64 m_total_cycles;
         void *m_ocx_handle;
         create_instance_t m_create_instance_func;
 
@@ -89,6 +92,7 @@ namespace avp64 {
         std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
         virtual vcml::u64 cycle_count() const override;
+        virtual void update_local_time(sc_core::sc_time& local_time) override;
         virtual std::string disassemble(vcml::u64&, unsigned char*) override;
         virtual vcml::u64 get_program_counter() override;
         virtual vcml::u64 get_stack_pointer() override;
@@ -101,7 +105,7 @@ namespace avp64 {
 
         arm64_cpu() = delete;
         arm64_cpu(const arm64_cpu &) = delete;
-        arm64_cpu(const sc_core::sc_module_name &name, vcml::u64 procid, vcml::u64 coreid);
+        explicit arm64_cpu(const sc_core::sc_module_name &name, vcml::u64 procid, vcml::u64 coreid);
         virtual ~arm64_cpu();
     };
     
