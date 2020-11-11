@@ -9,8 +9,43 @@
 
 #include "avp64/arm64_cpu.h"
 #include <dlfcn.h>
+#include <sys/mman.h>
+#include <stdexcept>
 
 namespace avp64 {
+
+    memory_protector::memory_protector()
+        : m_protected_pages() {
+        struct sigaction sa;
+        sa.sa_flags = SA_SIGINFO;
+        ::sigemptyset(&sa.sa_mask);
+        sa.sa_sigaction = segfault_handler;
+        VCML_ERROR_ON(::sigaction(SIGSEGV, &sa, NULL) != 0,
+                      "sigaction: %s", std::strerror(errno));
+    }
+
+    void memory_protector::segfault_handler(int sig, siginfo_t *si, void *unused) {
+        VCML_ERROR_ON(sig != SIGSEGV, "unexpected signal");
+        memory_protector::get_instance().notify_page(si->si_addr);
+    }
+
+    void memory_protector::register_page(arm64_cpu_env *cpu, vcml::u64 page_addr, void* host_addr) {
+        VCML_ERROR_ON(::mprotect(host_addr, 4096, PROT_READ) != 0,
+                      "mprotect: %s", std::strerror(errno));
+        m_protected_pages.insert({reinterpret_cast<vcml::u64>(host_addr), {cpu, page_addr}});
+    }
+
+    void memory_protector::notify_page(void* access_addr) {
+        vcml::u64 host_page_addr = reinterpret_cast<vcml::u64>(access_addr) & (~0xfffull);
+        ::mprotect(reinterpret_cast<void*>(host_page_addr), 4096, PROT_READ | PROT_WRITE);
+        try {
+            auto p = m_protected_pages.at(host_page_addr);
+            p.first->memory_protector_update(p.second);
+        } catch (std::out_of_range& e) {
+            VCML_ERROR("Page to notify not found");
+        }
+    }
+
     ocx::u8 *arm64_cpu_env::get_page_ptr_r(ocx::u64 page_paddr) {
         tlm::tlm_dmi dmi;
         vcml::u64 page_size = m_cpu->get_page_size();
@@ -47,6 +82,10 @@ namespace avp64 {
         }
     }
 
+    void arm64_cpu_env::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
+        memory_protector::get_instance().register_page(this, page_addr, page_ptr);
+    }
+
     ocx::response arm64_cpu_env::transport(const ocx::transaction& tx) {
         vcml::sideband info = vcml::SBI_NONE;
         if (tx.is_debug)
@@ -81,7 +120,7 @@ namespace avp64 {
         m_cpu->TIMER_IRQ_OUT[sigid] = set;
     }
 
-    void arm64_cpu_env::broadcast_syscall(int callno, void* arg) {
+    void arm64_cpu_env::broadcast_syscall(int callno, std::shared_ptr<void> arg, bool async) {
         m_cpu->handle_syscall(callno, arg);
         for (auto const& cpu: m_syscall_subscriber) {
             cpu->handle_syscall(callno, arg);
@@ -97,6 +136,8 @@ namespace avp64 {
     const char* arm64_cpu_env::get_param(const char* name) {
         if (strcmp("gicv3", name) == 0)
             return "false";
+        else if (strcmp("tbsize", name) == 0)
+            return "8MB";
         else
             VCML_ERROR("Unimplemented parameter requested");
     }
@@ -157,6 +198,15 @@ namespace avp64 {
 
     void arm64_cpu_env::add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu) {
         m_syscall_subscriber.push_back(cpu);
+    }
+
+    void arm64_cpu_env::memory_protector_update(vcml::u64 page_addr) {
+        m_cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
+        m_cpu->m_core->invalidate_page_ptr(page_addr);
+        for(auto const& cpu: m_syscall_subscriber) {
+            cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
+            cpu->m_core->invalidate_page_ptr(page_addr);
+        }
     }
 
     arm64_cpu_env::arm64_cpu_env()
@@ -289,7 +339,7 @@ namespace avp64 {
         vcml::processor::gdb_notify(signal);
     }
 
-    void arm64_cpu::handle_syscall(int callno, void *arg) {
+    void arm64_cpu::handle_syscall(int callno, std::shared_ptr<void> arg) {
         m_core->handle_syscall(callno, arg);
     }
 
@@ -337,7 +387,7 @@ namespace avp64 {
         if (dlsym_err)
             VCML_ERROR("Could not load symbol create_instance: %s", dlsym_err);
 
-        m_core = m_create_instance_func(20191113ull, m_env, "Cortex-A72");
+        m_core = m_create_instance_func(20201012ull, m_env, "Cortex-A72");
         if (!m_core)
             VCML_ERROR("Could not create ocx::core instance");
         m_env.inject_cpu(this);
