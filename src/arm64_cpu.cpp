@@ -9,8 +9,43 @@
 
 #include "avp64/arm64_cpu.h"
 #include <dlfcn.h>
+#include <sys/mman.h>
+#include <stdexcept>
 
 namespace avp64 {
+
+    memory_protector::memory_protector()
+        : m_protected_pages() {
+        struct sigaction sa;
+        sa.sa_flags = SA_SIGINFO;
+        ::sigemptyset(&sa.sa_mask);
+        sa.sa_sigaction = segfault_handler;
+        VCML_ERROR_ON(::sigaction(SIGSEGV, &sa, NULL) != 0,
+                      "sigaction: %s", std::strerror(errno));
+    }
+
+    void memory_protector::segfault_handler(int sig, siginfo_t *si, void *unused) {
+        VCML_ERROR_ON(sig != SIGSEGV, "unexpected signal");
+        memory_protector::get_instance().notify_page(si->si_addr);
+    }
+
+    void memory_protector::register_page(arm64_cpu_env *cpu, vcml::u64 page_addr, void* host_addr) {
+        VCML_ERROR_ON(::mprotect(host_addr, 4096, PROT_READ) != 0,
+                      "mprotect: %s", std::strerror(errno));
+        m_protected_pages.insert({reinterpret_cast<vcml::u64>(host_addr), {cpu, page_addr}});
+    }
+
+    void memory_protector::notify_page(void* access_addr) {
+        vcml::u64 host_page_addr = reinterpret_cast<vcml::u64>(access_addr) & (~0xfffull);
+        ::mprotect(reinterpret_cast<void*>(host_page_addr), 4096, PROT_READ | PROT_WRITE);
+        try {
+            auto p = m_protected_pages.at(host_page_addr);
+            p.first->memory_protector_update(p.second);
+        } catch (std::out_of_range& e) {
+            VCML_ERROR("Page to notify not found");
+        }
+    }
+
     ocx::u8 *arm64_cpu_env::get_page_ptr_r(ocx::u64 page_paddr) {
         tlm::tlm_dmi dmi;
         vcml::u64 page_size = m_cpu->get_page_size();
@@ -47,6 +82,10 @@ namespace avp64 {
         }
     }
 
+    void arm64_cpu_env::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
+        memory_protector::get_instance().register_page(this, page_addr, page_ptr);
+    }
+
     ocx::response arm64_cpu_env::transport(const ocx::transaction& tx) {
         vcml::sideband info = vcml::SBI_NONE;
         if (tx.is_debug)
@@ -59,11 +98,6 @@ namespace avp64 {
             resp = m_cpu->DATA.read(tx.addr, tx.data, tx.size, info);
         else
             resp = m_cpu->DATA.write(tx.addr, tx.data, tx.size, info);
-        // FIXME this is an ugly hack to sync
-        if (vcml::is_thread()) {
-            sc_core::wait(sc_core::SC_ZERO_TIME);
-            sc_core::wait(sc_core::SC_ZERO_TIME);
-        }
         switch (resp) {
             case tlm::TLM_OK_RESPONSE:
                 return ocx::RESP_OK;
@@ -86,7 +120,7 @@ namespace avp64 {
         m_cpu->TIMER_IRQ_OUT[sigid] = set;
     }
 
-    void arm64_cpu_env::broadcast_syscall(int callno, void* arg) {
+    void arm64_cpu_env::broadcast_syscall(int callno, std::shared_ptr<void> arg, bool async) {
         m_cpu->handle_syscall(callno, arg);
         for (auto const& cpu: m_syscall_subscriber) {
             cpu->handle_syscall(callno, arg);
@@ -102,6 +136,8 @@ namespace avp64 {
     const char* arm64_cpu_env::get_param(const char* name) {
         if (strcmp("gicv3", name) == 0)
             return "false";
+        else if (strcmp("tbsize", name) == 0)
+            return "8MB";
         else
             VCML_ERROR("Unimplemented parameter requested");
     }
@@ -119,6 +155,7 @@ namespace avp64 {
     void arm64_cpu_env::hint(ocx::hint_kind kind) {
         switch (kind) {
             case ocx::HINT_WFI: {
+                m_cpu->sync();
                 sc_core::sc_event_or_list list;
                 for (auto it : m_cpu->IRQ) {
                     list |= it.second->posedge_event();
@@ -126,8 +163,14 @@ namespace avp64 {
                     if (it.second->read())
                         return;
                 }
-                vcml::log_debug("waiting for interrupt");
+                sc_core::sc_time before_wait = sc_core::sc_time_stamp();
                 sc_core::wait(list);
+                VCML_ERROR_ON(m_cpu->local_time_stamp() != sc_core::sc_time_stamp(), "core not synchronized");
+                sc_core::sc_time after_wait = sc_core::sc_time_stamp();
+                sc_core::sc_time delta = after_wait - before_wait;
+                m_cpu->m_sleep_cycles += delta / m_cpu->clock_cycle();
+                m_cpu->m_total_cycles += delta / m_cpu->clock_cycle();
+                m_cpu->m_core->stop();
                 break;
             }
             default:
@@ -145,7 +188,7 @@ namespace avp64 {
     }
 
     bool arm64_cpu_env::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) {
-        throw std::logic_error("Not implemented");
+        m_cpu->gdb_notify(vcml::debugging::GDBSIG_TRAP);
         return true;
     }
 
@@ -157,8 +200,18 @@ namespace avp64 {
         m_syscall_subscriber.push_back(cpu);
     }
 
-    arm64_cpu_env::arm64_cpu_env() :
-        m_cpu(nullptr) {
+    void arm64_cpu_env::memory_protector_update(vcml::u64 page_addr) {
+        m_cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
+        m_cpu->m_core->invalidate_page_ptr(page_addr);
+        for(auto const& cpu: m_syscall_subscriber) {
+            cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
+            cpu->m_core->invalidate_page_ptr(page_addr);
+        }
+    }
+
+    arm64_cpu_env::arm64_cpu_env()
+        : m_cpu(nullptr)
+        , m_syscall_subscriber() {
         // Nothing to do
     }
 
@@ -175,8 +228,10 @@ namespace avp64 {
     }
 
     void arm64_cpu::simulate(unsigned int cycles) {
-        ocx::u64 ran_cycles = m_core->step(cycles);
-        m_cycle_count += ran_cycles;
+        // insn_count() is only reset at the beginning of step(), but not at the end,
+        // so the number of cycles can only be summed up in the following quantum
+        m_run_cycles += m_core->insn_count();
+        m_core->step(cycles);
     }
 
     vcml::u64 arm64_cpu::gdb_num_registers() {
@@ -211,29 +266,47 @@ namespace avp64 {
         return m_core->remove_breakpoint(addr);
     }
 
-    bool arm64_cpu::gdb_insert_watchpoint(const vcml::range& mem, vcml::vcml_access acs) {
-        if (acs==vcml::vcml_access::VCML_ACCESS_WRITE || acs==vcml::vcml_access::VCML_ACCESS_READ){
-            bool isrw = (acs==vcml::vcml_access::VCML_ACCESS_WRITE) ? true : false;
-            return  m_core->add_watchpoint(mem.start, mem.length(), isrw);
-        } else{
-            vcml::log_error("Unsupported watchpoint");
-            return false;
+    bool arm64_cpu::gdb_insert_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
+        switch (acs) {
+            case vcml::vcml_access::VCML_ACCESS_READ:
+                return m_core->add_watchpoint(mem.start, mem.length(), false);
+            case vcml::vcml_access::VCML_ACCESS_WRITE:
+                return m_core->add_watchpoint(mem.start, mem.length(), true);
+            case vcml::vcml_access::VCML_ACCESS_READ_WRITE:
+                return m_core->add_watchpoint(mem.start, mem.length(), true) &&
+                       m_core->add_watchpoint(mem.start, mem.length(), false);
+            default:
+                vcml::log_error("Unsupported watchpoint");
+                return false;
         }
     }
 
-    bool arm64_cpu::gdb_remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) {
-        if (acs==vcml::vcml_access::VCML_ACCESS_WRITE || acs==vcml::vcml_access::VCML_ACCESS_READ){
-            bool isrw = (acs==vcml::vcml_access::VCML_ACCESS_WRITE) ? true : false;
-            return  m_core->remove_watchpoint(mem.start, mem.length(), isrw);
-        } else{
-            vcml::log_error("Unsupported remove watchpoint");
-            return false;
+    bool arm64_cpu::gdb_remove_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
+        switch (acs) {
+            case vcml::vcml_access::VCML_ACCESS_READ:
+                return m_core->remove_watchpoint(mem.start, mem.length(), false);
+            case vcml::vcml_access::VCML_ACCESS_WRITE:
+                return m_core->remove_watchpoint(mem.start, mem.length(), true);
+            case vcml::vcml_access::VCML_ACCESS_READ_WRITE:
+                return m_core->remove_watchpoint(mem.start, mem.length(), true) &&
+                       m_core->remove_watchpoint(mem.start, mem.length(), false);
+            default:
+                vcml::log_error("Unsupported watchpoint");
+                return false;
         }
     }
 
     vcml::u64 arm64_cpu::cycle_count() const {
-        return m_cycle_count;
+        return m_run_cycles + m_core->insn_count();
     }
+
+    void arm64_cpu::update_local_time(sc_core::sc_time &local_time) {
+        vcml::u64 cycles = cycle_count() + m_sleep_cycles;
+        VCML_ERROR_ON(cycles < m_total_cycles, "cycle count goes down");
+        local_time += clock_cycles(cycles - m_total_cycles);
+        m_total_cycles = cycles;
+    }
+
     std::string arm64_cpu::disassemble(vcml::u64&, unsigned char*) {
         //FIXME
         throw std::logic_error("Not implemented");
@@ -266,7 +339,7 @@ namespace avp64 {
         vcml::processor::gdb_notify(signal);
     }
 
-    void arm64_cpu::handle_syscall(int callno, void *arg) {
+    void arm64_cpu::handle_syscall(int callno, std::shared_ptr<void> arg) {
         m_core->handle_syscall(callno, arg);
     }
 
@@ -296,14 +369,16 @@ namespace avp64 {
         vcml::processor::end_of_elaboration();
     }
 
-    arm64_cpu::arm64_cpu(const sc_core::sc_module_name &nm, vcml::u64 procid, vcml::u64 coreid) :
-            vcml::processor(nm),
-            m_core(nullptr),
-            m_core_id(coreid),
-            m_env(),
-            m_cycle_count(0),
-            TIMER_IRQ_OUT("TIMER_IRQ_OUT"),
-            timer_events(4) {
+    arm64_cpu::arm64_cpu(const sc_core::sc_module_name &nm, vcml::u64 procid, vcml::u64 coreid)
+        : vcml::processor(nm)
+        , m_core(nullptr)
+        , m_core_id(coreid)
+        , m_env()
+        , m_run_cycles(0)
+        , m_sleep_cycles(0)
+        , m_total_cycles(0)
+        , TIMER_IRQ_OUT("TIMER_IRQ_OUT")
+        , timer_events(4) {
         m_ocx_handle = dlopen("libocx-qemu-arm.so", RTLD_LAZY);
         if (!m_ocx_handle)
             VCML_ERROR("Could not load libocx-qemu-arm.so: %s", dlerror());
@@ -312,7 +387,7 @@ namespace avp64 {
         if (dlsym_err)
             VCML_ERROR("Could not load symbol create_instance: %s", dlsym_err);
 
-        m_core = m_create_instance_func(20191113ull, m_env, "Cortex-A72");
+        m_core = m_create_instance_func(20201012ull, m_env, "Cortex-A72");
         if (!m_core)
             VCML_ERROR("Could not create ocx::core instance");
         m_env.inject_cpu(this);

@@ -40,7 +40,7 @@ message(STATUS "Found OCX-QEMU-ARM at " ${OCX_QEMU_ARM_HOME})
 message(STATUS "Found VCML at " ${VCML_HOME})
 
 add_subdirectory(${OCX_QEMU_ARM_HOME} ocx-qemu-arm)
-add_subdirectory(${VCML_HOME} vcml EXCLUDE_FROM_ALL)
+add_subdirectory(${VCML_HOME} vcml)
 add_subdirectory(${VCML-NVDLA_HOME} EXCLUDE_FORM_ALL)
 
 set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")

@@ -12,8 +12,28 @@
 
 #include "vcml.h"
 #include "ocx/ocx.h"
+#include <signal.h>
 
 namespace avp64 {
+
+    class arm64_cpu_env;
+
+    class memory_protector {
+    private:
+        memory_protector();
+        std::map<vcml::u64, std::pair<arm64_cpu_env*, vcml::u64>> m_protected_pages;
+    public:
+        static memory_protector& get_instance() {
+            static memory_protector inst;
+            return inst;
+        }
+
+        static void segfault_handler(int sig, siginfo_t *si, void*);
+        void register_page(arm64_cpu_env *cpu, vcml::u64 page_addr, void *host_addr);
+        void notify_page(void* access_addr);
+        memory_protector(const memory_protector&) = delete;
+        void operator=(memory_protector const&) = delete;
+    };
 
     enum arm_generic_timer_type {
         ARM_TIMER_PHYS = 0,
@@ -28,16 +48,21 @@ namespace avp64 {
 
     class arm64_cpu_env : public ocx::env {
     private:
+        static void segfault_handler(int sig, siginfo_t *si, void *unused);
+
         arm64_cpu *m_cpu;
         std::vector<std::shared_ptr<arm64_cpu>> m_syscall_subscriber;
     public:
         virtual ocx::u8* get_page_ptr_r(ocx::u64 page_paddr) override;
         virtual ocx::u8* get_page_ptr_w(ocx::u64 page_paddr) override;
 
+        virtual void protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) override;
+        void memory_protector_update(vcml::u64 page_addr);
+
         virtual ocx::response transport(const ocx::transaction& tx) override;
         virtual void signal(ocx::u64 sigid, bool set) override;
 
-        virtual void broadcast_syscall(int callno, void* arg) override;
+        virtual void broadcast_syscall(int callno, std::shared_ptr<void> arg, bool async) override;
 
         virtual ocx::u64 get_time_ps() override;
         virtual const char* get_param(const char* name) override;
@@ -60,11 +85,14 @@ namespace avp64 {
     };
 
     class arm64_cpu : public vcml::processor {
+        friend arm64_cpu_env;
     private:
         ocx::core *m_core;
         vcml::u64 m_core_id;
         arm64_cpu_env m_env;
-        vcml::u64 m_cycle_count;
+        vcml::u64 m_run_cycles;
+        vcml::u64 m_sleep_cycles;
+        vcml::u64 m_total_cycles;
         void *m_ocx_handle;
         create_instance_t m_create_instance_func;
 
@@ -89,19 +117,20 @@ namespace avp64 {
         std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
         virtual vcml::u64 cycle_count() const override;
+        virtual void update_local_time(sc_core::sc_time& local_time) override;
         virtual std::string disassemble(vcml::u64&, unsigned char*) override;
         virtual vcml::u64 get_program_counter() override;
         virtual vcml::u64 get_stack_pointer() override;
         virtual vcml::u64 get_core_id() override;
         virtual void gdb_notify(int signal) override;
 
-        void handle_syscall(int callno, void* arg);
+        void handle_syscall(int callno, std::shared_ptr<void> arg);
         void add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu);
         vcml::u64 get_page_size();
 
         arm64_cpu() = delete;
         arm64_cpu(const arm64_cpu &) = delete;
-        arm64_cpu(const sc_core::sc_module_name &name, vcml::u64 procid, vcml::u64 coreid);
+        explicit arm64_cpu(const sc_core::sc_module_name &name, vcml::u64 procid, vcml::u64 coreid);
         virtual ~arm64_cpu();
     };
     
