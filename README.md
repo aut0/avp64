@@ -66,10 +66,11 @@ After the installation, set the enviroment variable `AVP64_SW` to the path of th
 ```
 export AVP64_SW=<software-repository>
 ```
-Execute the setup script, which is in `avp64/`, to copy and integrate the installed software:  
+Execute the setup script, which is in `avp64/`, to copy and integrate the installed software.:  
 ```
-./setup.sh
+./setup.sh <type>
 ```
+`<type>` specifies the software to be installed. It can be `linux`, `linux_nvdla` or `xen`. 
 
 ----
 ## Maintaining Multiple Builds
