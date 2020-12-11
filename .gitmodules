@@ -6,4 +6,4 @@
 	url = https://github.com/janweinstock/vcml
 [submodule "deps/vcml-nvdla"]
 	path = deps/vcml-nvdla
-	url = https://github.com/aut0/vcml-nvdla.git
+	url = https://github.com/aut0/vcml-nvdla
