@@ -78,7 +78,7 @@ namespace avp64 {
         vcml::opencores::ethoc  m_ethoc;
         vcml::generic::sdcard   m_sdcard;
         vcml::generic::sdhci    m_sdhci;
-        vcml::generic::simdev   m_simdev;
+        vcml::meta::simdev      m_simdev;
         vcml::generic::hwrng    m_hwrng;
 
         sc_core::sc_signal<bool> m_irq_uart0;

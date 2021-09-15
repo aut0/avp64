@@ -102,27 +102,25 @@ namespace avp64 {
         virtual void simulate(unsigned int cycles) override;
         virtual void end_of_elaboration() override;
 
-        virtual vcml::u64 gdb_num_registers() override;
-        virtual vcml::u64 gdb_register_width(vcml::u64 idx) override;
-        virtual bool gdb_read_reg(vcml::u64 idx, void* p, vcml::u64 size) override;
-        virtual bool gdb_write_reg(vcml::u64 idx, const void* p, vcml::u64 sz) override;
-        virtual bool gdb_page_size(vcml::u64& size) override;
-        virtual bool gdb_virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) override;
-        virtual bool gdb_insert_breakpoint(vcml::u64 addr) override;
-        virtual bool gdb_remove_breakpoint(vcml::u64 addr) override;
-        virtual bool gdb_insert_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
-        virtual bool gdb_remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
+        virtual bool read_reg_dbg(vcml::u64 idx, vcml::u64& val) override;
+        virtual bool write_reg_dbg(vcml::u64 idx, vcml::u64 val) override;
+        virtual bool page_size(vcml::u64& size) override;
+        virtual bool virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) override;
+        virtual bool insert_breakpoint(vcml::u64 addr) override;
+        virtual bool remove_breakpoint(vcml::u64 addr) override;
+        virtual bool insert_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
+        virtual bool remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
+
     public:
         vcml::out_port_list<bool> TIMER_IRQ_OUT;
         std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
         virtual vcml::u64 cycle_count() const override;
         virtual void update_local_time(sc_core::sc_time& local_time) override;
-        virtual std::string disassemble(vcml::u64&, unsigned char*) override;
-        virtual vcml::u64 get_program_counter() override;
-        virtual vcml::u64 get_stack_pointer() override;
-        virtual vcml::u64 get_core_id() override;
-        virtual void gdb_notify(int signal) override;
+        virtual bool disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) override;
+        virtual vcml::u64 program_counter() override;
+        virtual vcml::u64 stack_pointer() override;
+        virtual vcml::u64 get_core_id();
 
         void handle_syscall(int callno, std::shared_ptr<void> arg);
         void add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu);
