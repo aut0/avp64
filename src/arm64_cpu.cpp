@@ -8,9 +8,13 @@
  ******************************************************************************/
 
 #include "avp64/arm64_cpu.h"
+#include "avp64/aarch64_regs.h"
+
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <stdexcept>
+
+#define CPU_ARCH "aarch64"
 
 namespace avp64 {
 
@@ -87,7 +91,7 @@ namespace avp64 {
     }
 
     ocx::response arm64_cpu_env::transport(const ocx::transaction& tx) {
-        vcml::sideband info = vcml::SBI_NONE;
+        vcml::tlm_sbi info = vcml::SBI_NONE;
         if (tx.is_debug)
             info |= vcml::SBI_DEBUG;
         if (tx.is_excl)
@@ -183,12 +187,17 @@ namespace avp64 {
     }
 
     bool arm64_cpu_env::handle_breakpoint(ocx::u64 vaddr) {
-        m_cpu->gdb_notify(vcml::debugging::GDBSIG_TRAP);
+        m_cpu->notify_breakpoint_hit(vaddr);
         return true;
     }
 
     bool arm64_cpu_env::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) {
-        m_cpu->gdb_notify(vcml::debugging::GDBSIG_TRAP);
+        const vcml::range range(vaddr, vaddr + size);
+
+        if (iswr) 
+            m_cpu->notify_watchpoint_write(range, data);
+        else 
+            m_cpu->notify_watchpoint_read(range);
         return true;
     }
 
@@ -203,7 +212,7 @@ namespace avp64 {
     void arm64_cpu_env::memory_protector_update(vcml::u64 page_addr) {
         m_cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
         m_cpu->m_core->invalidate_page_ptr(page_addr);
-        for(auto const& cpu: m_syscall_subscriber) {
+        for (auto const& cpu: m_syscall_subscriber) {
             cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
             cpu->m_core->invalidate_page_ptr(page_addr);
         }
@@ -215,7 +224,7 @@ namespace avp64 {
         // Nothing to do
     }
 
-   arm64_cpu_env::~arm64_cpu_env() {
+    arm64_cpu_env::~arm64_cpu_env() {
 
     }
 
@@ -234,39 +243,33 @@ namespace avp64 {
         m_core->step(cycles);
     }
 
-    vcml::u64 arm64_cpu::gdb_num_registers() {
-        return 34;
+    bool arm64_cpu::read_reg_dbg(vcml::u64 idx, vcml::u64 &val) {
+        val = 0x0000000000000000; // init value because vcml doesn't -> necessary, if reg is smaller than 64 bit
+        return m_core->read_reg(idx, &val);
     }
 
-    vcml::u64 arm64_cpu::gdb_register_width(vcml::u64 idx) {
-        return m_core->reg_size(idx);
+    bool arm64_cpu::write_reg_dbg(vcml::u64 idx, vcml::u64 val) {
+        return m_core->write_reg(idx, &val);
     }
 
-    bool arm64_cpu::gdb_read_reg(vcml::u64 idx, void* p, vcml::u64 size) {
-        return m_core->read_reg(idx, p);
-    }
-
-    bool arm64_cpu::gdb_write_reg(vcml::u64 idx, const void* p, vcml::u64 sz) {
-        return m_core->write_reg(idx, p);
-    }
-
-    bool arm64_cpu::gdb_page_size(vcml::u64& size) {
+    bool arm64_cpu::page_size(vcml::u64& size) {
         size = m_core->page_size();
         return true;
     }
-    bool arm64_cpu::gdb_virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) {
+
+    bool arm64_cpu::virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) {
         return m_core->virt_to_phys(vaddr, paddr);
     }
 
-    bool arm64_cpu::gdb_insert_breakpoint(vcml::u64 addr) {
+    bool arm64_cpu::insert_breakpoint(vcml::u64 addr) {
         return m_core->add_breakpoint(addr);
     }
 
-    bool arm64_cpu::gdb_remove_breakpoint(vcml::u64 addr) {
+    bool arm64_cpu::remove_breakpoint(vcml::u64 addr) {
         return m_core->remove_breakpoint(addr);
     }
 
-    bool arm64_cpu::gdb_insert_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
+    bool arm64_cpu::insert_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
         switch (acs) {
             case vcml::vcml_access::VCML_ACCESS_READ:
                 return m_core->add_watchpoint(mem.start, mem.length(), false);
@@ -281,7 +284,7 @@ namespace avp64 {
         }
     }
 
-    bool arm64_cpu::gdb_remove_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
+    bool arm64_cpu::remove_watchpoint(const vcml::range &mem, vcml::vcml_access acs) {
         switch (acs) {
             case vcml::vcml_access::VCML_ACCESS_READ:
                 return m_core->remove_watchpoint(mem.start, mem.length(), false);
@@ -307,24 +310,26 @@ namespace avp64 {
         m_total_cycles = cycles;
     }
 
-    std::string arm64_cpu::disassemble(vcml::u64&, unsigned char*) {
+    bool arm64_cpu::disassemble(vcml::u8 *ibuf, vcml::u64 &addr, std::string &code) {
         //FIXME
         throw std::logic_error("Not implemented");
-        return "blub";
+        return false;
     }
-    vcml::u64 arm64_cpu::get_program_counter() {
+
+    vcml::u64 arm64_cpu::program_counter() {
         ocx::u64 pc_regid = m_core->pc_regid();
         vcml::u64 pc = 0;
-        if(m_core->read_reg(pc_regid, &pc)) {
+        if (m_core->read_reg(pc_regid, &pc)) {
             return pc;
         } else {
             VCML_ERROR("Could not read program counter");
         }
     }
-    vcml::u64 arm64_cpu::get_stack_pointer() {
+
+    vcml::u64 arm64_cpu::stack_pointer() {
         ocx::u64 sp_regid = m_core->sp_regid();
         vcml::u64 sp = 0;
-        if(m_core->read_reg(sp_regid, &sp)) {
+        if (m_core->read_reg(sp_regid, &sp)) {
             return sp;
         } else {
             VCML_ERROR("Could not read stack pointer");
@@ -333,10 +338,6 @@ namespace avp64 {
 
     vcml::u64 arm64_cpu::get_core_id() {
         return m_core_id;
-    }
-
-    void arm64_cpu::gdb_notify(int signal) {
-        vcml::processor::gdb_notify(signal);
     }
 
     void arm64_cpu::handle_syscall(int callno, std::shared_ptr<void> arg) {
@@ -370,7 +371,7 @@ namespace avp64 {
     }
 
     arm64_cpu::arm64_cpu(const sc_core::sc_module_name &nm, vcml::u64 procid, vcml::u64 coreid)
-        : vcml::processor(nm)
+        : vcml::processor(nm, CPU_ARCH)
         , m_core(nullptr)
         , m_core_id(coreid)
         , m_env()
@@ -391,6 +392,9 @@ namespace avp64 {
         if (!m_core)
             VCML_ERROR("Could not create ocx::core instance");
         m_env.inject_cpu(this);
+
+        set_little_endian();
+        define_cpuregs(aarch64_regs);
 
         m_core->set_id(procid, coreid);
         DATA.set_cpuid(m_core_id);

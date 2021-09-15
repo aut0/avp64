@@ -151,7 +151,7 @@ namespace avp64 {
         m_gic.SPI_IN[irq_uart3].bind(m_irq_uart3);
         m_gic.SPI_IN[irq_ethoc].bind(m_irq_ethoc);
         m_gic.SPI_IN[irq_sdhci].bind(m_irq_sdhci);
-}
+    }
 
     system::system(const sc_core::sc_module_name& nm):
         vcml::system(nm),
@@ -278,7 +278,7 @@ namespace avp64 {
                         stats.irq_uptime.to_seconds() / stats.irq_count * 1e6);
                 s += vcml::mkstr(", max %.1fus",
                         stats.irq_longest.to_seconds() * 1e6);
-                vcml::log_info(s.c_str());
+                vcml::log_info("%s", s.c_str());
             }
         }
 
@@ -288,7 +288,6 @@ namespace avp64 {
         vcml::log_info("  run time     : %.4fs", realtime);
         vcml::log_info("  instructions : %" PRId64, ninsn);
         vcml::log_info("  sim speed    : %.1f MIPS", mips);
-        vcml::log_info("");
 
         return result;
     }
@@ -296,8 +295,12 @@ namespace avp64 {
     void system::end_of_elaboration() {
         std::stringstream ss;
         m_bus.execute("show", VCML_NO_ARGS, ss);
-        log_debug(ss.str().c_str());
+        log_debug("%s", ss.str().c_str());
+
+        ss.str("");
+        ss.clear();
+        
         m_gic.execute("show", VCML_NO_ARGS, ss);
-        log_debug(ss.str().c_str());
+        log_debug("%s", ss.str().c_str());
     }
 }
