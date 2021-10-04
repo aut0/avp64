@@ -33,7 +33,7 @@ namespace avp64 {
         memory_protector::get_instance().notify_page(si->si_addr);
     }
 
-    void memory_protector::register_page(arm64_cpu_env *cpu, vcml::u64 page_addr, void* host_addr) {
+    void memory_protector::register_page(arm64_cpu* cpu, vcml::u64 page_addr, void* host_addr) {
         VCML_ERROR_ON(::mprotect(host_addr, 4096, PROT_READ) != 0,
                       "mprotect: %s", std::strerror(errno));
         m_protected_pages.insert({reinterpret_cast<vcml::u64>(host_addr), {cpu, page_addr}});
@@ -50,17 +50,17 @@ namespace avp64 {
         }
     }
 
-    ocx::u8 *arm64_cpu_env::get_page_ptr_r(ocx::u64 page_paddr) {
+    ocx::u8 *arm64_cpu::get_page_ptr_r(ocx::u64 page_paddr) {
         tlm::tlm_dmi dmi;
-        vcml::u64 page_size = m_cpu->get_page_size();
-        if (m_cpu->INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND, dmi)) {
+        vcml::u64 page_size = get_page_size();
+        if (INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND, dmi)) {
             return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
         } else {
             tlm::tlm_generic_payload tx;
             tx.set_address(page_paddr);
             tx.set_read();
-            if (m_cpu->INSN->get_direct_mem_ptr(tx, dmi)) {
-                m_cpu->INSN.map_dmi(dmi);
+            if (INSN->get_direct_mem_ptr(tx, dmi)) {
+                INSN.map_dmi(dmi);
                 return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
             } else {
                 return nullptr;
@@ -68,17 +68,17 @@ namespace avp64 {
         }
     }
 
-    ocx::u8 *arm64_cpu_env::get_page_ptr_w(ocx::u64 page_paddr) {
+    ocx::u8 *arm64_cpu::get_page_ptr_w(ocx::u64 page_paddr) {
         tlm::tlm_dmi dmi;
-        vcml::u64 page_size = m_cpu->get_page_size();
-        if (m_cpu->INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND, dmi)) {
+        vcml::u64 page_size = get_page_size();
+        if (INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND, dmi)) {
             return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
         } else {
             tlm::tlm_generic_payload tx;
             tx.set_address(page_paddr);
             tx.set_write();
-            if (m_cpu->INSN->get_direct_mem_ptr(tx, dmi)) {
-                m_cpu->INSN.map_dmi(dmi);
+            if (INSN->get_direct_mem_ptr(tx, dmi)) {
+                INSN.map_dmi(dmi);
                 return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
             } else {
                 return nullptr;
@@ -86,22 +86,22 @@ namespace avp64 {
         }
     }
 
-    void arm64_cpu_env::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
+    void arm64_cpu::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
         memory_protector::get_instance().register_page(this, page_addr, page_ptr);
     }
 
-    ocx::response arm64_cpu_env::transport(const ocx::transaction& tx) {
+    ocx::response arm64_cpu::transport(const ocx::transaction& tx) {
         vcml::tlm_sbi info = vcml::SBI_NONE;
         if (tx.is_debug)
             info |= vcml::SBI_DEBUG;
         if (tx.is_excl)
             info |= vcml::SBI_EXCL;
-        info.cpuid = m_cpu->get_core_id();
+        info.cpuid = get_core_id();
         tlm::tlm_response_status resp = tlm::TLM_GENERIC_ERROR_RESPONSE;
         if (tx.is_read)
-            resp = m_cpu->DATA.read(tx.addr, tx.data, tx.size, info);
+            resp = DATA.read(tx.addr, tx.data, tx.size, info);
         else
-            resp = m_cpu->DATA.write(tx.addr, tx.data, tx.size, info);
+            resp = DATA.write(tx.addr, tx.data, tx.size, info);
         switch (resp) {
             case tlm::TLM_OK_RESPONSE:
                 return ocx::RESP_OK;
@@ -120,24 +120,24 @@ namespace avp64 {
         }
     }
 
-    void arm64_cpu_env::signal(ocx::u64 sigid, bool set) {
-        m_cpu->TIMER_IRQ_OUT[sigid] = set;
+    void arm64_cpu::signal(ocx::u64 sigid, bool set) {
+        TIMER_IRQ_OUT[sigid] = set;
     }
 
-    void arm64_cpu_env::broadcast_syscall(int callno, std::shared_ptr<void> arg, bool async) {
-        m_cpu->handle_syscall(callno, arg);
+    void arm64_cpu::broadcast_syscall(int callno, std::shared_ptr<void> arg, bool async) {
+        handle_syscall(callno, arg);
         for (auto const& cpu: m_syscall_subscriber) {
             cpu->handle_syscall(callno, arg);
         }
     }
 
-    ocx::u64 arm64_cpu_env::get_time_ps() {
+    ocx::u64 arm64_cpu::get_time_ps() {
         sc_core::sc_time tmp = sc_core::sc_time_stamp();
         uint64_t val_ps = (tmp.to_seconds()+0.5)*1e12;
         return val_ps;
     }
 
-    const char* arm64_cpu_env::get_param(const char* name) {
+    const char* arm64_cpu::get_param(const char* name) {
         if (strcmp("gicv3", name) == 0)
             return "false";
         else if (strcmp("tbsize", name) == 0)
@@ -146,22 +146,22 @@ namespace avp64 {
             VCML_ERROR("Unimplemented parameter requested");
     }
 
-    void arm64_cpu_env::notify(ocx::u64 eventid, ocx::u64 time_ps) {
+    void arm64_cpu::notify(ocx::u64 eventid, ocx::u64 time_ps) {
         sc_core::sc_time notify_time(time_ps, sc_core::SC_PS);
         sc_core::sc_time delta = notify_time-sc_core::sc_time_stamp();
-        m_cpu->timer_events[eventid]->notify(delta);
+        timer_events[eventid]->notify(delta);
     }
 
-    void arm64_cpu_env::cancel(ocx::u64 eventid) {
-        m_cpu->timer_events[eventid]->cancel();
+    void arm64_cpu::cancel(ocx::u64 eventid) {
+        timer_events[eventid]->cancel();
     }
 
-    void arm64_cpu_env::hint(ocx::hint_kind kind) {
+    void arm64_cpu::hint(ocx::hint_kind kind) {
         switch (kind) {
             case ocx::HINT_WFI: {
-                m_cpu->sync();
+                sync();
                 sc_core::sc_event_or_list list;
-                for (auto it : m_cpu->IRQ) {
+                for (auto it : IRQ) {
                     list |= it.second->posedge_event();
                     // Treat WFI as NOP if IRQ is pending
                     if (it.second->read())
@@ -169,12 +169,12 @@ namespace avp64 {
                 }
                 sc_core::sc_time before_wait = sc_core::sc_time_stamp();
                 sc_core::wait(list);
-                VCML_ERROR_ON(m_cpu->local_time_stamp() != sc_core::sc_time_stamp(), "core not synchronized");
+                VCML_ERROR_ON(local_time_stamp() != sc_core::sc_time_stamp(), "core not synchronized");
                 sc_core::sc_time after_wait = sc_core::sc_time_stamp();
                 sc_core::sc_time delta = after_wait - before_wait;
-                m_cpu->m_sleep_cycles += delta / m_cpu->clock_cycle();
-                m_cpu->m_total_cycles += delta / m_cpu->clock_cycle();
-                m_cpu->m_core->stop();
+                m_sleep_cycles += delta / clock_cycle();
+                m_total_cycles += delta / clock_cycle();
+                m_core->stop();
                 break;
             }
             default:
@@ -182,50 +182,36 @@ namespace avp64 {
         }
     }
 
-    void arm64_cpu_env::handle_begin_basic_block(ocx::u64 vaddr) {
+    void arm64_cpu::handle_begin_basic_block(ocx::u64 vaddr) {
         throw std::logic_error("Not implemented");
     }
 
-    bool arm64_cpu_env::handle_breakpoint(ocx::u64 vaddr) {
-        m_cpu->notify_breakpoint_hit(vaddr);
+    bool arm64_cpu::handle_breakpoint(ocx::u64 vaddr) {
+        notify_breakpoint_hit(vaddr);
         return true;
     }
 
-    bool arm64_cpu_env::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) {
+    bool arm64_cpu::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) {
         const vcml::range range(vaddr, vaddr + size);
 
         if (iswr) 
-            m_cpu->notify_watchpoint_write(range, data);
+            notify_watchpoint_write(range, data);
         else 
-            m_cpu->notify_watchpoint_read(range);
+            notify_watchpoint_read(range);
         return true;
     }
 
-    void arm64_cpu_env::inject_cpu(arm64_cpu *cpu) {
-        m_cpu = cpu;
-    }
-
-    void arm64_cpu_env::add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu) {
+    void arm64_cpu::add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu) {
         m_syscall_subscriber.push_back(cpu);
     }
 
-    void arm64_cpu_env::memory_protector_update(vcml::u64 page_addr) {
-        m_cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
-        m_cpu->m_core->invalidate_page_ptr(page_addr);
+    void arm64_cpu::memory_protector_update(vcml::u64 page_addr) {
+        m_core->tb_flush_page(page_addr, page_addr+4095);
+        m_core->invalidate_page_ptr(page_addr);
         for (auto const& cpu: m_syscall_subscriber) {
             cpu->m_core->tb_flush_page(page_addr, page_addr+4095);
             cpu->m_core->invalidate_page_ptr(page_addr);
         }
-    }
-
-    arm64_cpu_env::arm64_cpu_env()
-        : m_cpu(nullptr)
-        , m_syscall_subscriber() {
-        // Nothing to do
-    }
-
-    arm64_cpu_env::~arm64_cpu_env() {
-
     }
 
     void arm64_cpu::timer_irq_trigger(int timer_id) {
@@ -344,10 +330,6 @@ namespace avp64 {
         m_core->handle_syscall(callno, arg);
     }
 
-    void arm64_cpu::add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu) {
-        m_env.add_syscall_subscriber(cpu);
-    }
-
     vcml::u64 arm64_cpu::get_page_size() {
         return m_core->page_size();
     }
@@ -374,10 +356,10 @@ namespace avp64 {
         : vcml::processor(nm, CPU_ARCH)
         , m_core(nullptr)
         , m_core_id(coreid)
-        , m_env()
         , m_run_cycles(0)
         , m_sleep_cycles(0)
         , m_total_cycles(0)
+        , m_syscall_subscriber()
         , TIMER_IRQ_OUT("TIMER_IRQ_OUT")
         , timer_events(4) {
         m_ocx_handle = dlopen("libocx-qemu-arm.so", RTLD_LAZY);
@@ -388,10 +370,9 @@ namespace avp64 {
         if (dlsym_err)
             VCML_ERROR("Could not load symbol create_instance: %s", dlsym_err);
 
-        m_core = m_create_instance_func(20201012ull, m_env, "Cortex-A72");
+        m_core = m_create_instance_func(20201012ull, *this, "Cortex-A72");
         if (!m_core)
             VCML_ERROR("Could not create ocx::core instance");
-        m_env.inject_cpu(this);
 
         set_little_endian();
         define_cpuregs(aarch64_regs);
