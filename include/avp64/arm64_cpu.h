@@ -16,12 +16,12 @@
 
 namespace avp64 {
 
-    class arm64_cpu_env;
+    class arm64_cpu;
 
     class memory_protector {
     private:
         memory_protector();
-        std::map<vcml::u64, std::pair<arm64_cpu_env*, vcml::u64>> m_protected_pages;
+        std::map<vcml::u64, std::pair<arm64_cpu*, vcml::u64>> m_protected_pages;
     public:
         static memory_protector& get_instance() {
             static memory_protector inst;
@@ -29,7 +29,7 @@ namespace avp64 {
         }
 
         static void segfault_handler(int sig, siginfo_t *si, void*);
-        void register_page(arm64_cpu_env *cpu, vcml::u64 page_addr, void *host_addr);
+        void register_page(arm64_cpu* cpu, vcml::u64 page_addr, void *host_addr);
         void notify_page(void* access_addr);
         memory_protector(const memory_protector&) = delete;
         void operator=(memory_protector const&) = delete;
@@ -44,15 +44,37 @@ namespace avp64 {
 
     typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
 
-    class arm64_cpu;
-
-    class arm64_cpu_env : public ocx::env {
+    class arm64_cpu : public vcml::processor, public ocx::env {
     private:
-        static void segfault_handler(int sig, siginfo_t *si, void *unused);
-
-        arm64_cpu *m_cpu;
+        ocx::core *m_core;
+        vcml::u64 m_core_id;
+        vcml::u64 m_run_cycles;
+        vcml::u64 m_sleep_cycles;
+        vcml::u64 m_total_cycles;
+        void *m_ocx_handle;
+        create_instance_t m_create_instance_func;
         std::vector<std::shared_ptr<arm64_cpu>> m_syscall_subscriber;
+
+        void timer_irq_trigger(int timer_id);
+        static void segfault_handler(int sig, siginfo_t *si, void *unused);
+    protected:
+        virtual void interrupt(unsigned int irq, bool set) override;
+        virtual void simulate(unsigned int cycles) override;
+        virtual void end_of_elaboration() override;
+
+        virtual bool read_reg_dbg(vcml::u64 idx, vcml::u64& val) override;
+        virtual bool write_reg_dbg(vcml::u64 idx, vcml::u64 val) override;
+        virtual bool page_size(vcml::u64& size) override;
+        virtual bool virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) override;
+        virtual bool insert_breakpoint(vcml::u64 addr) override;
+        virtual bool remove_breakpoint(vcml::u64 addr) override;
+        virtual bool insert_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
+        virtual bool remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
+
     public:
+        vcml::out_port_list<bool> TIMER_IRQ_OUT;
+        std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
+
         virtual ocx::u8* get_page_ptr_r(ocx::u64 page_paddr) override;
         virtual ocx::u8* get_page_ptr_w(ocx::u64 page_paddr) override;
 
@@ -77,43 +99,6 @@ namespace avp64 {
         virtual bool handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data, bool iswr) override;
 
         void inject_cpu(arm64_cpu *cpu);
-        void add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu);
-
-        arm64_cpu_env();
-        arm64_cpu_env(const arm64_cpu_env&) = delete;
-        virtual ~arm64_cpu_env();
-    };
-
-    class arm64_cpu : public vcml::processor {
-        friend arm64_cpu_env;
-    private:
-        ocx::core *m_core;
-        vcml::u64 m_core_id;
-        arm64_cpu_env m_env;
-        vcml::u64 m_run_cycles;
-        vcml::u64 m_sleep_cycles;
-        vcml::u64 m_total_cycles;
-        void *m_ocx_handle;
-        create_instance_t m_create_instance_func;
-
-        void timer_irq_trigger(int timer_id);
-    protected:
-        virtual void interrupt(unsigned int irq, bool set) override;
-        virtual void simulate(unsigned int cycles) override;
-        virtual void end_of_elaboration() override;
-
-        virtual bool read_reg_dbg(vcml::u64 idx, vcml::u64& val) override;
-        virtual bool write_reg_dbg(vcml::u64 idx, vcml::u64 val) override;
-        virtual bool page_size(vcml::u64& size) override;
-        virtual bool virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) override;
-        virtual bool insert_breakpoint(vcml::u64 addr) override;
-        virtual bool remove_breakpoint(vcml::u64 addr) override;
-        virtual bool insert_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
-        virtual bool remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
-
-    public:
-        vcml::out_port_list<bool> TIMER_IRQ_OUT;
-        std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
         virtual vcml::u64 cycle_count() const override;
         virtual void update_local_time(sc_core::sc_time& local_time) override;
