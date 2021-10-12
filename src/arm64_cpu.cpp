@@ -297,9 +297,17 @@ namespace avp64 {
     }
 
     bool arm64_cpu::disassemble(vcml::u8 *ibuf, vcml::u64 &addr, std::string &code) {
-        //FIXME
-        throw std::logic_error("Not implemented");
-        return false;
+        size_t bufsz = 100;
+        char buf[bufsz];
+
+        vcml::u64 len = m_core->disassemble(addr, buf, bufsz);
+        if (len == 0) {
+            return false;
+        }
+
+        code = std::string(buf);
+        addr += len;
+        return true;
     }
 
     vcml::u64 arm64_cpu::program_counter() {
