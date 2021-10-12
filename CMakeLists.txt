@@ -16,8 +16,6 @@ include(ExternalProject)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 set(CMAKE_EXE_LINKER_FLAGS -rdynamic)
 
 set(OCX_QEMU_ARM_HOME $ENV{OCX_QEMU_HOME})
