@@ -58,6 +58,8 @@ namespace avp64 {
         } else {
             tlm::tlm_generic_payload tx;
             tx.set_address(page_paddr);
+            tx.set_streaming_width(page_size);
+            tx.set_data_length(page_size);
             tx.set_read();
             if (INSN->get_direct_mem_ptr(tx, dmi)) {
                 INSN.map_dmi(dmi);
@@ -76,6 +78,8 @@ namespace avp64 {
         } else {
             tlm::tlm_generic_payload tx;
             tx.set_address(page_paddr);
+            tx.set_streaming_width(page_size);
+            tx.set_data_length(page_size);
             tx.set_write();
             if (INSN->get_direct_mem_ptr(tx, dmi)) {
                 INSN.map_dmi(dmi);
