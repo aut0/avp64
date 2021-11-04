@@ -136,9 +136,7 @@ namespace avp64 {
     }
 
     ocx::u64 arm64_cpu::get_time_ps() {
-        sc_core::sc_time tmp = sc_core::sc_time_stamp();
-        uint64_t val_ps = (tmp.to_seconds()+0.5)*1e12;
-        return val_ps;
+        return sc_core::sc_time_stamp().value();
     }
 
     const char* arm64_cpu::get_param(const char* name) {
