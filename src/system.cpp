@@ -22,14 +22,6 @@ namespace avp64 {
 
     void system::construct_system_arm64() {
         m_cpus.resize(nrcpu);
-        m_irq_percpu.resize(nrcpu);
-        m_fiq_percpu.resize(nrcpu);
-        m_virq_percpu.resize(nrcpu);
-        m_vfiq_percpu.resize(nrcpu);
-        m_irq_gt_hyp_percpu.resize(nrcpu);
-        m_irq_gt_virt_percpu.resize(nrcpu);
-        m_irq_gt_ns_percpu.resize(nrcpu);
-        m_irq_gt_s_percpu.resize(nrcpu);
         for(unsigned int cpu = 0; cpu < nrcpu; cpu++) {
             std::stringstream ss; ss << "arm" << cpu;
             m_cpus[cpu] = std::make_shared<arm64_cpu>(ss.str().c_str(), 0, cpu);
@@ -42,22 +34,14 @@ namespace avp64 {
             std::string irq_gt_ns_name("irq_gt_ns_" + ss.str());
             std::string irq_gt_s_name("irq_gt_s_" + ss.str());
 
-            m_irq_percpu[cpu] = new sc_core::sc_signal<bool>(irq_name.c_str());
-            m_fiq_percpu[cpu] = new sc_core::sc_signal<bool>(fiq_name.c_str());
-            m_virq_percpu[cpu] = new sc_core::sc_signal<bool>(virq_name.c_str());
-            m_vfiq_percpu[cpu] = new sc_core::sc_signal<bool>(vfiq_name.c_str());
-            m_irq_gt_hyp_percpu[cpu] = new sc_core::sc_signal<bool>(irq_gt_hyp_name.c_str());
-            m_irq_gt_virt_percpu[cpu] = new sc_core::sc_signal<bool>(irq_gt_virt_name.c_str());
-            m_irq_gt_ns_percpu[cpu] = new sc_core::sc_signal<bool>(irq_gt_ns_name.c_str());
-            m_irq_gt_s_percpu[cpu] = new sc_core::sc_signal<bool>(irq_gt_s_name.c_str());
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_IRQ].bind(*m_irq_percpu[cpu]);
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_FIQ].bind(*m_fiq_percpu[cpu]);
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_VIRQ].bind(*m_virq_percpu[cpu]);
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_VFIQ].bind(*m_vfiq_percpu[cpu]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_PHYS].bind(*m_irq_gt_ns_percpu[cpu]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_VIRT].bind(*m_irq_gt_virt_percpu[cpu]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_HYP].bind(*m_irq_gt_hyp_percpu[cpu]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_SEC].bind(*m_irq_gt_s_percpu[cpu]);
+            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_IRQ].bind(m_gic.IRQ_OUT[cpu]);
+            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_FIQ].bind(m_gic.FIQ_OUT[cpu]);
+            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_VIRQ].bind(m_gic.VIRQ_OUT[cpu]);
+            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_VFIQ].bind(m_gic.VFIQ_OUT[cpu]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_PHYS].bind(m_gic.PPI_IN[irq_gt_ns-16+(cpu*16)]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_VIRT].bind(m_gic.PPI_IN[irq_gt_virt-16+(cpu*16)]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_HYP].bind(m_gic.PPI_IN[irq_gt_hyp-16+(cpu*16)]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_SEC].bind(m_gic.PPI_IN[irq_gt_s-16+(cpu*16)]);
         }
         for(unsigned int cpu = 0; cpu < nrcpu; cpu++) {
             for(unsigned int i=0; i < nrcpu; i++) {
@@ -129,28 +113,12 @@ namespace avp64 {
         m_sdhci.SD_OUT.bind(m_sdcard.SD_IN);
 
         // IRQs
-        m_uart0.IRQ.bind(m_irq_uart0);
-        m_uart1.IRQ.bind(m_irq_uart1);
-        m_uart2.IRQ.bind(m_irq_uart2);
-        m_uart3.IRQ.bind(m_irq_uart3);
-        m_ethoc.IRQ.bind(m_irq_ethoc);
-        m_sdhci.IRQ.bind(m_irq_sdhci);
-        for (unsigned int cpu = 0; cpu < nrcpu; cpu++) {
-            m_gic.IRQ_OUT[cpu].bind(*m_irq_percpu[cpu]);
-            m_gic.FIQ_OUT[cpu].bind(*m_fiq_percpu[cpu]);
-            m_gic.VIRQ_OUT[cpu].bind(*m_virq_percpu[cpu]);
-            m_gic.VFIQ_OUT[cpu].bind(*m_vfiq_percpu[cpu]);
-            m_gic.PPI_IN[irq_gt_hyp-16+(cpu*16)].bind(*m_irq_gt_hyp_percpu[cpu]);
-            m_gic.PPI_IN[irq_gt_virt-16+(cpu*16)].bind(*m_irq_gt_virt_percpu[cpu]);
-            m_gic.PPI_IN[irq_gt_ns-16+(cpu*16)].bind(*m_irq_gt_ns_percpu[cpu]);
-            m_gic.PPI_IN[irq_gt_s-16+(cpu*16)].bind(*m_irq_gt_s_percpu[cpu]);
-        }
-        m_gic.SPI_IN[irq_uart0].bind(m_irq_uart0);
-        m_gic.SPI_IN[irq_uart1].bind(m_irq_uart1);
-        m_gic.SPI_IN[irq_uart2].bind(m_irq_uart2);
-        m_gic.SPI_IN[irq_uart3].bind(m_irq_uart3);
-        m_gic.SPI_IN[irq_ethoc].bind(m_irq_ethoc);
-        m_gic.SPI_IN[irq_sdhci].bind(m_irq_sdhci);
+        m_gic.SPI_IN[irq_uart0].bind(m_uart0.IRQ);
+        m_gic.SPI_IN[irq_uart1].bind(m_uart1.IRQ);
+        m_gic.SPI_IN[irq_uart2].bind(m_uart2.IRQ);
+        m_gic.SPI_IN[irq_uart3].bind(m_uart3.IRQ);
+        m_gic.SPI_IN[irq_ethoc].bind(m_ethoc.IRQ);
+        m_gic.SPI_IN[irq_sdhci].bind(m_sdhci.IRQ);
     }
 
     system::system(const sc_core::sc_module_name& nm):
@@ -200,50 +168,10 @@ namespace avp64 {
         m_sdhci("sdhci"),
         m_simdev("simdev"),
         m_hwrng("hwrng"),
-        m_irq_uart0("m_irq_uart0"),
-        m_irq_uart1("m_irq_uart1"),
-        m_irq_uart2("m_irq_uart2"),
-        m_irq_uart3("m_irq_uart3"),
-        m_irq_ethoc("m_irq_ethoc"),
-        m_irq_sdhci("m_irq_sdhci"),
         m_sig_clock("sig_clock"),
-        m_sig_reset("sig_reset"),
-        m_irq_percpu(),
-        m_fiq_percpu(),
-        m_virq_percpu(),
-        m_vfiq_percpu(),
-        m_irq_gt_hyp_percpu(),
-        m_irq_gt_virt_percpu(),
-        m_irq_gt_ns_percpu(),
-        m_irq_gt_s_percpu() {
+        m_sig_reset("sig_reset") {
         construct_system_arm64();
    }
-
-    system::~system() {
-        for (auto irq : m_irq_percpu)
-            SAFE_DELETE(irq);
-
-        for (auto fiq : m_fiq_percpu)
-            SAFE_DELETE(fiq);
-
-        for (auto virq : m_virq_percpu)
-            SAFE_DELETE(virq);
-
-        for (auto vfiq : m_vfiq_percpu)
-            SAFE_DELETE(vfiq);
-
-        for (auto irq : m_irq_gt_hyp_percpu)
-            SAFE_DELETE(irq);
-
-        for (auto irq : m_irq_gt_virt_percpu)
-            SAFE_DELETE(irq);
-
-        for (auto irq : m_irq_gt_ns_percpu)
-            SAFE_DELETE(irq);
-
-        for (auto irq : m_irq_gt_s_percpu)
-            SAFE_DELETE(irq);
-    }
 
     int system::run() {
         double simstart = vcml::realtime();

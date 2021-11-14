@@ -72,7 +72,7 @@ namespace avp64 {
         virtual bool remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) override;
 
     public:
-        vcml::out_port_list<bool> TIMER_IRQ_OUT;
+        vcml::irq_initiator_socket_array<> TIMER_IRQ_OUT;
         std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
         virtual ocx::u8* get_page_ptr_r(ocx::u64 page_paddr) override;

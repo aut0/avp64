@@ -164,7 +164,7 @@ namespace avp64 {
                 sync();
                 sc_core::sc_event_or_list list;
                 for (auto it : IRQ) {
-                    list |= it.second->posedge_event();
+                    list |= it.second->default_event();
                     // Treat WFI as NOP if IRQ is pending
                     if (it.second->read())
                         return;

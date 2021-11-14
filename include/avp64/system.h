@@ -56,7 +56,7 @@ namespace avp64 {
         system(const sc_core::sc_module_name &name);
         system() = delete;
         system(const system &) = delete;
-        virtual ~system();
+        virtual ~system() = default;
 
         int run();
 
@@ -81,24 +81,8 @@ namespace avp64 {
         vcml::meta::simdev      m_simdev;
         vcml::generic::hwrng    m_hwrng;
 
-        sc_core::sc_signal<bool> m_irq_uart0;
-        sc_core::sc_signal<bool> m_irq_uart1;
-        sc_core::sc_signal<bool> m_irq_uart2;
-        sc_core::sc_signal<bool> m_irq_uart3;
-        sc_core::sc_signal<bool> m_irq_ethoc;
-        sc_core::sc_signal<bool> m_irq_sdhci;
-
         sc_core::sc_signal<clock_t> m_sig_clock;
         sc_core::sc_signal<bool> m_sig_reset;
-
-        std::vector<sc_core::sc_signal<bool> *> m_irq_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_fiq_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_virq_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_vfiq_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_irq_gt_hyp_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_irq_gt_virt_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_irq_gt_ns_percpu;
-        std::vector<sc_core::sc_signal<bool> *> m_irq_gt_s_percpu;
 
         void construct_system_arm64();
     };
