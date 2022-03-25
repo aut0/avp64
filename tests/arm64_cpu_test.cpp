@@ -34,15 +34,15 @@ TEST(Arm64CpuTest, simple) {
     vcml::generic::memory dmem("dmem", 0x10000);
     vcml::range r(0x0, 0xf);
 
-    test_cpu.CLOCK.bind(clk);
-    imem.CLOCK.bind(clk);
-    dmem.CLOCK.bind(clk);
-    test_cpu.RESET.bind(rst);
-    imem.RESET.bind(rst);
-    dmem.RESET.bind(rst);
+    test_cpu.clk.bind(clk);
+    imem.clk.bind(clk);
+    dmem.clk.bind(clk);
+    test_cpu.rst.bind(rst);
+    imem.rst.bind(rst);
+    dmem.rst.bind(rst);
     // Sockets are bound, but only DATA is used for MMIO
-    test_cpu.INSN.bind(imem.IN);
-    test_cpu.DATA.bind(dmem.IN);
+    test_cpu.insn.bind(imem.in);
+    test_cpu.data.bind(dmem.in);
 
     vcml::clock_t defclk = 1* vcml::kHz;
     clk.write(defclk);

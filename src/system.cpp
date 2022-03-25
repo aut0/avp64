@@ -34,14 +34,14 @@ namespace avp64 {
             std::string irq_gt_ns_name("irq_gt_ns_" + ss.str());
             std::string irq_gt_s_name("irq_gt_s_" + ss.str());
 
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_IRQ].bind(m_gic.IRQ_OUT[cpu]);
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_FIQ].bind(m_gic.FIQ_OUT[cpu]);
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_VIRQ].bind(m_gic.VIRQ_OUT[cpu]);
-            m_cpus[cpu]->IRQ[AVP64_ARM64_CPU_VFIQ].bind(m_gic.VFIQ_OUT[cpu]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_PHYS].bind(m_gic.PPI_IN[irq_gt_ns-16+(cpu*16)]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_VIRT].bind(m_gic.PPI_IN[irq_gt_virt-16+(cpu*16)]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_HYP].bind(m_gic.PPI_IN[irq_gt_hyp-16+(cpu*16)]);
-            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_SEC].bind(m_gic.PPI_IN[irq_gt_s-16+(cpu*16)]);
+            m_cpus[cpu]->irq[AVP64_ARM64_CPU_IRQ].bind(m_gic.irq_out[cpu]);
+            m_cpus[cpu]->irq[AVP64_ARM64_CPU_FIQ].bind(m_gic.fiq_out[cpu]);
+            m_cpus[cpu]->irq[AVP64_ARM64_CPU_VIRQ].bind(m_gic.virq_out[cpu]);
+            m_cpus[cpu]->irq[AVP64_ARM64_CPU_VFIQ].bind(m_gic.vfiq_out[cpu]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_PHYS].bind(m_gic.ppi_in[irq_gt_ns-16+(cpu*16)]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_VIRT].bind(m_gic.ppi_in[irq_gt_virt-16+(cpu*16)]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_HYP].bind(m_gic.ppi_in[irq_gt_hyp-16+(cpu*16)]);
+            m_cpus[cpu]->TIMER_IRQ_OUT[avp64::ARM_TIMER_SEC].bind(m_gic.ppi_in[irq_gt_s-16+(cpu*16)]);
         }
         for(unsigned int cpu = 0; cpu < nrcpu; cpu++) {
             for(unsigned int i=0; i < nrcpu; i++) {
@@ -54,71 +54,71 @@ namespace avp64 {
 
         // Clock
         for (auto cpu : m_cpus) {
-            cpu->CLOCK.bind(m_sig_clock);
+            cpu->clk.bind(m_sig_clock);
         }
-        m_clock.CLOCK.bind(m_sig_clock);
-        m_bus.CLOCK.bind(m_sig_clock);
-        m_ram.CLOCK.bind(m_sig_clock);
-        m_gic.CLOCK.bind(m_sig_clock);
-        m_uart0.CLOCK.bind(m_sig_clock);
-        m_uart1.CLOCK.bind(m_sig_clock);
-        m_uart2.CLOCK.bind(m_sig_clock);
-        m_uart3.CLOCK.bind(m_sig_clock);
-        m_ethoc.CLOCK.bind(m_sig_clock);
-        m_sdcard.CLOCK.bind(m_sig_clock);
-        m_sdhci.CLOCK.bind(m_sig_clock);
-        m_simdev.CLOCK.bind(m_sig_clock);
-        m_hwrng.CLOCK.bind(m_sig_clock);
+        m_clock.clk.bind(m_sig_clock);
+        m_bus.clk.bind(m_sig_clock);
+        m_ram.clk.bind(m_sig_clock);
+        m_gic.clk.bind(m_sig_clock);
+        m_uart0.clk.bind(m_sig_clock);
+        m_uart1.clk.bind(m_sig_clock);
+        m_uart2.clk.bind(m_sig_clock);
+        m_uart3.clk.bind(m_sig_clock);
+        m_ethoc.clk.bind(m_sig_clock);
+        m_sdcard.clk.bind(m_sig_clock);
+        m_sdhci.clk.bind(m_sig_clock);
+        m_simdev.clk.bind(m_sig_clock);
+        m_hwrng.clk.bind(m_sig_clock);
 
         // Reset
         for (auto cpu : m_cpus) {
-            cpu->RESET.bind(m_sig_reset);
+            cpu->rst.bind(m_sig_reset);
         }
-        m_reset.RESET.bind(m_sig_reset);
-        m_bus.RESET.bind(m_sig_reset);
-        m_ram.RESET.bind(m_sig_reset);
-        m_gic.RESET.bind(m_sig_reset);
-        m_uart0.RESET.bind(m_sig_reset);
-        m_uart1.RESET.bind(m_sig_reset);
-        m_uart2.RESET.bind(m_sig_reset);
-        m_uart3.RESET.bind(m_sig_reset);
-        m_ethoc.RESET.bind(m_sig_reset);
-        m_sdcard.RESET.bind(m_sig_reset);
-        m_sdhci.RESET.bind(m_sig_reset);
-        m_simdev.RESET.bind(m_sig_reset);
-        m_hwrng.RESET.bind(m_sig_reset);
+        m_reset.rst.bind(m_sig_reset);
+        m_bus.rst.bind(m_sig_reset);
+        m_ram.rst.bind(m_sig_reset);
+        m_gic.rst.bind(m_sig_reset);
+        m_uart0.rst.bind(m_sig_reset);
+        m_uart1.rst.bind(m_sig_reset);
+        m_uart2.rst.bind(m_sig_reset);
+        m_uart3.rst.bind(m_sig_reset);
+        m_ethoc.rst.bind(m_sig_reset);
+        m_sdcard.rst.bind(m_sig_reset);
+        m_sdhci.rst.bind(m_sig_reset);
+        m_simdev.rst.bind(m_sig_reset);
+        m_hwrng.rst.bind(m_sig_reset);
 
         // Bus bindings
         for (auto cpu : m_cpus) {
-            m_bus.bind(cpu->INSN);
-            m_bus.bind(cpu->DATA);
+            m_bus.bind(cpu->insn);
+            m_bus.bind(cpu->data);
         }
-        m_bus.bind(m_ram.IN, addr_ram);
-        m_bus.bind(m_uart0.IN, addr_uart0);
-        m_bus.bind(m_uart1.IN, addr_uart1);
-        m_bus.bind(m_uart2.IN, addr_uart2);
-        m_bus.bind(m_uart3.IN, addr_uart3);
-        m_bus.bind(m_ethoc.IN, addr_ethoc.get());
-        m_bus.bind(m_ethoc.OUT);
-        m_bus.bind(m_sdhci.IN, addr_sdhci.get());
-        m_bus.bind(m_sdhci.OUT);
-        m_bus.bind(m_gic.CPUIF.IN, addr_gic_cpuif);
-        m_bus.bind(m_gic.DISTIF.IN, addr_gic_distif);
-        m_bus.bind(m_gic.VIFCTRL.IN, addr_gic_vifctrl);
-        m_bus.bind(m_gic.VCPUIF.IN, addr_gic_vcpuif);
-        m_bus.bind(m_simdev.IN, addr_simdev);
-        m_bus.bind(m_hwrng.IN, addr_hwrng);
+        m_bus.bind(m_ram.in, addr_ram);
+        m_bus.bind(m_uart0.in, addr_uart0);
+        m_bus.bind(m_uart1.in, addr_uart1);
+        m_bus.bind(m_uart2.in, addr_uart2);
+        m_bus.bind(m_uart3.in, addr_uart3);
+        m_bus.bind(m_ethoc.in, addr_ethoc.get());
+        m_bus.bind(m_ethoc.out);
+        m_bus.bind(m_sdhci.in, addr_sdhci.get());
+        m_bus.bind(m_sdhci.out);
+        m_bus.bind(m_gic.cpuif.in, addr_gic_cpuif);
+        m_bus.bind(m_gic.distif.in, addr_gic_distif);
+        m_bus.bind(m_gic.vifctrl.in, addr_gic_vifctrl);
+        m_bus.bind(m_gic.vcpuif.in, addr_gic_vcpuif);
+        m_bus.bind(m_simdev.in, addr_simdev);
+        m_bus.bind(m_hwrng.in, addr_hwrng);
 
         // Bind SDHCI and SDCARD
-        m_sdhci.SD_OUT.bind(m_sdcard.SD_IN);
+        m_sdhci.sd_out.bind(m_sdcard.sd_in);
 
         // IRQs
-        m_gic.SPI_IN[irq_uart0].bind(m_uart0.IRQ);
-        m_gic.SPI_IN[irq_uart1].bind(m_uart1.IRQ);
-        m_gic.SPI_IN[irq_uart2].bind(m_uart2.IRQ);
-        m_gic.SPI_IN[irq_uart3].bind(m_uart3.IRQ);
-        m_gic.SPI_IN[irq_ethoc].bind(m_ethoc.IRQ);
-        m_gic.SPI_IN[irq_sdhci].bind(m_sdhci.IRQ);
+        m_gic.spi_in[irq_uart0].bind(m_uart0.irq);
+        m_gic.spi_in[irq_uart1].bind(m_uart1.irq);
+        m_gic.spi_in[irq_uart2].bind(m_uart2.irq);
+        m_gic.spi_in[irq_uart3].bind(m_uart3.irq);
+        m_gic.spi_in[irq_ethoc].bind(m_ethoc.irq);
+        m_gic.spi_in[irq_sdhci].bind(m_sdhci.irq);
     }
 
     system::system(const sc_core::sc_module_name& nm):
@@ -181,7 +181,7 @@ namespace avp64 {
 
         uint64_t ninsn = 0;
         for (unsigned int cpu = 0; cpu < nrcpu; cpu++) {
-            double mhz = m_cpus[cpu]->CLOCK.read() * 1e-6;
+            double mhz = m_cpus[cpu]->clk.read() * 1e-6;
             double mips = m_cpus[cpu]->get_cps() * 1e-6; //approximated
             double cpurt = m_cpus[cpu]->get_run_time();
             uint64_t cycles = m_cpus[cpu]->cycle_count();
@@ -193,7 +193,7 @@ namespace avp64 {
             vcml::log_info("  run time     : %.1fs", cpurt);
             vcml::log_info("  cycles       : %" PRId64, cycles);
 
-            for (auto irq : m_cpus[cpu]->IRQ) {
+            for (auto irq : m_cpus[cpu]->irq) {
                 vcml::irq_stats stats;
                 if (!m_cpus[cpu]->get_irq_stats(irq.first, stats) ||
                     stats.irq_count == 0)

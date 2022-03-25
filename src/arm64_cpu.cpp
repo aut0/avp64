@@ -53,7 +53,7 @@ namespace avp64 {
     ocx::u8 *arm64_cpu::get_page_ptr_r(ocx::u64 page_paddr) {
         tlm::tlm_dmi dmi;
         vcml::u64 page_size = get_page_size();
-        if (INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND, dmi)) {
+        if (insn.dmi().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND, dmi)) {
             return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
         } else {
             tlm::tlm_generic_payload tx;
@@ -61,8 +61,8 @@ namespace avp64 {
             tx.set_streaming_width(page_size);
             tx.set_data_length(page_size);
             tx.set_read();
-            if (INSN->get_direct_mem_ptr(tx, dmi)) {
-                INSN.map_dmi(dmi);
+            if (insn->get_direct_mem_ptr(tx, dmi)) {
+                insn.map_dmi(dmi);
                 return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
             } else {
                 return nullptr;
@@ -73,7 +73,7 @@ namespace avp64 {
     ocx::u8 *arm64_cpu::get_page_ptr_w(ocx::u64 page_paddr) {
         tlm::tlm_dmi dmi;
         vcml::u64 page_size = get_page_size();
-        if (INSN.dmi().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND, dmi)) {
+        if (insn.dmi().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND, dmi)) {
             return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
         } else {
             tlm::tlm_generic_payload tx;
@@ -81,8 +81,8 @@ namespace avp64 {
             tx.set_streaming_width(page_size);
             tx.set_data_length(page_size);
             tx.set_write();
-            if (INSN->get_direct_mem_ptr(tx, dmi)) {
-                INSN.map_dmi(dmi);
+            if (insn->get_direct_mem_ptr(tx, dmi)) {
+                insn.map_dmi(dmi);
                 return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
             } else {
                 return nullptr;
@@ -103,9 +103,9 @@ namespace avp64 {
         info.cpuid = get_core_id();
         tlm::tlm_response_status resp = tlm::TLM_GENERIC_ERROR_RESPONSE;
         if (tx.is_read)
-            resp = DATA.read(tx.addr, tx.data, tx.size, info);
+            resp = data.read(tx.addr, tx.data, tx.size, info);
         else
-            resp = DATA.write(tx.addr, tx.data, tx.size, info);
+            resp = data.write(tx.addr, tx.data, tx.size, info);
         switch (resp) {
             case tlm::TLM_OK_RESPONSE:
                 return ocx::RESP_OK;
@@ -163,7 +163,7 @@ namespace avp64 {
             case ocx::HINT_WFI: {
                 sync();
                 sc_core::sc_event_or_list list;
-                for (auto it : IRQ) {
+                for (auto it : irq) {
                     list |= it.second->default_event();
                     // Treat WFI as NOP if IRQ is pending
                     if (it.second->read())
@@ -388,8 +388,8 @@ namespace avp64 {
         define_cpuregs(aarch64_regs);
 
         m_core->set_id(procid, coreid);
-        DATA.set_cpuid(m_core_id);
-        INSN.set_cpuid(m_core_id);
+        data.set_cpuid(m_core_id);
+        insn.set_cpuid(m_core_id);
         timer_events[ARM_TIMER_PHYS] = std::shared_ptr<sc_core::sc_event>(new sc_core::sc_event("arm_timer_ns"));
         timer_events[ARM_TIMER_VIRT] = std::shared_ptr<sc_core::sc_event>(new sc_core::sc_event("arm_timer_virt"));
         timer_events[ARM_TIMER_HYP] = std::shared_ptr<sc_core::sc_event>(new sc_core::sc_event("arm_timer_hyp"));
