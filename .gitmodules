@@ -3,4 +3,4 @@
 	url = https://github.com/snps-virtualprototyping/ocx-qemu-arm
 [submodule "deps/vcml"]
 	path = deps/vcml
-	url = https://github.com/janweinstock/vcml
+	url = https://github.com/machineware-gmbh/vcml

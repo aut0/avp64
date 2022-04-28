@@ -10,7 +10,7 @@ The following target software configurations were tested (see [config](config/))
 ----
 ## Build & Installation
 In order to build `avp64`, you need a working installation of `vcml` and its components.
-For that please follow the installation guideline of `vcml` which can be found [here](https://github.com/janweinstock/vcml).
+For that please follow the installation guideline of `vcml` which can be found [here](https://github.com/machineware-gmbh/vcml).
 
 1. Clone git repository including submodules:
     ```
@@ -59,7 +59,7 @@ Run the platform using a [config](config/) file:
 ```
 <install-dir>/bin/avp64 -f <install-dir>/config/<config-file>
 ```
-For more details on run parameters please look [here](https://github.com/janweinstock/vcml).  
+For more details on run parameters please look [here](https://github.com/machineware-gmbh/vcml).  
 
 To install tested software which belongs to the provided [configuration files](config/), follow the installation guide of [avp64_sw](https://github.com/aut0/avp64_sw).  
 After the installation, set the enviroment variable `AVP64_SW` to the path of the `avp64_sw` repository:  
@@ -101,7 +101,7 @@ Afterwards, you can find the builds in:
 ----
 ## Documentation
 The VCML documentation can be found 
-[here](https://github.com/janweinstock/vcml).
+[here](https://github.com/machineware-gmbh/vcml).
 
 ----
 ## License

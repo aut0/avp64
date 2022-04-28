@@ -54,39 +54,37 @@ namespace avp64 {
 
         // Clock
         for (auto cpu : m_cpus) {
-            cpu->clk.bind(m_sig_clock);
+            m_clock.clk.bind(cpu->clk);
         }
-        m_clock.clk.bind(m_sig_clock);
-        m_bus.clk.bind(m_sig_clock);
-        m_ram.clk.bind(m_sig_clock);
-        m_gic.clk.bind(m_sig_clock);
-        m_uart0.clk.bind(m_sig_clock);
-        m_uart1.clk.bind(m_sig_clock);
-        m_uart2.clk.bind(m_sig_clock);
-        m_uart3.clk.bind(m_sig_clock);
-        m_ethoc.clk.bind(m_sig_clock);
-        m_sdcard.clk.bind(m_sig_clock);
-        m_sdhci.clk.bind(m_sig_clock);
-        m_simdev.clk.bind(m_sig_clock);
-        m_hwrng.clk.bind(m_sig_clock);
+        m_clock.clk.bind(m_bus.clk);
+        m_clock.clk.bind(m_ram.clk);
+        m_clock.clk.bind(m_gic.clk);
+        m_clock.clk.bind(m_uart0.clk);
+        m_clock.clk.bind(m_uart1.clk);
+        m_clock.clk.bind(m_uart2.clk);
+        m_clock.clk.bind(m_uart3.clk);
+        m_clock.clk.bind(m_ethoc.clk);
+        m_clock.clk.bind(m_sdcard.clk);
+        m_clock.clk.bind(m_sdhci.clk);
+        m_clock.clk.bind(m_simdev.clk);
+        m_clock.clk.bind(m_hwrng.clk);
 
         // Reset
         for (auto cpu : m_cpus) {
-            cpu->rst.bind(m_sig_reset);
+            m_reset.rst.bind(cpu->rst);
         }
-        m_reset.rst.bind(m_sig_reset);
-        m_bus.rst.bind(m_sig_reset);
-        m_ram.rst.bind(m_sig_reset);
-        m_gic.rst.bind(m_sig_reset);
-        m_uart0.rst.bind(m_sig_reset);
-        m_uart1.rst.bind(m_sig_reset);
-        m_uart2.rst.bind(m_sig_reset);
-        m_uart3.rst.bind(m_sig_reset);
-        m_ethoc.rst.bind(m_sig_reset);
-        m_sdcard.rst.bind(m_sig_reset);
-        m_sdhci.rst.bind(m_sig_reset);
-        m_simdev.rst.bind(m_sig_reset);
-        m_hwrng.rst.bind(m_sig_reset);
+        m_reset.rst.bind(m_bus.rst);
+        m_reset.rst.bind(m_ram.rst);
+        m_reset.rst.bind(m_gic.rst);
+        m_reset.rst.bind(m_uart0.rst);
+        m_reset.rst.bind(m_uart1.rst);
+        m_reset.rst.bind(m_uart2.rst);
+        m_reset.rst.bind(m_uart3.rst);
+        m_reset.rst.bind(m_ethoc.rst);
+        m_reset.rst.bind(m_sdcard.rst);
+        m_reset.rst.bind(m_sdhci.rst);
+        m_reset.rst.bind(m_simdev.rst);
+        m_reset.rst.bind(m_hwrng.rst);
 
         // Bus bindings
         for (auto cpu : m_cpus) {
@@ -167,9 +165,7 @@ namespace avp64 {
         m_sdcard("sdcard"),
         m_sdhci("sdhci"),
         m_simdev("simdev"),
-        m_hwrng("hwrng"),
-        m_sig_clock("sig_clock"),
-        m_sig_reset("sig_reset") {
+        m_hwrng("hwrng") {
         construct_system_arm64();
    }
 
