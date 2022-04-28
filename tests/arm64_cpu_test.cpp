@@ -25,8 +25,9 @@ public:
 TEST(Arm64CpuTest, simple) {
     arm64_cpu_test test_cpu;
 
-    sc_core::sc_signal<clock_t> clk("clk");
-    sc_core::sc_signal<bool> rst("rst");
+    vcml::clock_t defclk = 1* vcml::kHz;
+    vcml::generic::clock clock("clk", defclk);
+    vcml::generic::reset reset("rst");
     sc_core::sc_signal<bool> irq0("irq0");
     sc_core::sc_signal<bool> irq1("irq1");
 
@@ -34,19 +35,15 @@ TEST(Arm64CpuTest, simple) {
     vcml::generic::memory dmem("dmem", 0x10000);
     vcml::range r(0x0, 0xf);
 
-    test_cpu.clk.bind(clk);
-    imem.clk.bind(clk);
-    dmem.clk.bind(clk);
-    test_cpu.rst.bind(rst);
-    imem.rst.bind(rst);
-    dmem.rst.bind(rst);
+    clock.clk.bind(test_cpu.clk);
+    clock.clk.bind(imem.clk);
+    clock.clk.bind(dmem.clk);
+    reset.rst.bind(test_cpu.rst);
+    reset.rst.bind(imem.rst);
+    reset.rst.bind(dmem.rst);
     // Sockets are bound, but only DATA is used for MMIO
     test_cpu.insn.bind(imem.in);
     test_cpu.data.bind(dmem.in);
-
-    vcml::clock_t defclk = 1* vcml::kHz;
-    clk.write(defclk);
-    rst.write(false);
 
     vcml::u64 pc, x0,x1;
     sc_core::sc_time quantum(1.0, sc_core::SC_SEC);

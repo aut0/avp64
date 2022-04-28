@@ -81,9 +81,6 @@ namespace avp64 {
         vcml::meta::simdev      m_simdev;
         vcml::generic::hwrng    m_hwrng;
 
-        sc_core::sc_signal<clock_t> m_sig_clock;
-        sc_core::sc_signal<bool> m_sig_reset;
-
         void construct_system_arm64();
     };
     
