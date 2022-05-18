@@ -63,6 +63,14 @@
 #define AVP64_SDHCI_SIZE        (0x00001000ull)
 #define AVP64_SDHCI_HIGH        (AVP64_SDHCI_ADDR + AVP64_SDHCI_SIZE -1)
 
+#define AVP64_SPI_ADDR          (0x10147000ull)
+#define AVP64_SPI_SIZE          (0x00002000ull)
+#define AVP64_SPI_HIGH          (AVP64_SPI_ADDR + AVP64_SPI_SIZE -1)
+
+#define AVP64_GPIO_ADDR          (0x10149000ull)
+#define AVP64_GPIO_SIZE          (0x00001000ull)
+#define AVP64_GPIO_HIGH          (AVP64_GPIO_ADDR + AVP64_GPIO_SIZE -1)
+
 // interrupt map
 #define AVP64_IRQ_UART0         (5)
 #define AVP64_IRQ_UART1         (6)
@@ -74,6 +82,7 @@
 #define AVP64_IRQ_GT_S          (29)
 #define AVP64_IRQ_GT_VIRT       (27)
 #define AVP64_IRQ_GT_HYP        (26)
+#define AVP64_IRQ_SPI           (11)
 
 #define AVP64_CPU_DEFCLK        (100 * vcml::MHz)
 

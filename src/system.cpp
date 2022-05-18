@@ -69,6 +69,8 @@ namespace avp64 {
         m_sdhci.clk.bind(m_sig_clock);
         m_simdev.clk.bind(m_sig_clock);
         m_hwrng.clk.bind(m_sig_clock);
+        m_spi.clk.bind(m_sig_clock);
+        m_gpio.clk.bind(m_sig_clock);
 
         // Reset
         for (auto cpu : m_cpus) {
@@ -87,6 +89,8 @@ namespace avp64 {
         m_sdhci.rst.bind(m_sig_reset);
         m_simdev.rst.bind(m_sig_reset);
         m_hwrng.rst.bind(m_sig_reset);
+        m_spi.rst.bind(m_sig_reset);
+        m_gpio.rst.bind(m_sig_reset);
 
         // Bus bindings
         for (auto cpu : m_cpus) {
@@ -108,9 +112,16 @@ namespace avp64 {
         m_bus.bind(m_gic.vcpuif.in, addr_gic_vcpuif);
         m_bus.bind(m_simdev.in, addr_simdev);
         m_bus.bind(m_hwrng.in, addr_hwrng);
+        m_bus.bind(m_spi.in, addr_spi);
+        m_bus.bind(m_gpio.in, addr_gpio);
 
         // Bind SDHCI and SDCARD
         m_sdhci.sd_out.bind(m_sdcard.sd_in);
+
+        m_spi.spi_out.stub();
+
+        // GPIOs
+        m_gpio.ports[0].bind(m_gpio_spi);
 
         // IRQs
         m_gic.spi_in[irq_uart0].bind(m_uart0.irq);
@@ -119,6 +130,7 @@ namespace avp64 {
         m_gic.spi_in[irq_uart3].bind(m_uart3.irq);
         m_gic.spi_in[irq_ethoc].bind(m_ethoc.irq);
         m_gic.spi_in[irq_sdhci].bind(m_sdhci.irq);
+        m_gic.spi_in[irq_spi].bind(m_spi.irq);
     }
 
     system::system(const sc_core::sc_module_name& nm):
@@ -143,6 +155,8 @@ namespace avp64 {
         addr_sdhci("addr_sdhci", vcml::range(AVP64_SDHCI_ADDR, AVP64_SDHCI_HIGH)),
         addr_simdev("addr_simdev", vcml::range(AVP64_SIMDEV_ADDR, AVP64_SIMDEV_HIGH)),
         addr_hwrng("addr_hwrng", vcml::range(AVP64_HWRNG_ADDR, AVP64_HWRNG_HIGH)),
+        addr_spi("addr_spi", vcml::range(AVP64_SPI_ADDR, AVP64_SPI_HIGH)),
+        addr_gpio("addr_gpio", vcml::range(AVP64_GPIO_ADDR, AVP64_GPIO_HIGH)), 
         irq_uart0("irq_uart0", AVP64_IRQ_UART0),
         irq_uart1("irq_uart1", AVP64_IRQ_UART1),
         irq_uart2("irq_uart2", AVP64_IRQ_UART2),
@@ -153,6 +167,7 @@ namespace avp64 {
         irq_gt_virt("irq_gt_virt", AVP64_IRQ_GT_VIRT),
         irq_gt_ns("irq_gt_ns", AVP64_IRQ_GT_NS),
         irq_gt_s("irq_gt_s", AVP64_IRQ_GT_S),
+        irq_spi("irq_spi", AVP64_IRQ_SPI),
         m_cpus(),
         m_clock("clock", clock),
         m_reset("reset"),
@@ -168,6 +183,9 @@ namespace avp64 {
         m_sdhci("sdhci"),
         m_simdev("simdev"),
         m_hwrng("hwrng"),
+        m_spi("spi"),
+        m_gpio("gpio"),
+        m_gpio_spi("gpio_spi"),
         m_sig_clock("sig_clock"),
         m_sig_reset("sig_reset") {
         construct_system_arm64();

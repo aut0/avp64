@@ -41,6 +41,8 @@ namespace avp64 {
         vcml::property<vcml::range> addr_sdhci;
         vcml::property<vcml::range> addr_simdev;
         vcml::property<vcml::range> addr_hwrng;
+        vcml::property<vcml::range> addr_spi;
+        vcml::property<vcml::range> addr_gpio;
 
         vcml::property<int> irq_uart0;
         vcml::property<int> irq_uart1;
@@ -52,7 +54,8 @@ namespace avp64 {
         vcml::property<int> irq_gt_virt;
         vcml::property<int> irq_gt_ns;
         vcml::property<int> irq_gt_s;
-
+        vcml::property<int> irq_spi; 
+        
         system(const sc_core::sc_module_name &name);
         system() = delete;
         system(const system &) = delete;
@@ -80,6 +83,10 @@ namespace avp64 {
         vcml::generic::sdhci    m_sdhci;
         vcml::meta::simdev      m_simdev;
         vcml::generic::hwrng    m_hwrng;
+        vcml::opencores::ocspi  m_spi;
+        vcml::generic::gpio     m_gpio;
+
+        sc_core::sc_signal<bool> m_gpio_spi;
 
         sc_core::sc_signal<clock_t> m_sig_clock;
         sc_core::sc_signal<bool> m_sig_reset;
