@@ -69,6 +69,7 @@ namespace avp64 {
         m_sdhci.clk.bind(m_sig_clock);
         m_simdev.clk.bind(m_sig_clock);
         m_hwrng.clk.bind(m_sig_clock);
+        m_spibus.clk.bind(m_sig_clock);
         m_spi.clk.bind(m_sig_clock);
         m_gpio.clk.bind(m_sig_clock);
 
@@ -89,6 +90,7 @@ namespace avp64 {
         m_sdhci.rst.bind(m_sig_reset);
         m_simdev.rst.bind(m_sig_reset);
         m_hwrng.rst.bind(m_sig_reset);
+        m_spibus.rst.bind(m_sig_reset);
         m_spi.rst.bind(m_sig_reset);
         m_gpio.rst.bind(m_sig_reset);
 
@@ -118,8 +120,9 @@ namespace avp64 {
         // Bind SDHCI and SDCARD
         m_sdhci.sd_out.bind(m_sdcard.sd_in);
 
-        m_spi.spi_out.stub();
-
+        m_spi.spi_out.bind(m_spibus.spi_in);
+        m_spibus.bind(m_max31855.spi_in, m_gpio_spi, false);  // CS_ACTIVE_LOW
+        m_max31855.bind(m_gpio_spi, false); // CS_ACTIVE_LOW
         // GPIOs
         m_gpio.ports[0].bind(m_gpio_spi);
 
@@ -183,8 +186,10 @@ namespace avp64 {
         m_sdhci("sdhci"),
         m_simdev("simdev"),
         m_hwrng("hwrng"),
+        m_spibus("spibus"),
         m_spi("spi"),
         m_gpio("gpio"),
+        m_max31855("max31855"),
         m_gpio_spi("gpio_spi"),
         m_sig_clock("sig_clock"),
         m_sig_reset("sig_reset") {

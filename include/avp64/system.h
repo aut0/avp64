@@ -83,8 +83,10 @@ namespace avp64 {
         vcml::generic::sdhci    m_sdhci;
         vcml::meta::simdev      m_simdev;
         vcml::generic::hwrng    m_hwrng;
+        vcml::generic::spibus   m_spibus;
         vcml::opencores::ocspi  m_spi;
         vcml::generic::gpio     m_gpio;
+        vcml::generic::max31855 m_max31855;
 
         sc_core::sc_signal<bool> m_gpio_spi;
 
