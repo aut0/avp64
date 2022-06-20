@@ -90,9 +90,6 @@ namespace avp64 {
 
         sc_core::sc_signal<bool> m_gpio_spi;
 
-        sc_core::sc_signal<clock_t> m_sig_clock;
-        sc_core::sc_signal<bool> m_sig_reset;
-
         void construct_system_arm64();
     };
     
