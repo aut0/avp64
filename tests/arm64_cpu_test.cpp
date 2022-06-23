@@ -10,11 +10,11 @@
 #include <gtest/gtest.h>
 #include "avp64/arm64_cpu.h"
 
-class arm64_cpu_test : public avp64::arm64_cpu {
+class arm64_cpu_test : public avp64::arm64_cpu
+{
 public:
-    arm64_cpu_test() : avp64::arm64_cpu("test_cpu", 0,1) {
-    };
-    bool read_reg(vcml::u64 idx, vcml::u64 &val) {
+    arm64_cpu_test(): avp64::arm64_cpu("test_cpu", 0, 1){};
+    bool read_reg(vcml::u64 idx, vcml::u64& val) {
         return read_reg_dbg(idx, val);
     }
     bool write_reg(vcml::u64 idx, vcml::u64 val) {
@@ -25,7 +25,7 @@ public:
 TEST(Arm64CpuTest, simple) {
     arm64_cpu_test test_cpu;
 
-    vcml::clock_t defclk = 1* vcml::kHz;
+    vcml::clock_t defclk = 1 * vcml::kHz;
     vcml::generic::clock clock("clk", defclk);
     vcml::generic::reset reset("rst");
     sc_core::sc_signal<bool> irq0("irq0");
@@ -45,14 +45,14 @@ TEST(Arm64CpuTest, simple) {
     test_cpu.insn.bind(imem.in);
     test_cpu.data.bind(dmem.in);
 
-    vcml::u64 pc, x0,x1;
+    vcml::u64 pc, x0, x1;
     sc_core::sc_time quantum(1.0, sc_core::SC_SEC);
     tlm::tlm_global_quantum::instance().set(quantum);
 
-    vcml::u32 insn_mmio[4] = {0xd2995fc0,    // 0x0: mov x0, #0xcafe
-                              0xf9400001,    // 0x4: ldr x1, [x0]
-                              0x14000000,    // 0x8: b 0x8
-                              0x00000000};
+    vcml::u32 insn_mmio[4] = { 0xd2995fc0, // 0x0: mov x0, #0xcafe
+                               0xf9400001, // 0x4: ldr x1, [x0]
+                               0x14000000, // 0x8: b 0x8
+                               0x00000000 };
 
     vcml::tlm_sbi info = vcml::SBI_NONE;
     imem.write(r, &insn_mmio, info);
@@ -77,5 +77,3 @@ TEST(Arm64CpuTest, simple) {
     EXPECT_EQ(x0, 0xcafe);
     EXPECT_EQ(x1, 0x0);
 }
-
-
