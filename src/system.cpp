@@ -68,6 +68,9 @@ namespace avp64 {
         m_clock.clk.bind(m_sdhci.clk);
         m_clock.clk.bind(m_simdev.clk);
         m_clock.clk.bind(m_hwrng.clk);
+        m_clock.clk.bind(m_spibus.clk);
+        m_clock.clk.bind(m_spi.clk);
+        m_clock.clk.bind(m_gpio.clk);
 
         // Reset
         for (auto cpu : m_cpus) {
@@ -85,6 +88,9 @@ namespace avp64 {
         m_reset.rst.bind(m_sdhci.rst);
         m_reset.rst.bind(m_simdev.rst);
         m_reset.rst.bind(m_hwrng.rst);
+        m_reset.rst.bind(m_spibus.rst);
+        m_reset.rst.bind(m_spi.rst);
+        m_reset.rst.bind(m_gpio.rst);
 
         // Bus bindings
         for (auto cpu : m_cpus) {
@@ -109,14 +115,21 @@ namespace avp64 {
         m_bus.bind(m_spi.in, addr_spi);
         m_bus.bind(m_gpio.in, addr_gpio);
 
+        // Connect network to eth
+        m_net.connect(m_ethoc);
+
+        // Connect terminals to uarts
+        m_term0.connect(m_uart0);
+        m_term1.connect(m_uart1); 
+        m_term2.connect(m_uart2);
+        m_term3.connect(m_uart3);
+        
         // Bind SDHCI and SDCARD
         m_sdhci.sd_out.bind(m_sdcard.sd_in);
 
         m_spi.spi_out.bind(m_spibus.spi_in);
-        m_spibus.bind(m_max31855.spi_in, m_gpio_spi, false);  // CS_ACTIVE_LOW
-        m_max31855.bind(m_gpio_spi, false); // CS_ACTIVE_LOW
-        // GPIOs
-        m_gpio.ports[0].bind(m_gpio_spi);
+        m_spibus.bind(m_max31855.spi_in, m_gpio.gpio_out[0], false);  // CS_ACTIVE_LOW
+        m_max31855.bind(m_gpio.gpio_out[0], false); // CS_ACTIVE_LOW
 
         // IRQs
         m_gic.spi_in[irq_uart0].bind(m_uart0.irq);
@@ -173,7 +186,12 @@ namespace avp64 {
         m_uart1("uart1"),
         m_uart2("uart2"),
         m_uart3("uart3"),
+        m_term0("term0"),
+        m_term1("term1"),
+        m_term2("term2"),
+        m_term3("term3"),
         m_ethoc("ethoc"),
+        m_net("net"),
         m_sdcard("sdcard"),
         m_sdhci("sdhci"),
         m_simdev("simdev"),
@@ -181,8 +199,7 @@ namespace avp64 {
         m_spibus("spibus"),
         m_spi("spi"),
         m_gpio("gpio"),
-        m_max31855("max31855"),
-        m_gpio_spi("gpio_spi") {
+        m_max31855("max31855") {
         construct_system_arm64();
    }
 

@@ -77,18 +77,21 @@ namespace avp64 {
         vcml::arm::pl011uart    m_uart0;
         vcml::arm::pl011uart    m_uart1;
         vcml::arm::pl011uart    m_uart2;
-        vcml::arm::pl011uart    m_uart3;
+        vcml::arm::pl011uart    m_uart3; 
+        vcml::serial::terminal  m_term0;
+        vcml::serial::terminal  m_term1;
+        vcml::serial::terminal  m_term2;
+        vcml::serial::terminal  m_term3;
         vcml::opencores::ethoc  m_ethoc;
-        vcml::generic::sdcard   m_sdcard;
-        vcml::generic::sdhci    m_sdhci;
+        vcml::ethernet::network m_net;
+        vcml::sd::sdcard   m_sdcard;
+        vcml::sd::sdhci    m_sdhci;
         vcml::meta::simdev      m_simdev;
         vcml::generic::hwrng    m_hwrng;
-        vcml::generic::spibus   m_spibus;
+        vcml::spi::bus   m_spibus;
         vcml::opencores::ocspi  m_spi;
         vcml::generic::gpio     m_gpio;
-        vcml::generic::max31855 m_max31855;
-
-        sc_core::sc_signal<bool> m_gpio_spi;
+        vcml::spi::max31855 m_max31855;
 
         void construct_system_arm64();
     };
