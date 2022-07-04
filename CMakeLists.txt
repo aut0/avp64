@@ -14,6 +14,9 @@ option(BUILD_TESTS "Build unit tests" OFF)
 
 include(ExternalProject)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(AVP64_LINTER "" CACHE STRING "Code linter to use")
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 set(CMAKE_EXE_LINKER_FLAGS -rdynamic)
@@ -45,6 +48,8 @@ set(sources
     ${src}/main.cpp)
 
 add_executable(avp64 ${sources})
+
+set_target_properties(avp64 PROPERTIES CXX_CLANG_TIDY "${AVP64_LINTER}")
 
 target_include_directories(avp64 PRIVATE ${inc})
 
