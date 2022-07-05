@@ -63,7 +63,7 @@ void system::construct_system_arm64() {
     }
 
     // Clock
-    for (auto cpu : m_cpus) {
+    for (const auto& cpu : m_cpus) {
         m_clock.clk.bind(cpu->clk);
     }
     m_clock.clk.bind(m_bus.clk);
@@ -83,7 +83,7 @@ void system::construct_system_arm64() {
     m_clock.clk.bind(m_gpio.clk);
 
     // Reset
-    for (auto cpu : m_cpus) {
+    for (const auto& cpu : m_cpus) {
         m_reset.rst.bind(cpu->rst);
     }
     m_reset.rst.bind(m_bus.rst);
@@ -103,7 +103,7 @@ void system::construct_system_arm64() {
     m_reset.rst.bind(m_gpio.rst);
 
     // Bus bindings
-    for (auto cpu : m_cpus) {
+    for (const auto& cpu : m_cpus) {
         m_bus.bind(cpu->insn);
         m_bus.bind(cpu->data);
     }

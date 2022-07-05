@@ -211,7 +211,7 @@ bool arm64_cpu::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data,
     return true;
 }
 
-void arm64_cpu::add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu) {
+void arm64_cpu::add_syscall_subscriber(const std::shared_ptr<arm64_cpu>& cpu) {
     m_syscall_subscriber.push_back(cpu);
 }
 
@@ -350,7 +350,7 @@ vcml::u64 arm64_cpu::get_core_id() {
 }
 
 void arm64_cpu::handle_syscall(int callno, std::shared_ptr<void> arg) {
-    m_core->handle_syscall(callno, arg);
+    m_core->handle_syscall(callno, std::move(arg));
 }
 
 vcml::u64 arm64_cpu::get_page_size() {
