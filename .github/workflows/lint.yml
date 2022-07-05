@@ -43,7 +43,7 @@ jobs:
 
     - name: Download SystemC
       if: steps.cache-systemc.outputs.cache-hit != 'true'
-      run: ./utils/setup-systemc -p ${{github.workspace}} -v ${{matrix.systemc}}
+      run: ./deps/vcml/utils/setup-systemc -p ${{github.workspace}} -v ${{matrix.systemc}}
 
     - name: Configure
       run: cmake -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DVCML_BUILD_TESTS=ON -DVCML_LINTER=clang-tidy
