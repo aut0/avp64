@@ -117,7 +117,7 @@ public:
     virtual vcml::u64 get_core_id();
 
     void handle_syscall(int callno, std::shared_ptr<void> arg);
-    void add_syscall_subscriber(std::shared_ptr<arm64_cpu> cpu);
+    void add_syscall_subscriber(const std::shared_ptr<arm64_cpu>& cpu);
     vcml::u64 get_page_size();
 
     arm64_cpu() = delete;
