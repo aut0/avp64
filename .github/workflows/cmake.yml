@@ -46,6 +46,10 @@ jobs:
         run: git apply ${{github.workspace}}/patches/ocx-qemu-arm-disable-tests.patch
         working-directory: ${{github.workspace}}/deps/ocx-qemu-arm
 
+      - name: Patch unicorn
+        run: git apply ${{github.workspace}}/patches/unicorn-fix-breakpoint.patch
+        working-directory: ${{github.workspace}}/deps/ocx-qemu-arm/unicorn
+
       - name: Configure
         run: CXXFLAGS="-Wall -Werror" cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTS=ON
 
