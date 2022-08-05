@@ -1,5 +1,9 @@
 # An ARMv8 Virtual Platform (AVP64)
 
+[![Build Status](https://github.com/aut0/avp64/workflows/cmake/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/cmake.yml)
+[![Lint Status](https://github.com/aut0/avp64/workflows/lint/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/lint.yml)
+[![Code Style](https://github.com/aut0/avp64/workflows/style/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/style.yml)
+
 This repository contains an ARMv8 multicore virtual platform.
 It was built at the Institute for Communication Technologies and Embedded Systems at RTWH Aachen University.
 The following target software configurations were tested (see [config](config/)):
