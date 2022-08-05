@@ -1,0 +1,35 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ba5d34e..1ee67bf 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,6 +4,7 @@ include(ExternalProject)
+ project(ocx-qemu-arm)
+ 
+ set(CMAKE_CXX_STANDARD 11)
++option(OCX_QEMU_ARM_BUILD_TESTS OFF)
+ 
+ set(CAPSTONE_HOME $ENV{CAPSTONE_HOME})
+ if(NOT EXISTS ${CAPSTONE_HOME})
+@@ -20,7 +21,7 @@ if(NOT EXISTS ${UNICORN_HOME})
+     set(UNICORN_HOME ${CMAKE_CURRENT_SOURCE_DIR}/unicorn)
+ endif()
+ 
+-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
++if(CMAKE_BUILD_TYPE MATCHES Debug)
+     set (UNICORN_DEBUG yes)
+ else()
+     set (UNICORN_DEBUG no)
+@@ -83,7 +84,9 @@ target_link_libraries(ocx-qemu-arm ${UNICORN_LIB} capstone-static)
+ 
+ install(TARGETS ocx-qemu-arm DESTINATION lib)
+ 
+-enable_testing()
+-add_test(NAME ocx-qemu-arm
+-         COMMAND $<TARGET_FILE:ocx-test-runner>
+-                 $<TARGET_FILE:ocx-qemu-arm> Cortex-A53)
++if (OCX_QEMU_ARM_BUILD_TESTS)
++    enable_testing()
++    add_test(NAME ocx-qemu-arm
++            COMMAND $<TARGET_FILE:ocx-test-runner>
++                    $<TARGET_FILE:ocx-qemu-arm> Cortex-A53)
++endif()
