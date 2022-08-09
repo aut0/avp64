@@ -62,7 +62,7 @@ public:
     system(const system&) = delete;
     virtual ~system() = default;
 
-    int run();
+    int run() override;
 
     virtual void end_of_elaboration() override;
 
