@@ -1,0 +1,26 @@
+dnuxiff --git a/qemu/target/arm/translate-a64.c b/qemu/target/arm/translate-a64.c
+index 0c1cb192..27e5b1f5 100644
+--- a/qemu/target/arm/translate-a64.c
++++ b/qemu/target/arm/translate-a64.c
+@@ -15121,7 +15121,7 @@ static bool aarch64_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
+     if (bp->flags & BP_CALL) { // SNPS added
+         gen_a64_set_pc_im(dc, dc->base.pc_next);
+         gen_helper_call_breakpoints(tcg_ctx, tcg_ctx->cpu_env);
+-        dc->base.is_jmp = DISAS_TOO_MANY;
++        dc->base.is_jmp = DISAS_EXIT;
+     } else
+     if (bp->flags & BP_CPU) {
+         gen_a64_set_pc_im(dc, dc->base.pc_next);
+diff --git a/qemu/target/arm/translate.c b/qemu/target/arm/translate.c
+index 9caffdce..4ff13b0c 100644
+--- a/qemu/target/arm/translate.c
++++ b/qemu/target/arm/translate.c
+@@ -9265,7 +9265,7 @@ static bool arm_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
+         gen_set_condexec(dc);
+         gen_set_pc_im(dc, dc->base.pc_next);
+         gen_helper_call_breakpoints(tcg_ctx, tcg_ctx->cpu_env);
+-        dc->base.is_jmp = DISAS_TOO_MANY;
++        dc->base.is_jmp = DISAS_EXIT;
+     } else
+     if (bp->flags & BP_CPU) {
+         gen_set_condexec(dc);

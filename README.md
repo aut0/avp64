@@ -34,7 +34,22 @@ For that please follow the installation guideline of `vcml` which can be found [
     <install-dir> output directory for binaries,  e.g. /opt/avp64
     ```
 
-3. Configure and build the project using `cmake`. During configuration you must
+3. Patch submodules: Two patches can be applied to patch the `ocx-qemu-arm` submodule.
+
+    - [ocx-qemu-arm-disable-tests.patch](./patches/ocx-qemu-arm-disable-tests.patch): This patch adds an option to the ocx-qemu-arm projects which allows to disable the tests of the submodule.
+    - [unicorn-fix-breakpoint.patch](./patches/unicorn-fix-breakpoint.patch): This patch fixes the breakpoint behavior of the VP.
+    Without this patch, the VP executes the instruction on a breakpoint hit and stops after the execution.
+    The patch stops the VP before the instruction is exectuted.
+
+    To apply the patches, execute:
+
+    ```bash
+    (cd <source-dir>/deps/ocx-qemu-arm && git apply <source-dir>/patches/ocx-qemu-arm-disable-tests.patch)
+    (cd <source-dir>/deps/ocx-qemu-arm/unicorn && git apply <source-dir>/patches/unicorn-fix-breakpoint.patch)
+
+    ```
+
+4. Configure and build the project using `cmake`. During configuration you must
    state whether or not to build the unit tests:
 
      - `-DBUILD_TESTS=[ON|OFF]`: build unit tests (default: `OFF`)
@@ -54,7 +69,7 @@ For that please follow the installation guideline of `vcml` which can be found [
    If building with `-DBUILD_TESTS=ON` you can run all unit tests using
    `make test` within `<build-dir>`.
 
-4. After installation, the following new files should be present:
+5. After installation, the following new files should be present:
 
     ```bash
     <install-dir>/bin/avp64                # executable program
@@ -62,7 +77,7 @@ For that please follow the installation guideline of `vcml` which can be found [
     <install-dir>/lib/libocx-qemu-arm.so 
     ```
 
-5. If the library `libocx-qemu-arm.so` cannot be found, add the lib folder to `LD_LIBRARY_PATH`:
+6. If the library `libocx-qemu-arm.so` cannot be found, add the lib folder to `LD_LIBRARY_PATH`:
 
     ```bash
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/avp64/lib/
