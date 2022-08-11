@@ -95,6 +95,9 @@ Run the platform using a [config](config/) file:
 
 For more details on run parameters please look [here](https://github.com/machineware-gmbh/vcml).  
 
+
+To stop the platform, press <kbd>Ctrl</kbd> + <kbd>a</kbd> + <kbd>x</kbd> .
+
 To install tested software that belongs to the provided [configuration files](config/), follow the installation guide of [avp64_sw](https://github.com/aut0/avp64_sw).
 After the installation, set the environment variable `AVP64_SW` to the path of the `avp64_sw` repository:
 
