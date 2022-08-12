@@ -40,12 +40,15 @@ For that please follow the installation guideline of `vcml` which can be found [
     - [unicorn-fix-breakpoint.patch](./patches/unicorn-fix-breakpoint.patch): This patch fixes the breakpoint behavior of the VP.
     Without this patch, the VP executes the instruction on a breakpoint hit and stops after the execution.
     The patch stops the VP before the instruction is executed.
+    - [unicorn-fix-wfi-hint.patch](./patches/unicorn-fix-wfi-hint.patch): This patch fixes the *Wait for Interrupt* (WFI) hint of unicorn.
+    Without this patch, WFI instructions are not forwarded to avp64 which decreases the simulation performance.
 
     To apply the patches, execute:
 
     ```bash
     (cd <source-dir>/deps/ocx-qemu-arm && git apply <source-dir>/patches/ocx-qemu-arm-disable-tests.patch)
     (cd <source-dir>/deps/ocx-qemu-arm/unicorn && git apply <source-dir>/patches/unicorn-fix-breakpoint.patch)
+    (cd <source-dir>/deps/ocx-qemu-arm/unicorn && git apply <source-dir>/patches/unicorn-fix-wfi-hint.patch)
 
     ```
 

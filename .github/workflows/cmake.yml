@@ -47,7 +47,9 @@ jobs:
         working-directory: ${{github.workspace}}/deps/ocx-qemu-arm
 
       - name: Patch unicorn
-        run: git apply ${{github.workspace}}/patches/unicorn-fix-breakpoint.patch
+        run: |
+          git apply ${{github.workspace}}/patches/unicorn-fix-breakpoint.patch
+          git apply ${{github.workspace}}/patches/unicorn-fix-wfi-hint.patch
         working-directory: ${{github.workspace}}/deps/ocx-qemu-arm/unicorn
 
       - name: Configure
