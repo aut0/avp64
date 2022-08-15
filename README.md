@@ -36,16 +36,19 @@ For that please follow the installation guideline of `vcml` which can be found [
 
 3. Patch submodules: Two patches can be applied to patch the `ocx-qemu-arm` submodule.
 
-    - [ocx-qemu-arm-disable-tests.patch](./patches/ocx-qemu-arm-disable-tests.patch): This patch adds an option to the ocx-qemu-arm projects which allows to disable the tests of the submodule.
+    - [ocx-qemu-arm-disable-tests.patch](./patches/ocx-qemu-arm-disable-tests.patch): This patch adds an option to the ocx-qemu-arm projects which allows disabling the tests of the submodule.
     - [unicorn-fix-breakpoint.patch](./patches/unicorn-fix-breakpoint.patch): This patch fixes the breakpoint behavior of the VP.
     Without this patch, the VP executes the instruction on a breakpoint hit and stops after the execution.
-    The patch stops the VP before the instruction is exectuted.
+    The patch stops the VP before the instruction is executed.
+    - [unicorn-fix-wfi-hint.patch](./patches/unicorn-fix-wfi-hint.patch): This patch fixes the *Wait for Interrupt* (WFI) hint of unicorn.
+    Without this patch, WFI instructions are not forwarded to avp64 which decreases the simulation performance.
 
     To apply the patches, execute:
 
     ```bash
     (cd <source-dir>/deps/ocx-qemu-arm && git apply <source-dir>/patches/ocx-qemu-arm-disable-tests.patch)
     (cd <source-dir>/deps/ocx-qemu-arm/unicorn && git apply <source-dir>/patches/unicorn-fix-breakpoint.patch)
+    (cd <source-dir>/deps/ocx-qemu-arm/unicorn && git apply <source-dir>/patches/unicorn-fix-wfi-hint.patch)
 
     ```
 

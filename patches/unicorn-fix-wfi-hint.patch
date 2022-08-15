@@ -1,0 +1,25 @@
+diff --git a/qemu/target/arm/op_helper.c b/qemu/target/arm/op_helper.c
+index e2791dc1..50e81543 100644
+--- a/qemu/target/arm/op_helper.c
++++ b/qemu/target/arm/op_helper.c
+@@ -312,8 +312,18 @@ void HELPER(wfi)(CPUARMState *env, uint32_t insn_len)
+                         target_el);
+     }
+ 
+-    cs->exception_index = EXCP_HLT;
+-    cs->halted = 1;
++    uc_hintfunc_t fn = env->uc->uc_hint_func;
++    void* opaque = env->uc->uc_hint_opaque;
++
++    if (fn != NULL) {
++        env->uc->is_memcb = true; // force adjustment during PC register read
++        fn(opaque, UC_HINT_WFI);
++        env->uc->is_memcb = false;
++    } else {
++        cs->exception_index = EXCP_HLT;
++        cs->halted = 1;
++    }
++
+     cpu_loop_exit(cs);
+ }
+ 
