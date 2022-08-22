@@ -56,7 +56,8 @@ void memory_protector::notify_page(void* access_addr) {
 ocx::u8* arm64_cpu::get_page_ptr_r(ocx::u64 page_paddr) {
     tlm::tlm_dmi dmi;
     vcml::u64 page_size = get_page_size();
-    if (insn.dmi().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND, dmi)) {
+    if (insn.dmi_cache().lookup(page_paddr, page_size, tlm::TLM_READ_COMMAND,
+                                dmi)) {
         return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
     } else {
         tlm::tlm_generic_payload tx;
@@ -76,8 +77,8 @@ ocx::u8* arm64_cpu::get_page_ptr_r(ocx::u64 page_paddr) {
 ocx::u8* arm64_cpu::get_page_ptr_w(ocx::u64 page_paddr) {
     tlm::tlm_dmi dmi;
     vcml::u64 page_size = get_page_size();
-    if (insn.dmi().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND,
-                          dmi)) {
+    if (insn.dmi_cache().lookup(page_paddr, page_size, tlm::TLM_WRITE_COMMAND,
+                                dmi)) {
         return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
     } else {
         tlm::tlm_generic_payload tx;
