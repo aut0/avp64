@@ -85,6 +85,7 @@ private:
     vcml::serial::terminal m_term3;
     vcml::opencores::ethoc m_ethoc;
     vcml::ethernet::network m_net;
+    vcml::ethernet::bridge m_bridge;
     vcml::sd::sdcard m_sdcard;
     vcml::sd::sdhci m_sdhci;
     vcml::meta::simdev m_simdev;

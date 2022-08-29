@@ -127,6 +127,7 @@ void system::construct_system_arm64() {
 
     // Connect network to eth
     m_net.connect(m_ethoc);
+    m_net.connect(m_bridge);
 
     // Connect terminals to uarts
     m_term0.connect(m_uart0);
@@ -208,6 +209,7 @@ system::system(const sc_core::sc_module_name& nm):
     m_term3("term3"),
     m_ethoc("ethoc"),
     m_net("net"),
+    m_bridge("bridge"),
     m_sdcard("sdcard"),
     m_sdhci("sdhci"),
     m_simdev("simdev"),
