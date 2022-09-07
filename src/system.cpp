@@ -155,13 +155,7 @@ void system::construct_system_arm64() {
 
 system::system(const sc_core::sc_module_name& nm):
     vcml::system(nm),
-    type("type", "unknown"),
-    duration("duration", sc_core::SC_ZERO_TIME),
-    quantum("quantum", sc_core::sc_time(10.0, sc_core::SC_US)),
-    session("session", 0),
-    vspdebug("vspdebug", false),
     nrcpu("nrcpu", 1),
-    clock("clock", AVP64_CPU_DEFCLK),
     addr_ram("addr_ram", vcml::range(AVP64_RAM_ADDR, AVP64_RAM_HIGH)),
     addr_gic_cpuif("addr_gic_cpuif",
                    vcml::range(AVP64_GIC_CPUIF_ADDR, AVP64_GIC_CPUIF_HIGH)),
@@ -194,7 +188,7 @@ system::system(const sc_core::sc_module_name& nm):
     irq_gt_s("irq_gt_s", AVP64_IRQ_GT_S),
     irq_spi("irq_spi", AVP64_IRQ_SPI),
     m_cpus(),
-    m_clock("clock", clock),
+    m_clock("clock", AVP64_CPU_DEFCLK),
     m_reset("reset"),
     m_bus("bus"),
     m_ram("ram", addr_ram.get().length()),
