@@ -42,10 +42,6 @@ jobs:
         if: steps.cache-systemc.outputs.cache-hit != 'true'
         run: deps/vcml/utils/setup-systemc -p ${{github.workspace}} -v 2.3.3
 
-      - name: Patch ocx-qemu-arm
-        run: git apply ${{github.workspace}}/patches/ocx-qemu-arm-disable-tests.patch
-        working-directory: ${{github.workspace}}/deps/ocx-qemu-arm
-
       - name: Patch unicorn
         run: |
           git apply ${{github.workspace}}/patches/unicorn-fix-breakpoint.patch
