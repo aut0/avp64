@@ -19,15 +19,7 @@ class system : public vcml::system
 {
 public:
     // properties
-    vcml::property<std::string> type;
-
-    vcml::property<sc_core::sc_time> duration;
-    vcml::property<sc_core::sc_time> quantum;
-
-    vcml::property<unsigned short> session;
-    vcml::property<bool> vspdebug;
     vcml::property<unsigned int> nrcpu;
-    vcml::property<unsigned int> clock;
 
     vcml::property<vcml::range> addr_ram;
     vcml::property<vcml::range> addr_gic_cpuif;

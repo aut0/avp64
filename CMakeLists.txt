@@ -31,7 +31,6 @@ if(NOT EXISTS ${VCML_HOME})
     set(VCML_HOME ${CMAKE_CURRENT_SOURCE_DIR}/deps/vcml)
 endif()
 
-message(STATUS "Found OCX at " ${OCX_HOME})
 message(STATUS "Found OCX-QEMU-ARM at " ${OCX_QEMU_ARM_HOME})
 message(STATUS "Found VCML at " ${VCML_HOME})
 
