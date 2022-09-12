@@ -42,6 +42,7 @@ jobs:
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
+
       - name: Test
         env:
           LD_LIBRARY_PATH: ${{github.workspace}}/build/ocx-qemu-arm
