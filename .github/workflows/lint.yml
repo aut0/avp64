@@ -17,11 +17,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-          systemc: [2.3.3]
-
-    env:
-      SYSTEMC_HOME: ${{github.workspace}}/systemc/${{matrix.systemc}}
 
     steps:
     - name: Checkout
@@ -35,20 +30,8 @@ jobs:
         sudo apt-get update -y -qq
         sudo apt-get install libelf-dev libsdl2-dev libvncserver-dev libslirp-dev ninja-build clang-tidy
 
-    - name: Cache SystemC
-      id: cache-systemc
-      uses: actions/cache@v2
-      with:
-        path: ${{github.workspace}}/systemc
-        key: cache-systemc-${{matrix.systemc}}-${{runner.os}}
-
-    - name: Download SystemC
-      if: steps.cache-systemc.outputs.cache-hit != 'true'
-      run: deps/vcml/utils/setup-systemc -p ${{github.workspace}} -v ${{matrix.systemc}}
-
     - name: Configure
       run: CXXFLAGS="-Wall -Werror" cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTS=ON -DAVP64_LINTER=clang-tidy
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
-
