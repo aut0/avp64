@@ -176,14 +176,14 @@ void arm64_cpu::hint(ocx::hint_kind kind) {
             if (it.second->read())
                 return;
         }
-        const sc_core::sc_time& before_wait = sc_core::sc_time_stamp();
+        const sc_core::sc_time before_wait = sc_core::sc_time_stamp();
         sc_core::wait(list);
         VCML_ERROR_ON(local_time_stamp() != sc_core::sc_time_stamp(),
                       "core not synchronized");
-        const sc_core::sc_time& after_wait = sc_core::sc_time_stamp();
-        sc_core::sc_time delta = after_wait - before_wait;
-        m_sleep_cycles += delta / clock_cycle();
-        m_total_cycles += delta / clock_cycle();
+        const vcml::u64 cycles = (sc_core::sc_time_stamp() - before_wait) /
+                                 clock_cycle();
+        m_sleep_cycles += cycles;
+        m_total_cycles += cycles;
         m_core->stop();
         break;
     }
