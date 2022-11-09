@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include "avp64/system.h"
 #include "avp64/config.h"
+#include "mwr/core/utils.h"
 
 #define SAFE_DELETE(p)  \
     do {                \
@@ -216,9 +217,9 @@ system::system(const sc_core::sc_module_name& nm):
 }
 
 int system::run() {
-    double simstart = vcml::realtime();
+    double simstart = mwr::timestamp();
     int result = vcml::system::run();
-    double realtime = vcml::realtime() - simstart;
+    double realtime = mwr::timestamp() - simstart;
     double total_runtime = sc_core::sc_time_stamp().to_seconds();
 
     uint64_t ninsn = 0;

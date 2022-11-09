@@ -257,7 +257,10 @@ bool arm64_cpu::page_size(vcml::u64& size) {
 }
 
 bool arm64_cpu::virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) {
-    return m_core->virt_to_phys(vaddr, paddr);
+    ocx::u64 paddr_ocx = paddr;
+    bool ret_val = m_core->virt_to_phys(vaddr, paddr_ocx);
+    paddr = paddr_ocx;
+    return ret_val;
 }
 
 bool arm64_cpu::insert_breakpoint(vcml::u64 addr) {
