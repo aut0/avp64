@@ -10,6 +10,8 @@ The following target software configurations were tested (see [config](config/))
 
 - CoreMark
 - Dhrystone
+- Whetstone
+- STREAM
 - Linux single- and dual-core
 - Xen single- and dual-core
 
