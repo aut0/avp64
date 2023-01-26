@@ -265,13 +265,13 @@ int system::run() {
 
 void system::end_of_elaboration() {
     std::stringstream ss;
-    m_bus.execute("show", VCML_NO_ARGS, ss);
+    m_bus.execute("show", ss);
     log_debug("%s", ss.str().c_str());
 
     ss.str("");
     ss.clear();
 
-    m_gic.execute("show", VCML_NO_ARGS, ss);
+    m_gic.execute("show", ss);
     log_debug("%s", ss.str().c_str());
 }
 } // namespace avp64
