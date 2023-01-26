@@ -16,9 +16,6 @@ jobs:
 
     name: Build AVP64
 
-    env:
-      SYSTEMC_HOME: ${{github.workspace}}/systemc/2.3.3
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
