@@ -112,7 +112,8 @@ public:
     void inject_cpu(arm64_cpu* cpu);
 
     virtual vcml::u64 cycle_count() const override;
-    virtual void update_local_time(sc_core::sc_time& local_time) override;
+    virtual void update_local_time(sc_core::sc_time& local_time,
+                                   sc_core::sc_process_b* proc) override;
     virtual bool disassemble(vcml::u8* ibuf, vcml::u64& addr,
                              std::string& code) override;
     virtual vcml::u64 program_counter() override;
