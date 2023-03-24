@@ -307,11 +307,14 @@ vcml::u64 arm64_cpu::cycle_count() const {
     return m_run_cycles + m_core->insn_count();
 }
 
-void arm64_cpu::update_local_time(sc_core::sc_time& local_time) {
-    vcml::u64 cycles = cycle_count() + m_sleep_cycles;
-    VCML_ERROR_ON(cycles < m_total_cycles, "cycle count goes down");
-    local_time += clock_cycles(cycles - m_total_cycles);
-    m_total_cycles = cycles;
+void arm64_cpu::update_local_time(sc_core::sc_time& local_time,
+                                  sc_core::sc_process_b* proc) {
+    if (is_local_process(proc)) {
+        vcml::u64 cycles = cycle_count() + m_sleep_cycles;
+        VCML_ERROR_ON(cycles < m_total_cycles, "cycle count goes down");
+        local_time += clock_cycles(cycles - m_total_cycles);
+        m_total_cycles = cycles;
+    }
 }
 
 bool arm64_cpu::disassemble(vcml::u8* ibuf, vcml::u64& addr,
