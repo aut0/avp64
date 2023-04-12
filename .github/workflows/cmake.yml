@@ -30,12 +30,17 @@ jobs:
 
       - name: Patch unicorn
         run: |
-          git apply ${{github.workspace}}/patches/unicorn-fix-breakpoint.patch
-          git apply ${{github.workspace}}/patches/unicorn-fix-wfi-hint.patch
+          git apply ${{github.workspace}}/patches/unicorn-*.patch
         working-directory: ${{github.workspace}}/deps/ocx-qemu-arm/unicorn
 
       - name: Configure
-        run: CXXFLAGS="-Wall -Werror" cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTS=ON
+        run: |
+          cmake \
+            -B ${{github.workspace}}/build \
+            -DCXXFLAGS="-Wall -Werror" \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DBUILD_TESTS=ON \
+            -DOCX_QEMU_ARM_BUILD_TESTS=OFF
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
