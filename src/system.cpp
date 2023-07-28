@@ -243,8 +243,8 @@ int system::run() {
                 continue;
 
             std::string s;
-            s += vcml::mkstr("  irq %d status :", stats.irq);
-            s += vcml::mkstr(" %d#", stats.irq_count);
+            s += vcml::mkstr("  irq %lu status :", stats.irq);
+            s += vcml::mkstr(" %lu#", stats.irq_count);
             s += vcml::mkstr(", avg %.1fus", stats.irq_uptime.to_seconds() /
                                                  stats.irq_count * 1e6);
             s += vcml::mkstr(", max %.1fus",

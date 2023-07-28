@@ -62,12 +62,13 @@ private:
     static void segfault_handler(int sig, siginfo_t* si, void* unused);
 
 protected:
-    virtual void interrupt(unsigned int irq, bool set) override;
-    virtual void simulate(unsigned int cycles) override;
+    virtual void interrupt(size_t irq, bool set) override;
+    virtual void simulate(size_t cycles) override;
     virtual void end_of_elaboration() override;
 
-    virtual bool read_reg_dbg(vcml::u64 idx, vcml::u64& val) override;
-    virtual bool write_reg_dbg(vcml::u64 idx, vcml::u64 val) override;
+    virtual bool read_reg_dbg(size_t regno, void* buf, size_t len) override;
+    virtual bool write_reg_dbg(size_t regno, const void* buf,
+                               size_t len) override;
     virtual bool page_size(vcml::u64& size) override;
     virtual bool virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) override;
     virtual bool insert_breakpoint(vcml::u64 addr) override;
@@ -81,7 +82,7 @@ public:
     using vcml::component::transport; // needed to not hide vcml transport
                                       // function by ocx transport
 
-    vcml::gpio_initiator_socket_array<> timer_irq_out;
+    vcml::gpio_initiator_array timer_irq_out;
     std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
     virtual ocx::u8* get_page_ptr_r(ocx::u64 page_paddr) override;
