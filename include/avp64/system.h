@@ -82,7 +82,6 @@ private:
     vcml::sd::sdhci m_sdhci;
     vcml::meta::simdev m_simdev;
     vcml::generic::hwrng m_hwrng;
-    vcml::spi::bus m_spibus;
     vcml::spi::ocspi m_spi;
     vcml::generic::gpio m_gpio;
     vcml::spi::max31855 m_max31855;
