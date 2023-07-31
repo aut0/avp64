@@ -79,7 +79,6 @@ void system::construct_system_arm64() {
     m_clock.clk.bind(m_sdhci.clk);
     m_clock.clk.bind(m_simdev.clk);
     m_clock.clk.bind(m_hwrng.clk);
-    m_clock.clk.bind(m_spibus.clk);
     m_clock.clk.bind(m_spi.clk);
     m_clock.clk.bind(m_gpio.clk);
 
@@ -99,7 +98,6 @@ void system::construct_system_arm64() {
     m_reset.rst.bind(m_sdhci.rst);
     m_reset.rst.bind(m_simdev.rst);
     m_reset.rst.bind(m_hwrng.rst);
-    m_reset.rst.bind(m_spibus.rst);
     m_reset.rst.bind(m_spi.rst);
     m_reset.rst.bind(m_gpio.rst);
 
@@ -139,10 +137,8 @@ void system::construct_system_arm64() {
     // Bind SDHCI and SDCARD
     m_sdhci.sd_out.bind(m_sdcard.sd_in);
 
-    m_spi.spi_out.bind(m_spibus.spi_in);
-    m_spibus.bind(m_max31855.spi_in, m_gpio.gpio_out[0],
-                  false);                       // CS_ACTIVE_LOW
-    m_max31855.bind(m_gpio.gpio_out[0], false); // CS_ACTIVE_LOW
+    m_spi.spi_out.bind(m_max31855.spi_in);
+    m_gpio.gpio_out[0].bind(m_max31855.cs);
 
     // IRQs
     m_gic.spi_in[irq_uart0].bind(m_uart0.irq);
@@ -209,7 +205,6 @@ system::system(const sc_core::sc_module_name& nm):
     m_sdhci("sdhci"),
     m_simdev("simdev"),
     m_hwrng("hwrng"),
-    m_spibus("spibus"),
     m_spi("spi"),
     m_gpio("gpio"),
     m_max31855("max31855") {
@@ -243,8 +238,8 @@ int system::run() {
                 continue;
 
             std::string s;
-            s += vcml::mkstr("  irq %d status :", stats.irq);
-            s += vcml::mkstr(" %d#", stats.irq_count);
+            s += vcml::mkstr("  irq %lu status :", stats.irq);
+            s += vcml::mkstr(" %lu#", stats.irq_count);
             s += vcml::mkstr(", avg %.1fus", stats.irq_uptime.to_seconds() /
                                                  stats.irq_count * 1e6);
             s += vcml::mkstr(", max %.1fus",

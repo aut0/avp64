@@ -14,18 +14,18 @@ class arm64_cpu_test : public avp64::arm64_cpu
 {
 public:
     arm64_cpu_test(): avp64::arm64_cpu("test_cpu", 0, 1){};
-    bool read_reg(vcml::u64 idx, vcml::u64& val) {
-        return read_reg_dbg(idx, val);
+    bool read_reg(id_t regno, void* buf, size_t len) {
+        return read_reg_dbg(regno, buf, len);
     }
-    bool write_reg(vcml::u64 idx, vcml::u64 val) {
-        return write_reg_dbg(idx, val);
+    bool write_reg(id_t regno, const void* buf, size_t len) {
+        return write_reg_dbg(regno, buf, len);
     }
 };
 
 TEST(Arm64CpuTest, simple) {
     arm64_cpu_test test_cpu;
 
-    vcml::clock_t defclk = 1 * vcml::kHz;
+    mwr::hz_t defclk = 1 * mwr::kHz;
     vcml::generic::clock clock("clk", defclk);
     vcml::generic::reset reset("rst");
     sc_core::sc_signal<bool> irq0("irq0");
@@ -58,21 +58,21 @@ TEST(Arm64CpuTest, simple) {
     imem.write(r, &insn_mmio, info);
 
     pc = 0;
-    EXPECT_TRUE(test_cpu.write_reg(32, pc));
-    EXPECT_TRUE(test_cpu.write_reg(0, pc));
-    EXPECT_TRUE(test_cpu.write_reg(1, pc));
-    EXPECT_TRUE(test_cpu.read_reg(32, pc));
-    EXPECT_TRUE(test_cpu.read_reg(0, x0));
-    EXPECT_TRUE(test_cpu.read_reg(1, x1));
+    EXPECT_TRUE(test_cpu.write_reg(32, &pc, 8));
+    EXPECT_TRUE(test_cpu.write_reg(0, &pc, 8));
+    EXPECT_TRUE(test_cpu.write_reg(1, &pc, 8));
+    EXPECT_TRUE(test_cpu.read_reg(32, &pc, 8));
+    EXPECT_TRUE(test_cpu.read_reg(0, &x0, 8));
+    EXPECT_TRUE(test_cpu.read_reg(1, &x1, 8));
     EXPECT_EQ(pc, 0x0);
     EXPECT_EQ(x0, 0x0);
     EXPECT_EQ(x1, 0x0);
 
     sc_core::sc_start(quantum);
 
-    EXPECT_TRUE(test_cpu.read_reg(32, pc));
-    EXPECT_TRUE(test_cpu.read_reg(0, x0));
-    EXPECT_TRUE(test_cpu.read_reg(1, x1));
+    EXPECT_TRUE(test_cpu.read_reg(32, &pc, 8));
+    EXPECT_TRUE(test_cpu.read_reg(0, &x0, 8));
+    EXPECT_TRUE(test_cpu.read_reg(1, &x1, 8));
     EXPECT_EQ(pc, 0x8);
     EXPECT_EQ(x0, 0xcafe);
     EXPECT_EQ(x1, 0x0);

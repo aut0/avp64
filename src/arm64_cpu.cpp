@@ -8,7 +8,6 @@
  ******************************************************************************/
 
 #include "avp64/arm64_cpu.h"
-#include "avp64/aarch64_regs.h"
 
 #include <dlfcn.h>
 #include <sys/mman.h>
@@ -229,11 +228,11 @@ void arm64_cpu::timer_irq_trigger(int timer_id) {
     m_core->notified(timer_id);
 }
 
-void arm64_cpu::interrupt(unsigned int irq, bool set) {
+void arm64_cpu::interrupt(size_t irq, bool set) {
     m_core->interrupt(irq, set);
 }
 
-void arm64_cpu::simulate(unsigned int cycles) {
+void arm64_cpu::simulate(size_t cycles) {
     // insn_count() is only reset at the beginning of step(), but not at the
     // end, so the number of cycles can only be summed up in the following
     // quantum
@@ -241,14 +240,12 @@ void arm64_cpu::simulate(unsigned int cycles) {
     m_core->step(cycles);
 }
 
-bool arm64_cpu::read_reg_dbg(vcml::u64 idx, vcml::u64& val) {
-    val = 0x0000000000000000; // init value because vcml doesn't -> necessary,
-                              // if reg is smaller than 64 bit
-    return m_core->read_reg(idx, &val);
+bool arm64_cpu::read_reg_dbg(size_t regno, void* buf, size_t len) {
+    return m_core->read_reg(regno, buf);
 }
 
-bool arm64_cpu::write_reg_dbg(vcml::u64 idx, vcml::u64 val) {
-    return m_core->write_reg(idx, &val);
+bool arm64_cpu::write_reg_dbg(size_t regno, const void* buf, size_t len) {
+    return m_core->write_reg(regno, buf);
 }
 
 bool arm64_cpu::page_size(vcml::u64& size) {
@@ -406,7 +403,35 @@ arm64_cpu::arm64_cpu(const sc_core::sc_module_name& nm, vcml::u64 procid,
         VCML_ERROR("Could not create ocx::core instance");
 
     set_little_endian();
-    define_cpuregs(AARCH64_REGS);
+
+    // X0 - X30
+    for (id_t i = 0; i < 31; ++i)
+        define_cpureg_rw(i, mwr::mkstr("X%u", i), 8);
+
+    define_cpureg_rw(31, "SP", 8);
+    define_cpureg_rw(32, "PC", 8);
+
+    // aarch64 status register and bitfields
+    define_cpureg_rw(33, "CPSR", 4);
+    define_cpureg_rw(50, "SPSR_EL1", 4);
+    define_cpureg_rw(64, "SPSR_EL2", 4);
+    define_cpureg_rw(78, "SPSR_EL3", 4);
+    define_cpureg_rw(92, "SP_EL0", 8);
+    define_cpureg_rw(93, "SP_EL1", 8);
+    define_cpureg_rw(94, "SP_EL2", 8);
+    define_cpureg_rw(95, "SP_EL3", 8);
+    define_cpureg_rw(96, "ELR_EL0", 8);
+    define_cpureg_rw(97, "ELR_EL1", 8);
+    define_cpureg_rw(98, "ELR_EL2", 8);
+    define_cpureg_rw(99, "ELR_EL3", 8);
+
+    // aarch64 floating point registers
+    for (id_t i = 0; i < 32; ++i)
+        define_cpureg_rw(i + 449, mwr::mkstr("D%u", i), 8);
+
+    // aarch64 floating point status registers
+    define_cpureg_rw(192, "FPSR", 4);
+    define_cpureg_rw(193, "FPCR", 4);
 
     m_core->set_id(procid, coreid);
     data.set_cpuid(m_core_id);
