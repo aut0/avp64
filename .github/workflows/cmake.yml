@@ -39,7 +39,7 @@ jobs:
             -B ${{github.workspace}}/build \
             -DCMAKE_CXX_FLAGS="-Wall -Werror" \
             -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-            -DBUILD_TESTS=ON \
+            -DAVP64_BUILD_TESTS=ON \
             -DOCX_QEMU_ARM_BUILD_TESTS=OFF
 
       - name: Build

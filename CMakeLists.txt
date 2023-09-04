@@ -10,7 +10,7 @@
 
 cmake_minimum_required(VERSION 3.6)
 project(avp64)
-option(BUILD_TESTS "Build unit tests" OFF)
+option(AVP64_BUILD_TESTS "Build unit tests" OFF)
 
 include(ExternalProject)
 
@@ -59,8 +59,8 @@ target_link_libraries(avp64 -pthread -lelf)
 install(TARGETS avp64 DESTINATION bin)
 install(DIRECTORY config/ DESTINATION config)
 
-if(BUILD_TESTS)
-    message("Building AVP64 tests")
+if(AVP64_BUILD_TESTS)
+    message(STATUS "Building AVP64 tests")
     enable_testing()
     add_subdirectory(tests)
 endif()
