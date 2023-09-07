@@ -49,6 +49,7 @@ set(sources
 add_executable(avp64 ${sources})
 
 set_target_properties(avp64 PROPERTIES CXX_CLANG_TIDY "${AVP64_LINTER}")
+target_compile_options(avp64 PRIVATE ${MWR_COMPILER_WARN_FLAGS})
 
 target_include_directories(avp64 PRIVATE ${inc})
 
