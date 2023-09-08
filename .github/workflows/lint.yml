@@ -31,7 +31,12 @@ jobs:
         sudo apt-get install libelf-dev libsdl2-dev libvncserver-dev libslirp-dev ninja-build clang-tidy
 
     - name: Configure
-      run: CXXFLAGS="-Wall -Werror" cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTS=ON -DAVP64_LINTER=clang-tidy
+      run: |
+        cmake \
+          -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DAVP64_BUILD_TESTS=ON \
+          -DAVP64_LINTER=clang-tidy
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)

@@ -50,7 +50,7 @@ For that please follow the installation guideline of `vcml` which can be found [
 4. Configure and build the project using `cmake`. During configuration you must
    state whether or not to build the unit tests:
 
-     - `-DBUILD_TESTS=[ON|OFF]`: build unit tests (default: `OFF`)
+     - `-DAVP64_BUILD_TESTS=[ON|OFF]`: build unit tests (default: `OFF`)
 
    Ensure that the environment variable `SYSTEMC_HOME` is correctly set.
    Release and debug build configurations are controlled via the regular
@@ -64,7 +64,7 @@ For that please follow the installation guideline of `vcml` which can be found [
    sudo make install
    ```
 
-   If building with `-DBUILD_TESTS=ON` you can run all unit tests using
+   If building with `-DAVP64_BUILD_TESTS=ON` you can run all unit tests using
    `make test` within `<build-dir>`.
 
 5. After installation, the following new files should be present:
