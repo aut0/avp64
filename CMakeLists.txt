@@ -53,9 +53,8 @@ target_compile_options(avp64 PRIVATE ${MWR_COMPILER_WARN_FLAGS})
 
 target_include_directories(avp64 PRIVATE ${inc})
 
-target_link_libraries(avp64 vcml)
 target_link_libraries(avp64 ${CMAKE_DL_LIBS})
-target_link_libraries(avp64 -pthread -lelf)
+target_link_whole_archives(avp64 vcml)
 
 install(TARGETS avp64 DESTINATION bin)
 install(DIRECTORY config/ DESTINATION config)

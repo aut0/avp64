@@ -7,20 +7,29 @@ on:
     branches: [ master ]
 
 env:
-  BUILD_TYPE: Release
   TARGET_ARCH: linux64
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        BUILD_TYPE: [Release, Debug]
 
     name: Build AVP64
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
+      - name: Download software
+        run: |
+          wget https://github.com/aut0/avp64_sw/releases/latest/download/linux.tar.gz
+          tar -xvf linux.tar.gz
+          rm linux.tar.gz
 
       - name: Setup Dependencies
         run: |
@@ -37,15 +46,22 @@ jobs:
         run: |
           cmake \
             -B ${{github.workspace}}/build \
-            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} \
             -DAVP64_BUILD_TESTS=ON \
             -DOCX_QEMU_ARM_BUILD_TESTS=OFF
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.BUILD_TYPE}} -j $(nproc)
 
       - name: Test
         env:
           LD_LIBRARY_PATH: ${{github.workspace}}/build/ocx-qemu-arm
         working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+        run: |
+          ctest -C ${{matrix.BUILD_TYPE}} --output-on-failure --output-junit testreport.xml
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: ${{github.workspace}}/build/testreport.xml
