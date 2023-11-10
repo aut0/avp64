@@ -13,14 +13,14 @@ env:
 jobs:
   lint:
     name: lint
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -28,7 +28,12 @@ jobs:
       run: |
         sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
         sudo apt-get update -y -qq
-        sudo apt-get install libelf-dev libsdl2-dev libvncserver-dev libslirp-dev ninja-build clang-tidy
+        sudo apt-get install libelf-dev libsdl2-dev libvncserver-dev libslirp-dev clang-tidy
+
+    - name: Patch unicorn
+      run: |
+        git apply ${{github.workspace}}/patches/unicorn-*.patch
+      working-directory: ${{github.workspace}}/deps/ocx-qemu-arm/unicorn
 
     - name: Configure
       run: |
@@ -36,7 +41,9 @@ jobs:
           -B ${{github.workspace}}/build \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DAVP64_BUILD_TESTS=ON \
-          -DAVP64_LINTER=clang-tidy
+          -DOCX_QEMU_ARM_BUILD_TESTS=OFF \
+          -DAVP64_LINTER="clang-tidy" \
+          -DCMAKE_CXX_STANDARD=17
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
