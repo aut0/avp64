@@ -45,7 +45,7 @@ rm -rf "$BUILD_RELEASE/sw"
 AVP64_LINUX_BUILD="$AVP64_SW/linux/BUILD"
 AVP64_LINUX_KERNEL_IMAGE="$AVP64_LINUX_BUILD/buildroot/output/linux/images/Image"
 AVP64_LINUX_KERNEL_ELF="$AVP64_LINUX_BUILD/buildroot/output/linux/build/linux-4.19.4/vmlinux"
-AVP64_LINUX_DTB="$AVP64_LINUX_BUILD/buildroot/output/linux/images/avp64_linux.dtb"
+AVP64_LINUX_DTB_DIR="$AVP64_LINUX_BUILD/buildroot/output/dt"
 AVP64_LINUX_SDCARD="$AVP64_LINUX_BUILD/buildroot/output/linux/images/sdcard.img"
 AVP64_LINUX_BOOT="$AVP64_LINUX_BUILD/linux_bootcode/el3/boot.bin"
 
@@ -58,27 +58,24 @@ if [ -f "$AVP64_LINUX_KERNEL_IMAGE" ]; then
     ln -s -r  "$BUILD_DEBUG/sw/arm64/linux/Image-4.19.4" "$BUILD_RELEASE/sw/arm64/linux/Image-4.19.4"
     cp -rv "$AVP64_LINUX_KERNEL_ELF" "$BUILD_DEBUG/sw/arm64/linux/vmlinux-4.19.4"
     ln -s -r "$BUILD_DEBUG/sw/arm64/linux/vmlinux-4.19.4" "$BUILD_RELEASE/sw/arm64/linux/vmlinux-4.19.4"
-    cp -rv "$AVP64_LINUX_DTB" "$BUILD_DEBUG/sw/arm64/linux/linux.dtb"
-    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/linux.dtb" "$BUILD_RELEASE/sw/arm64/linux/linux.dtb"
     cp -rv "$AVP64_LINUX_SDCARD" "$BUILD_DEBUG/sw/arm64/linux/sdcard.img"
     chmod -w "$BUILD_DEBUG/sw/arm64/linux/sdcard.img"
     ln -s -r "$BUILD_DEBUG/sw/arm64/linux/sdcard.img" "$BUILD_RELEASE/sw/arm64/linux/sdcard.img"
     cp -rv "$AVP64_LINUX_BOOT" "$BUILD_DEBUG/sw/arm64/linux/boot.bin"
     ln -s -r "$BUILD_DEBUG/sw/arm64/linux/boot.bin" "$BUILD_RELEASE/sw/arm64/linux/boot.bin"
 
-    AVP64X2_LINUX_DTB="$AVP64_LINUX_BUILD/buildroot/output/linux/images/avp64_linux_dualcore.dtb"
-    mkdir -p "$BUILD_DEBUG/sw/arm64x2/linux"
-    mkdir -p "$BUILD_RELEASE/sw/arm64x2/linux"
-    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/Image-4.19.4" "$BUILD_DEBUG/sw/arm64x2/linux/Image-4.19.4"
-    ln -s -r "$BUILD_RELEASE/sw/arm64/linux/Image-4.19.4" "$BUILD_RELEASE/sw/arm64x2/linux/Image-4.19.4"
-    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/vmlinux-4.19.4" "$BUILD_DEBUG/sw/arm64x2/linux/vmlinux-4.19.4"
-    ln -s -r "$BUILD_RELEASE/sw/arm64/linux/vmlinux-4.19.4" "$BUILD_RELEASE/sw/arm64x2/linux/vmlinux-4.19.4"
-    cp -rv "$AVP64X2_LINUX_DTB" "$BUILD_DEBUG/sw/arm64x2/linux/smp2_linux.dtb"
-    cp -rv "$AVP64X2_LINUX_DTB" "$BUILD_RELEASE/sw/arm64x2/linux/smp2_linux.dtb"
-    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/sdcard.img" "$BUILD_DEBUG/sw/arm64x2/linux/sdcard.img"
-    ln -s -r "$BUILD_RELEASE/sw/arm64/linux/sdcard.img" "$BUILD_RELEASE/sw/arm64x2/linux/sdcard.img"
-    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/boot.bin" "$BUILD_DEBUG/sw/arm64x2/linux/boot.bin"
-    ln -s -r "$BUILD_RELEASE/sw/arm64/linux/boot.bin" "$BUILD_RELEASE/sw/arm64x2/linux/boot.bin"
+    cp -rv "$AVP64_LINUX_DTB_DIR/avp64x1.dtb" "$BUILD_DEBUG/sw/arm64/linux/"
+    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/avp64x1.dtb" "$BUILD_RELEASE/sw/arm64/linux/avp64x1.dtb"
+
+    cp -rv "$AVP64_LINUX_DTB_DIR/avp64x2.dtb" "$BUILD_DEBUG/sw/arm64/linux/"
+    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/avp64x2.dtb" "$BUILD_RELEASE/sw/arm64/linux/avp64x2.dtb"
+
+    cp -rv "$AVP64_LINUX_DTB_DIR/avp64x4.dtb" "$BUILD_DEBUG/sw/arm64/linux/"
+    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/avp64x4.dtb" "$BUILD_RELEASE/sw/arm64/linux/avp64x4.dtb"
+
+    cp -rv "$AVP64_LINUX_DTB_DIR/avp64x8.dtb" "$BUILD_DEBUG/sw/arm64/linux/"
+    ln -s -r "$BUILD_DEBUG/sw/arm64/linux/avp64x8.dtb" "$BUILD_RELEASE/sw/arm64/linux/avp64x8.dtb"
+
 else
     echo "Linux kernel build not found at $AVP64_LINUX_BUILD"
 fi
