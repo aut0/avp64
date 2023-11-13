@@ -1,0 +1,7 @@
+{
+    "cmake.buildDirectory": "${workspaceFolder}/build/${variant:buildType}/build",
+    "cmake.installPrefix": "${workspaceFolder}/build/${variant:buildType}",
+    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+    "cmake.generator": "Unix Makefiles",
+    "cmake.exportCompileCommandsFile": true
+}
