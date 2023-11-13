@@ -150,6 +150,12 @@ The VCML documentation can be found
 
 ----
 
+## Target-Software-Debugging Tutorial
+
+You can find a tutorial that shows how to debug the executed target software using Visual Studio Code [here](vscode/).
+
+----
+
 ## License
 
 This project is licensed under the MIT license - see the

@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug AVP64",
+            "program": "${workspaceFolder}/build/debug/bin/avp64",
+            "args": [
+                "-f", "config/arm64_linux_4_19_4-x1.cfg", // the config file that should be used by avp64
+                "-c", "system.arm.gdb_wait=true" // wait until the target software debugger is connected
+            ],
+            "cwd": "${workspaceFolder}/build/debug",
+            "env": {
+                "LD_LIBRARY_PATH": "${workspaceFolder}/build/debug/lib"
+            },
+            "postRunCommands": [
+                "process handle -n true -p true -s false SIGSEGV"
+            ]
+        },
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Debug Target SW",
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "target": ":52100", // gdb port of avp64 that should be used (default value for cpu0)
+            "remote": true,
+            "printCalls": true,
+            "cwd": "${workspaceFolder}/build/debug/sw/arm64/linux/linux-4.19.4",
+            "valuesFormatting": "parseText",
+            "executable": "${workspaceFolder}/build/debug/sw/arm64/linux/vmlinux-4.19.4", // elf file of the software that is executed
+            "pathSubstitutions": {
+                "/app/build/buildroot/output/linux/build/linux-4.19.4": "${workspaceFolder}/build/debug/sw/arm64/linux/linux-4.19.4"
+            },
+            "stopAtConnect": true
+        }
+    ]
+}
