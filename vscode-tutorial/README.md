@@ -3,7 +3,7 @@
 ## Setup
 
 1. Install the needed tools
-    
+
     Ubuntu:
 
     ```bash
@@ -17,6 +17,7 @@
     ```bash
     <avp64 root>/vscode/setup.bash
     ```
+
 1. Install the VSCode extensions
 
     * In the end of the setup script, VSCode opens
@@ -36,7 +37,6 @@
     * The project is configured to be installed at `<avp64 root>/build/{debug|release}/`. (This setting can be changed in the [\<avp64 root\>/.vscode/settings.json](../.vscode/settings.json) file)
     * To install the project, press <kbd>F1</kbd> and type _CMake: Install_
 
-
 ## Start AVP64
 
 1. Open the Debug view (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>)
@@ -47,17 +47,19 @@
     Sample output:
 
     ```text
-            SystemC 2.3.3-MachineWare GmbH --- Nov 10 2023 18:03:26
+            SystemC 2.3.3-MachineWare GmbH --- Jul 26 2024 14:01:36
             Copyright (c) 1996-2018 by all Contributors,
             ALL RIGHTS RESERVED
     [I 0.000000000] system.term0: listening on port 52010
     [I 0.000000000] system.term1: listening on port 52011
     [I 0.000000000] system.term2: listening on port 52012
     [I 0.000000000] system.term3: listening on port 52013
-    [D 0.001000000] created slirp ipv4 network 10.0.0.0/24
-    [D 0.001000000] created slirp ipv6 network fec0::
-    [I 0.132000000] system: starting infinite simulation using 100 us quantum
-    [I 0.138000000] system.arm0: waiting for GDB connection on port 52100
+    [D 0.000000000] created slirp ipv4 network 10.0.0.0/24
+    [D 0.000000000] created slirp ipv6 network fec0::
+    [I 0.000000000] system: starting infinite simulation using 100 us quantum
+    [I 0.000000000] system.cpu: waiting for GDB connection on port 5555
+    [I 0.000000000] system.cpu.arm0: listening for GDB connection on port 52100
+    [I 0.000000000] system.cpu.arm1: listening for GDB connection on port 52101
     ```
 
 1. Connect the debugger by going back to the Debug view (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>)

@@ -23,39 +23,30 @@ while [ -h "$SOURCE" ]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
-LINUX_SW=https://github.com/aut0/avp64_sw/releases/latest/download/linux.tar.gz
-LINUX_SRC=https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.19.4.tar.gz
+LINUX_SW=https://github.com/aut0/avp64_sw/releases/download/v2024.07.30/buildroot_6_5_6.tar.gz
+LINUX_SRC=https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/linux-6.5.6.tar.gz
 LINUX_ARCHIVE="${LINUX_SRC##*/}"
 LINUX_DIRNAME="${LINUX_ARCHIVE%.tar.gz}"
 ROOT_DIR=${DIR}/..
 VSCODE_DIR=${ROOT_DIR}/.vscode
 EXTENSIONS=(llvm-vs-code-extensions.vscode-clangd twxs.cmake ms-vscode.cmake-tools vadimcn.vscode-lldb webfreak.debug)
 
-# fetch linux
+# fetch sw
 wget ${LINUX_SW}
 tar -xvf linux.tar.gz
 rm linux.tar.gz
-
-# copy sw folder
-mkdir -p ${ROOT_DIR}/build/{debug,release}
-mv sw ${ROOT_DIR}/build/debug
-ln -s -r ${ROOT_DIR}/build/debug/sw ${ROOT_DIR}/build/release/sw
+mv sw "${ROOT_DIR}/"
 
 # get linux sources
 wget ${LINUX_SRC}
 tar -xf ${LINUX_ARCHIVE}
 rm ${LINUX_ARCHIVE}
-mv ${LINUX_DIRNAME} ${ROOT_DIR}/build/release/sw/arm64/linux/
+mv ${LINUX_DIRNAME} "${ROOT_DIR}/linux-src/"
 
 # setup .vscode folder
-mkdir ${ROOT_DIR}/.vscode
-cp ${DIR}/settings.json ${VSCODE_DIR}/
-cp ${DIR}/launch.json ${VSCODE_DIR}/
-
-# apply patches
-pushd ${ROOT_DIR}/deps/ocx-qemu-arm/unicorn > /dev/null
-git apply ${ROOT_DIR}/patches/unicorn-*.patch
-popd > /dev/null
+mkdir "${ROOT_DIR}/.vscode"
+cp "${DIR}/settings.json" "${VSCODE_DIR}/"
+cp "${DIR}/launch.json" "${VSCODE_DIR}/"
 
 # open VS Code
 code ${ROOT_DIR}

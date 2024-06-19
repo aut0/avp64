@@ -8,3 +8,5 @@ gdbscript*
 .vscode
 .cache
 compile_commands.json
+linux-src/
+

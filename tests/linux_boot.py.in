@@ -2,7 +2,7 @@
 
 ##############################################################################
 #                                                                            #
-# Copyright 2023 Nils Bosbach, Jan Henrik Weinstock                          #
+# Copyright 2024 Nils Bosbach, Jan Henrik Weinstock                          #
 #                                                                            #
 # This software is licensed under the MIT license.                           #
 # A copy of the license can be found in the LICENSE file at the root         #
@@ -14,14 +14,14 @@ import sys
 import pexpect
 import os
 
-sim='$<TARGET_FILE:avp64>'
+sim='$<TARGET_FILE:avp64-runner>'
 cfg='@config@'
 
-cmdline = f'{sim} -f {cfg}';
+cmdline = f'{sim} -f {cfg}'
 
 print(cmdline)
 
-p = pexpect.spawn(cmdline, logfile=sys.stdout, timeout=None, encoding='utf-8', env=os.environ | {'LD_LIBRARY_PATH': '@ld_library_path@'})
+p = pexpect.spawn(cmdline, logfile=sys.stdout, timeout=None, encoding='utf-8')
 
 # did all secondary cpus boot?
 for cpu in range(1, @nrcpu@):
@@ -33,13 +33,14 @@ p.expect('1000a000.uart: ttyAMA1 at MMIO 0x1000a000')
 p.expect('1000b000.uart: ttyAMA2 at MMIO 0x1000b000')
 p.expect('1000c000.uart: ttyAMA3 at MMIO 0x1000c000')
 p.expect('timeriomem_rng 10007000.rng: 32bits')
-p.expect('spi_oc_tiny 10147000.spi')
-p.expect('mmc0: SDHCI controller on f_sdh30')
+p.expect('spi_oc_tiny 10020000.spi')
+p.expect('smsc911x 10010000.lan9118 eth0')
+p.expect('rtc-ds1742 1000e000.rtc: registered as rtc0')
+p.expect('mmc0: SDHCI controller on 1000d000.mmc')
 p.expect('mmc0: new SDHC card at address 0000')
-p.expect('ethoc 1000d000.ethernet eth0: Link is Up')
 
 # did we get a login prompt?
-p.expect('avp64-dom0 login:')
+p.expect('avp64 login:')
 p.sendline('root')
 
 # can we run commands?

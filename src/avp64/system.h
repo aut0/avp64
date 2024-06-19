@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2020 Lukas Jünger                                                *
+ * Copyright 2024 Lukas Jünger, Nils Bosbach                                  *
  *                                                                            *
  * This software is licensed under the MIT license found in the               *
  * LICENSE file at the root directory of this source tree.                    *
@@ -11,26 +11,69 @@
 #define AVP64_SYSTEM_H
 
 #include "vcml.h"
-#include "avp64/arm64_cpu.h"
+#include "avp64.h"
 
 namespace avp64 {
+
+enum : mwr::u64 {
+    RAM_LO = 0x00000000,
+    RAM_HI = RAM_LO + 0x10000000 - 1,
+
+    HWRNG_LO = 0x10007000,
+    HWRNG_HI = HWRNG_LO + 0x1000 - 1,
+
+    SIMDEV_LO = 0x10008000,
+    SIMDEV_HI = SIMDEV_LO + 0x1000 - 1,
+
+    UART0_LO = 0x10009000,
+    UART0_HI = UART0_LO + 0x1000 - 1,
+
+    UART1_LO = 0x1000a000,
+    UART1_HI = UART1_LO + 0x1000 - 1,
+
+    UART2_LO = 0x1000b000,
+    UART2_HI = UART2_LO + 0x1000 - 1,
+
+    UART3_LO = 0x1000c000,
+    UART3_HI = UART3_LO + 0x1000 - 1,
+
+    SDHCI_LO = 0x1000d000,
+    SDHCI_HI = SDHCI_LO + 0x1000 - 1,
+
+    RTC_LO = 0x1000e000,
+    RTC_HI = RTC_LO + 0x1000 - 1,
+
+    GPIO_LO = 0x1000f000,
+    GPIO_HI = GPIO_LO + 0x1000 - 1,
+
+    LAN0_LO = 0x10010000,
+    LAN0_HI = LAN0_LO + 0x10000 - 1,
+
+    SPI_LO = 0x10020000,
+    SPI_HI = SPI_LO + 0x1000 - 1,
+};
+
+enum : mwr::u64 {
+    SPI_UART0 = 5,
+    SPI_UART1 = 6,
+    SPI_UART2 = 7,
+    SPI_UART3 = 8,
+    SPI_LAN0 = 9,
+    SPI_SDHCI = 10,
+    SPI_SPI = 11,
+};
 
 class system : public vcml::system
 {
 public:
     // properties
-    vcml::property<unsigned int> nrcpu;
-
     vcml::property<vcml::range> addr_ram;
-    vcml::property<vcml::range> addr_gic_cpuif;
-    vcml::property<vcml::range> addr_gic_distif;
-    vcml::property<vcml::range> addr_gic_vifctrl;
-    vcml::property<vcml::range> addr_gic_vcpuif;
     vcml::property<vcml::range> addr_uart0;
     vcml::property<vcml::range> addr_uart1;
     vcml::property<vcml::range> addr_uart2;
     vcml::property<vcml::range> addr_uart3;
-    vcml::property<vcml::range> addr_ethoc;
+    vcml::property<vcml::range> addr_rtc;
+    vcml::property<vcml::range> addr_lan0;
     vcml::property<vcml::range> addr_sdhci;
     vcml::property<vcml::range> addr_simdev;
     vcml::property<vcml::range> addr_hwrng;
@@ -41,12 +84,8 @@ public:
     vcml::property<int> irq_uart1;
     vcml::property<int> irq_uart2;
     vcml::property<int> irq_uart3;
-    vcml::property<int> irq_ethoc;
+    vcml::property<int> irq_lan0;
     vcml::property<int> irq_sdhci;
-    vcml::property<int> irq_gt_hyp;
-    vcml::property<int> irq_gt_virt;
-    vcml::property<int> irq_gt_ns;
-    vcml::property<int> irq_gt_s;
     vcml::property<int> irq_spi;
 
     system(const sc_core::sc_module_name& name);
@@ -58,15 +97,15 @@ public:
 
     virtual void end_of_elaboration() override;
 
-private:
-    std::vector<std::shared_ptr<arm64_cpu>> m_cpus;
+    const char* version() const override;
 
-    vcml::generic::clock m_clock;
+private:
+    vcml::generic::clock m_clock_cpu;
     vcml::generic::reset m_reset;
+    vcml::meta::throttle m_throttle;
 
     vcml::generic::bus m_bus;
     vcml::generic::memory m_ram;
-    vcml::arm::gic400 m_gic;
     vcml::serial::pl011 m_uart0;
     vcml::serial::pl011 m_uart1;
     vcml::serial::pl011 m_uart2;
@@ -75,7 +114,7 @@ private:
     vcml::serial::terminal m_term1;
     vcml::serial::terminal m_term2;
     vcml::serial::terminal m_term3;
-    vcml::ethernet::ethoc m_ethoc;
+    vcml::ethernet::lan9118 m_lan0;
     vcml::ethernet::network m_net;
     vcml::ethernet::bridge m_bridge;
     vcml::sd::card m_sdcard;
@@ -85,6 +124,9 @@ private:
     vcml::spi::ocspi m_spi;
     vcml::generic::gpio m_gpio;
     vcml::spi::max31855 m_max31855;
+    vcml::timers::rtc1742 m_rtc;
+
+    cpu m_cpu;
 
     void construct_system_arm64();
 };

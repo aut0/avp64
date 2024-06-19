@@ -1,113 +1,83 @@
 # An ARMv8 Virtual Platform (AVP64)
 
 [![Build Status](https://github.com/aut0/avp64/workflows/cmake/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/cmake.yml)
+[![Nightly](https://github.com/aut0/avp64/workflows/nightly/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/nightly.yml)
 [![Lint Status](https://github.com/aut0/avp64/workflows/lint/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/lint.yml)
 [![Code Style](https://github.com/aut0/avp64/workflows/style/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/style.yml)
 
 This repository contains an ARMv8 multicore virtual platform.
-It was built at the Institute for Communication Technologies and Embedded Systems at RTWH Aachen University.
-The following target software configurations were tested (see [config](config/)):
+It was built at the [Institute for Communication Technologies and Embedded Systems at RTWH Aachen University](https://www.ice.rwth-aachen.de/).
+The following target software configurations were tested (see [avp64-sw](https://github.com/aut0/avp64_sw)):
 
 - CoreMark
 - Dhrystone
 - Whetstone
 - STREAM
-- Linux single- and dual-core
+- Linux single-, dual-, quad-, octa-core
 - Xen single- and dual-core
 
 ----
 
 ## Build & Installation
 
-In order to build `avp64`, you need a working installation of `vcml` and its components.
-For that please follow the installation guideline of `vcml` which can be found [here](https://github.com/machineware-gmbh/vcml).
-
 1. Clone git repository including submodules:
 
     ```bash
-    git clone --recurse-submodules https://github.com/aut0/avp64
+    git clone --recursive https://github.com/aut0/avp64
     ```
 
-2. Chose directories for building and deployment:
+1. Chose directories for building and deployment:
 
-    ```bash
+    ```text
     <source-dir>  location of your repo copy,     e.g. /home/lukas/avp64
     <build-dir>   location to store object files, e.g. /home/lukas/avp64/BUILD
     <install-dir> output directory for binaries,  e.g. /opt/avp64
     ```
 
-3. Patch submodules: A patch can be applied to patch the `unicorn` submodule.
+1. Configure and build the project using `cmake`. During configuration you must
+   state whether or not to build the runner (vp executable) and the unit tests:
 
-    - [unicorn-fix-breakpoint.patch](./patches/unicorn-fix-breakpoint.patch): This patch fixes the breakpoint behavior of the VP.
-    Without this patch, the VP executes the instruction on a breakpoint hit and stops after the execution.
-    The patch stops the VP before the instruction is executed.
-    To apply the patch, execute:
-
-    ```bash
-    (cd <source-dir>/deps/ocx-qemu-arm/unicorn && git apply <source-dir>/patches/unicorn-fix-breakpoint.patch)
-    ```
-
-4. Configure and build the project using `cmake`. During configuration you must
-   state whether or not to build the unit tests:
-
+     - `-DAVP64_BUILD_RUNNET=[ON|OFF]`: build runner (default: `ON`)
      - `-DAVP64_BUILD_TESTS=[ON|OFF]`: build unit tests (default: `OFF`)
 
-   Ensure that the environment variable `SYSTEMC_HOME` is correctly set.
-   Release and debug build configurations are controlled via the regular
-   parameters:
+   Release and debug build configurations are controlled via the regular cmake parameters:
 
    ```bash
    mkdir -p <build-dir>
    cd <build-dir>
    cmake -DCMAKE_INSTALL_PREFIX=<install-dir> -DCMAKE_BUILD_TYPE=RELEASE <source-dir>
-   make -j 4
+   make -j `nproc`
    sudo make install
    ```
 
-   If building with `-DAVP64_BUILD_TESTS=ON` you can run all unit tests using
-   `make test` within `<build-dir>`.
+   If building with `-DAVP64_BUILD_TESTS=ON` you can run all unit tests using `make test` within `<build-dir>`.
 
-5. After installation, the following new files should be present:
+1. After installation, the following new files should be present:
 
     ```bash
-    <install-dir>/bin/avp64                # executable program
-    <install-dir>/config/                  # configuration files
-    <install-dir>/lib/libocx-qemu-arm.so 
+    <install-dir>/bin/avp64-runner        # executable program
+    <install-dir>/lib/libocx-qemu-arm.so
     ```
 
-6. If the library `libocx-qemu-arm.so` cannot be found, add the lib folder to `LD_LIBRARY_PATH`:
+1. If the library `libocx-qemu-arm.so` cannot be found, add the lib folder to `LD_LIBRARY_PATH`:
 
     ```bash
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/avp64/lib/
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<install-dir>/lib/
     ```
 
 ----
 
 ## Run
 
-Run the platform using a [config](config/) file:
+Run the platform using a config file from the [sw](sw/) folder:
 
 ```bash
-<install-dir>/bin/avp64 -f <install-dir>/config/<config-file>
+<install-dir>/bin/avp64-runner -f <install-dir>/sw/<config-file>
 ```
 
 For more details on run parameters please look [here](https://github.com/machineware-gmbh/vcml).  
 
-
 To stop the platform, press <kbd>Ctrl</kbd> + <kbd>a</kbd> + <kbd>x</kbd> .
-
-To install tested software that belongs to the provided [configuration files](config/), follow the installation guide of [avp64_sw](https://github.com/aut0/avp64_sw).
-After the installation, set the environment variable `AVP64_SW` to the path of the `avp64_sw` repository:
-
-```bash
-export AVP64_SW=<software-repository>
-```
-
-Execute the setup script, which is in `avp64/`, to copy and integrate the installed software:  
-
-```bash
-./setup.sh
-```
 
 ----
 
@@ -118,7 +88,6 @@ that like to make changes on `avp64` and want to track down bugs.
 Note that these builds operate significantly slower than optimized release
 builds and should therefore not be used for VPs that are used productively,
 e.g. for target software development.
-Ensure that the environment variable `SYSTEMC_HOME` is correctly set.  
 To maintain both builds from a single source repository, try the following:
 
 ```bash
@@ -143,16 +112,18 @@ Afterward, you can find the builds in:
 
 ----
 
+## Tutorial
+
+A baisc tutorial that shows how to debug the executed target software using [Visual Studio Code](https://code.visualstudio.com/) can be found in the [vscode-tutorial](./vscode-tutorial/) folder.
+Run the [vscode-tutorial/setup.bash](./vscode-tutorial/setup.bash) script to download the Linux image and Linux Kernel Source files and setup Visual Studio Code.
+See the corresponding [Readme](./vscode-tutorial/README.md) for further details.
+
+----
+
 ## Documentation
 
 The VCML documentation can be found
 [here](https://github.com/machineware-gmbh/vcml).
-
-----
-
-## Target-Software-Debugging Tutorial
-
-You can find a tutorial that shows how to debug the executed target software using Visual Studio Code [here](vscode/).
 
 ----
 

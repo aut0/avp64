@@ -1,6 +1,3 @@
-[submodule "deps/ocx-qemu-arm"]
-	path = deps/ocx-qemu-arm
-	url = https://github.com/snps-virtualprototyping/ocx-qemu-arm
-[submodule "deps/vcml"]
-	path = deps/vcml
-	url = https://github.com/machineware-gmbh/vcml
+[submodule "cmake"]
+	path = cmake
+	url = https://github.com/machineware-gmbh/cmake.git

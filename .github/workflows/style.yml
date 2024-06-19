@@ -16,4 +16,4 @@ jobs:
         submodules: 'recursive'
 
     - name: Check code style
-      run: deps/vcml/utils/format -n
+      run: ./utils/format -n

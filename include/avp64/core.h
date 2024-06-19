@@ -1,28 +1,38 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2020 Lukas Jünger                                                *
+ * Copyright 2024 Lukas Jünger, Nils Bosbach                                  *
  *                                                                            *
  * This software is licensed under the MIT license found in the               *
  * LICENSE file at the root directory of this source tree.                    *
  *                                                                            *
  ******************************************************************************/
 
-#ifndef AVP_ARM64_CPU_H
-#define AVP_ARM64_CPU_H
+#ifndef AVP64_CORE_H
+#define AVP64_CORE_H
 
 #include "vcml.h"
 #include "ocx/ocx.h"
+
 #include <signal.h>
 
 namespace avp64 {
 
-class arm64_cpu;
+class core;
 
 class memory_protector
 {
 private:
+    struct page_data {
+        core* c;
+        vcml::u64 page_addr;
+        vcml::u64 page_size;
+        bool locked;
+    };
+    std::map<vcml::u64, struct page_data> m_protected_pages;
+    struct sigaction m_sa_orig;
+
     memory_protector();
-    std::map<vcml::u64, std::pair<arm64_cpu*, vcml::u64>> m_protected_pages;
+    void segfault_handler_int(int sig, siginfo_t* si, void*);
 
 public:
     static memory_protector& get_instance() {
@@ -30,11 +40,20 @@ public:
         return inst;
     }
 
-    static void segfault_handler(int sig, siginfo_t* si, void*);
-    void register_page(arm64_cpu* cpu, vcml::u64 page_addr, void* host_addr);
-    void notify_page(void* access_addr);
     memory_protector(const memory_protector&) = delete;
     void operator=(memory_protector const&) = delete;
+    virtual ~memory_protector();
+
+    static void segfault_handler(int sig, siginfo_t* si, void*);
+    void register_page(core* cpu, vcml::u64 page_addr, void* host_addr);
+    bool notify_page(void* access_addr);
+};
+
+enum : size_t {
+    INTERRUPT_IRQ = 0,
+    INTERRUPT_FIQ = 1,
+    INTERRUPT_VIRQ = 2,
+    INTERRUPT_VFIQ = 3,
 };
 
 enum arm_generic_timer_type {
@@ -46,7 +65,7 @@ enum arm_generic_timer_type {
 
 typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
 
-class arm64_cpu : public vcml::processor, public ocx::env
+class core : public vcml::processor, private ocx::env
 {
 private:
     ocx::core* m_core;
@@ -56,7 +75,9 @@ private:
     vcml::u64 m_total_cycles;
     void* m_ocx_handle;
     create_instance_t m_create_instance_func;
-    std::vector<std::shared_ptr<arm64_cpu>> m_syscall_subscriber;
+    std::vector<std::shared_ptr<core>> m_syscall_subscriber;
+    std::unordered_set<vcml::u64> m_update_mem;
+    std::list<std::pair<int, std::shared_ptr<void>>> m_syscalls;
 
     void timer_irq_trigger(int timer_id);
     static void segfault_handler(int sig, siginfo_t* si, void* unused);
@@ -85,6 +106,8 @@ public:
     vcml::gpio_initiator_array timer_irq_out;
     std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
+    void log_timing_info() const;
+
     virtual ocx::u8* get_page_ptr_r(ocx::u64 page_paddr) override;
     virtual ocx::u8* get_page_ptr_w(ocx::u64 page_paddr) override;
 
@@ -110,7 +133,7 @@ public:
     virtual bool handle_watchpoint(ocx::u64 vaddr, ocx::u64 size,
                                    ocx::u64 data, bool iswr) override;
 
-    void inject_cpu(arm64_cpu* cpu);
+    void inject_cpu(core* cpu);
 
     virtual vcml::u64 cycle_count() const override;
     virtual void update_local_time(sc_core::sc_time& local_time,
@@ -119,17 +142,18 @@ public:
                              std::string& code) override;
     virtual vcml::u64 program_counter() override;
     virtual vcml::u64 stack_pointer() override;
-    virtual vcml::u64 get_core_id();
+    virtual vcml::u64 core_id() override;
 
     void handle_syscall(int callno, std::shared_ptr<void> arg);
-    void add_syscall_subscriber(const std::shared_ptr<arm64_cpu>& cpu);
+    void add_syscall_subscriber(const std::shared_ptr<core>& cpu);
     vcml::u64 get_page_size();
 
-    arm64_cpu() = delete;
-    arm64_cpu(const arm64_cpu&) = delete;
-    explicit arm64_cpu(const sc_core::sc_module_name& name, vcml::u64 procid,
-                       vcml::u64 coreid);
-    virtual ~arm64_cpu();
+    core() = delete;
+    core(const core&) = delete;
+    explicit core(const sc_core::sc_module_name& name, vcml::u64 procid,
+                  vcml::u64 coreid);
+    virtual ~core() override;
+    virtual const char* kind() const override { return "avp64::core"; }
 };
 
 } // namespace avp64
