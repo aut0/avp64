@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2020 Lukas Jünger                                                *
+ * Copyright 2024 Lukas Jünger, Nils Bosbach                                  *
  *                                                                            *
  * This software is licensed under the MIT license found in the               *
  * LICENSE file at the root directory of this source tree.                    *
@@ -8,12 +8,12 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-#include "avp64/arm64_cpu.h"
+#include "avp64/core.h"
 
-class arm64_cpu_test : public avp64::arm64_cpu
+class arm64_core_test : public avp64::core
 {
 public:
-    arm64_cpu_test(): avp64::arm64_cpu("test_cpu", 0, 1){};
+    arm64_core_test(): avp64::core("test_core", 0, 1){};
     bool read_reg(id_t regno, void* buf, size_t len) {
         return read_reg_dbg(regno, buf, len);
     }
@@ -23,13 +23,11 @@ public:
 };
 
 TEST(Arm64CpuTest, simple) {
-    arm64_cpu_test test_cpu;
+    arm64_core_test test_cpu;
 
     mwr::hz_t defclk = 1 * mwr::kHz;
     vcml::generic::clock clock("clk", defclk);
     vcml::generic::reset reset("rst");
-    sc_core::sc_signal<bool> irq0("irq0");
-    sc_core::sc_signal<bool> irq1("irq1");
 
     vcml::generic::memory imem("imem", 0x1000);
     vcml::generic::memory dmem("dmem", 0x10000);

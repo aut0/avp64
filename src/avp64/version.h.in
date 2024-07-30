@@ -1,0 +1,25 @@
+/******************************************************************************
+ *                                                                            *
+ * Copyright 2024 Lukas Jünger, Nils Bosbach                                  *
+ *                                                                            *
+ * This software is licensed under the MIT license found in the               *
+ * LICENSE file at the root directory of this source tree.                    *
+ *                                                                            *
+ ******************************************************************************/
+
+#ifndef AVP64_VERSION_H
+#define AVP64_VERSION_H
+
+#define AVP64_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define AVP64_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define AVP64_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+#define AVP64_GIT_REV       "@AVP64_GIT_REV@"
+#define AVP64_GIT_REV_SHORT "@AVP64_GIT_REV_SHORT@"
+
+#define AVP64_VERSION        @AVP64_VERSION_INT@
+#define AVP64_VERSION_STRING "@AVP64_VERSION_STRING@"
+
+#include <mwr.h>
+
+#endif

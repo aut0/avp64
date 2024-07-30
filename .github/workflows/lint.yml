@@ -28,22 +28,16 @@ jobs:
       run: |
         sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
         sudo apt-get update -y -qq
-        sudo apt-get install libelf-dev libsdl2-dev libvncserver-dev libslirp-dev clang-tidy
-
-    - name: Patch unicorn
-      run: |
-        git apply ${{github.workspace}}/patches/unicorn-*.patch
-      working-directory: ${{github.workspace}}/deps/ocx-qemu-arm/unicorn
+        sudo apt-get install build-essential libelf-dev libsdl2-dev libvncserver-dev libslirp-dev clang-tidy
 
     - name: Configure
       run: |
         cmake \
           -B ${{github.workspace}}/build \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DAVP64_BUILD_TESTS=ON \
-          -DOCX_QEMU_ARM_BUILD_TESTS=OFF \
-          -DAVP64_LINTER="clang-tidy" \
-          -DCMAKE_CXX_STANDARD=17
+          -DAVP64_BUILD_TESTS=OFF \
+          -DAVP64_BUILD_RUNNER=ON \
+          -DAVP64_LINTER="clang-tidy"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
