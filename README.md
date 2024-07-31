@@ -37,7 +37,7 @@ The following target software configurations were tested (see [avp64-sw](https:/
 1. Configure and build the project using `cmake`. During configuration you must
    state whether or not to build the runner (vp executable) and the unit tests:
 
-     - `-DAVP64_BUILD_RUNNET=[ON|OFF]`: build runner (default: `ON`)
+     - `-DAVP64_BUILD_RUNNER=[ON|OFF]`: build runner (default: `ON`)
      - `-DAVP64_BUILD_TESTS=[ON|OFF]`: build unit tests (default: `OFF`)
 
    Release and debug build configurations are controlled via the regular cmake parameters:
@@ -91,7 +91,7 @@ e.g. for target software development.
 To maintain both builds from a single source repository, try the following:
 
 ```bash
-git clone --recurse-submodules https://github.com/aut0/avp64 && cd avp64  
+git clone --recurse-submodules https://github.com/aut0/avp64 && cd avp64
 
 home=$PWD
 for type in "DEBUG" "RELEASE"; do
