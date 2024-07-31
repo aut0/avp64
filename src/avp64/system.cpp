@@ -28,6 +28,8 @@ void system::construct_system_arm64() {
     clk_bind(m_clock_cpu, "clk", m_gpio, "clk");
     clk_bind(m_clock_cpu, "clk", m_rtc, "clk");
     clk_bind(m_clock_cpu, "clk", m_cpu, "clk");
+    clk_bind(m_clock_cpu, "clk", m_can, "clk");
+    clk_bind(m_clock_cpu, "clk", m_can_msgram, "clk");
 
     gpio_bind(m_reset, "rst", m_bus, "rst");
     gpio_bind(m_reset, "rst", m_ram, "rst");
@@ -44,6 +46,8 @@ void system::construct_system_arm64() {
     gpio_bind(m_reset, "rst", m_gpio, "rst");
     gpio_bind(m_reset, "rst", m_rtc, "rst");
     gpio_bind(m_reset, "rst", m_cpu, "rst");
+    gpio_bind(m_reset, "rst", m_can, "rst");
+    gpio_bind(m_reset, "rst", m_can_msgram, "rst");
 
     tlm_bind(m_bus, m_cpu, "bus");
     tlm_bind(m_bus, m_ram, "in", addr_ram);
@@ -59,6 +63,9 @@ void system::construct_system_arm64() {
     tlm_bind(m_bus, m_spi, "in", addr_spi);
     tlm_bind(m_bus, m_gpio, "in", addr_gpio);
     tlm_bind(m_bus, m_rtc, "in", addr_rtc);
+    tlm_bind(m_bus, m_can, "in", addr_can);
+    tlm_bind(m_bus, m_can, "dma");
+    tlm_bind(m_bus, m_can_msgram, "in", addr_can_msgram);
 
     // Connect network to eth
     eth_bind(m_net, "eth_tx", 0, m_lan0, "eth_rx");
@@ -84,6 +91,10 @@ void system::construct_system_arm64() {
     m_max31855.bind(m_gpio.gpio_out[0],
                     false); // active low CS forced by Linux kernel
 
+    // Connect CAN device to CAN controller
+    m_canbus.connect(m_can);
+    m_canbus.connect(m_canbridge);
+
     // IRQs
     gpio_bind(m_uart0, "irq", m_cpu, "spi", irq_uart0);
     gpio_bind(m_uart1, "irq", m_cpu, "spi", irq_uart1);
@@ -92,6 +103,8 @@ void system::construct_system_arm64() {
     gpio_bind(m_lan0, "irq", m_cpu, "spi", irq_lan0);
     gpio_bind(m_sdhci, "irq", m_cpu, "spi", irq_sdhci);
     gpio_bind(m_spi, "irq", m_cpu, "spi", irq_spi);
+    gpio_bind(m_can, "irq0", m_cpu, "spi", irq_can0);
+    gpio_bind(m_can, "irq1", m_cpu, "spi", irq_can1);
 }
 
 system::system(const sc_core::sc_module_name& nm):
@@ -108,6 +121,8 @@ system::system(const sc_core::sc_module_name& nm):
     addr_hwrng("addr_hwrng", { HWRNG_LO, HWRNG_HI }),
     addr_spi("addr_spi", { SPI_LO, SPI_HI }),
     addr_gpio("addr_gpio", { GPIO_LO, GPIO_HI }),
+    addr_can("addr_can", { CAN_LO, CAN_HI }),
+    addr_can_msgram("addr_can_msgram", { CAN_MSGRAM_LO, CAN_MSGRAM_HI }),
     irq_uart0("irq_uart0", SPI_UART0),
     irq_uart1("irq_uart1", SPI_UART1),
     irq_uart2("irq_uart2", SPI_UART2),
@@ -115,6 +130,8 @@ system::system(const sc_core::sc_module_name& nm):
     irq_lan0("irq_lan0", SPI_LAN0),
     irq_sdhci("irq_sdhci", SPI_SDHCI),
     irq_spi("irq_spi", SPI_SPI),
+    irq_can0("irq_can0", CAN_0),
+    irq_can1("irq_can1", CAN_1),
     m_clock_cpu("clock_cpu", 1 * mwr::GHz),
     m_reset("reset"),
     m_throttle("throttle"),
@@ -139,6 +156,10 @@ system::system(const sc_core::sc_module_name& nm):
     m_gpio("gpio"),
     m_max31855("max31855"),
     m_rtc("rtc"),
+    m_canbus("canbus"),
+    m_can_msgram("can_msgram", addr_can_msgram.get().length()),
+    m_can("can", addr_can_msgram.get()),
+    m_canbridge("canbridge"),
     m_cpu("cpu") {
     construct_system_arm64();
 }
