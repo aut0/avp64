@@ -1,9 +1,9 @@
 # An ARMv8 Virtual Platform (AVP64)
 
-[![Build Status](https://github.com/aut0/avp64/workflows/cmake/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/cmake.yml)
-[![Nightly](https://github.com/aut0/avp64/workflows/nightly/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/nightly.yml)
-[![Lint Status](https://github.com/aut0/avp64/workflows/lint/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/lint.yml)
-[![Code Style](https://github.com/aut0/avp64/workflows/style/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/style.yml)
+[![cmake](https://github.com/aut0/avp64/actions/workflows/cmake.yml/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/cmake.yml)
+[![nightly](https://github.com/aut0/avp64/actions/workflows/nightly.yml/badge.svg?event=schedule)](https://github.com/aut0/avp64/actions/workflows/nightly.yml)
+[![lint](https://github.com/aut0/avp64/actions/workflows/lint.yml/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/lint.yml)
+[![style](https://github.com/aut0/avp64/actions/workflows/style.yml/badge.svg?event=push)](https://github.com/aut0/avp64/actions/workflows/style.yml)
 
 This repository contains an ARMv8 multicore virtual platform.
 It was built at the [Institute for Communication Technologies and Embedded Systems at RTWH Aachen University](https://www.ice.rwth-aachen.de/).
