@@ -51,6 +51,12 @@ enum : mwr::u64 {
 
     SPI_LO = 0x10020000,
     SPI_HI = SPI_LO + 0x1000 - 1,
+
+    CAN_LO = 0x10021000,
+    CAN_HI = CAN_LO + 0x1000 - 1,
+
+    CAN_MSGRAM_LO = 0x10022000,
+    CAN_MSGRAM_HI = CAN_MSGRAM_LO + 0x4000 - 1,
 };
 
 enum : mwr::u64 {
@@ -61,6 +67,8 @@ enum : mwr::u64 {
     SPI_LAN0 = 9,
     SPI_SDHCI = 10,
     SPI_SPI = 11,
+    CAN_0 = 14,
+    CAN_1 = 15,
 };
 
 class system : public vcml::system
@@ -79,6 +87,8 @@ public:
     vcml::property<vcml::range> addr_hwrng;
     vcml::property<vcml::range> addr_spi;
     vcml::property<vcml::range> addr_gpio;
+    vcml::property<vcml::range> addr_can;
+    vcml::property<vcml::range> addr_can_msgram;
 
     vcml::property<int> irq_uart0;
     vcml::property<int> irq_uart1;
@@ -87,6 +97,8 @@ public:
     vcml::property<int> irq_lan0;
     vcml::property<int> irq_sdhci;
     vcml::property<int> irq_spi;
+    vcml::property<int> irq_can0;
+    vcml::property<int> irq_can1;
 
     system(const sc_core::sc_module_name& name);
     system() = delete;
@@ -125,6 +137,10 @@ private:
     vcml::generic::gpio m_gpio;
     vcml::spi::max31855 m_max31855;
     vcml::timers::rtc1742 m_rtc;
+    vcml::can::bus m_canbus;
+    vcml::generic::memory m_can_msgram;
+    vcml::can::m_can m_can;
+    vcml::can::bridge m_canbridge;
 
     cpu m_cpu;
 
