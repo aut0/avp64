@@ -23,7 +23,7 @@ while [ -h "$SOURCE" ]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
-LINUX_SW=https://github.com/aut0/avp64_sw/releases/download/v2024.07.30/buildroot_6_5_6.tar.gz
+LINUX_SW=https://github.com/aut0/avp64_sw/releases/download/v2024.08.02/buildroot_6_5_6.tar.gz
 LINUX_SRC=https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/linux-6.5.6.tar.gz
 LINUX_ARCHIVE="${LINUX_SRC##*/}"
 LINUX_DIRNAME="${LINUX_ARCHIVE%.tar.gz}"

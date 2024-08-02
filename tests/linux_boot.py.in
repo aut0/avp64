@@ -12,12 +12,12 @@
 
 import sys
 import pexpect
-import os
+import time
 
 sim='$<TARGET_FILE:avp64-runner>'
 cfg='@config@'
 
-cmdline = f'{sim} -f {cfg}'
+cmdline = f'{sim} -f {cfg} -c system.term0.backends=term'
 
 print(cmdline)
 
@@ -34,6 +34,7 @@ p.expect('1000b000.uart: ttyAMA2 at MMIO 0x1000b000')
 p.expect('1000c000.uart: ttyAMA3 at MMIO 0x1000c000')
 p.expect('timeriomem_rng 10007000.rng: 32bits')
 p.expect('spi_oc_tiny 10020000.spi')
+p.expect('m_can_platform 10021000.can: m_can device registered')
 p.expect('smsc911x 10010000.lan9118 eth0')
 p.expect('rtc-ds1742 1000e000.rtc: registered as rtc0')
 p.expect('mmc0: SDHCI controller on 1000d000.mmc')
@@ -44,17 +45,40 @@ p.expect('avp64 login:')
 p.sendline('root')
 
 # can we run commands?
-p.expect('#')
+p.expect('# ')
 p.sendline('uname')
 p.expect('Linux')
 
 # did all processors boot up?
-p.expect('#')
+p.expect('# ')
 p.sendline('cat /proc/cpuinfo')
 for cpu in range(@nrcpu@):
     p.expect('processor')
 
+# CAN test -------------------------------------------------------------------
+p.expect('# ')
+p.sendline('ip addr')
+p.expect('can0:')
+
+# can we bringup the can controller?
+p.expect('# ')
+p.sendline('ip link set can0 up type can bitrate 1000000')
+
+# can we bringup the can controller?
+p.expect('# ')
+p.sendline('ip addr')
+p.expect('can0: <NOARP,UP,LOWER_UP,ECHO>')
+
+# can we send a package?
+p.expect('# ')
+p.sendline('cansend can0 123#deadbeef')
+p.expect('# ')
+
 # test ok - shut down simulation
-p.expect('#')
 p.sendline('devmem 0x10008000 32 1')
 p.expect(pexpect.EOF)
+
+# check if can packed arrived
+with open('system.canbridge.tx', 'r') as f:
+    line = f.readline()
+    assert('frame #1 CAN 123 [00] de ad be ef' in line)
