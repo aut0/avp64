@@ -64,21 +64,22 @@ p.expect('can0:')
 p.expect('# ')
 p.sendline('ip link set can0 up type can bitrate 1000000')
 
-# can we bringup the can controller?
+# is the can if up?
 p.expect('# ')
-p.sendline('ip addr')
-p.expect('can0: <NOARP,UP,LOWER_UP,ECHO>')
+p.sendline('sleep 2 && cat /sys/class/net/can0/operstate')
+p.expect('up')
 
 # can we send a package?
 p.expect('# ')
-p.sendline('cansend can0 123#deadbeef')
+p.sendline('cansend can0 123#deadbeef && sleep 2')
 p.expect('# ')
-
-# test ok - shut down simulation
-p.sendline('devmem 0x10008000 32 1')
-p.expect(pexpect.EOF)
 
 # check if can packed arrived
 with open('system.canbridge.tx', 'r') as f:
     line = f.readline()
     assert('frame #1 CAN 123 [00] de ad be ef' in line)
+
+# test ok - shut down simulation
+p.sendline('devmem 0x10008000 32 1')
+p.expect(pexpect.EOF)
+
