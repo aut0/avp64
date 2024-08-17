@@ -134,7 +134,7 @@ private:
     vcml::meta::simdev m_simdev;
     vcml::generic::hwrng m_hwrng;
     vcml::spi::ocspi m_spi;
-    vcml::generic::gpio m_gpio;
+    vcml::gpio::mmgpio m_gpio;
     vcml::spi::max31855 m_max31855;
     vcml::timers::rtc1742 m_rtc;
     vcml::can::bus m_canbus;
