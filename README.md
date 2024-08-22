@@ -69,6 +69,12 @@ The following target software configurations were tested (see [avp64-sw](https:/
 
 ## Run
 
+To run the platform, a configuration and the corresponding target software files are required.
+Examples can be found in the [avp64-sw](https://github.com/aut0/avp64_sw) repository.
+The configuration files and target software can be placed in the [sw](sw/) folder to be automatically copied to the install directory on `make install`.
+To fetch the latest buildroot Linux build, the [utils/fetch_buildroot_linux](./utils/fetch_buildroot_linux) script can be used.
+This script downloads the latest prebuilt linux image and configuration files and places them in the [sw](sw/) folder.  
+
 Run the platform using a config file from the [sw](sw/) folder:
 
 ```bash

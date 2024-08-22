@@ -1,0 +1,33 @@
+#!/bin/env bash
+
+##############################################################################
+#                                                                            #
+# Copyright 2024 Nils Bosbach                                                #
+#                                                                            #
+# This software is licensed under the MIT license.                           #
+# A copy of the license can be found in the LICENSE file at the root         #
+# of the source tree.                                                        #
+#                                                                            #
+##############################################################################
+
+# Get directory of script itself
+SOURCE="${BASH_SOURCE[0]}"
+# resolve $SOURCE until the file is no longer a symlink
+while [ -h "$SOURCE" ]; do
+        DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+        SOURCE="$(readlink "$SOURCE")"
+        # if $SOURCE was a relative symlink, we need to resolve it relative to the
+        # path where the symlink file was located
+        [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR=${DIR}/..
+SW_DIR=${ROOT_DIR}/sw
+
+BUILDROOT=https://github.com/aut0/avp64_sw/releases/latest/download/buildroot_6_5_6.tar.gz
+BUILDROOT_TAR="${BUILDROOT##*/}"
+
+# fetch sw
+wget ${BUILDROOT}
+tar -xvf ${BUILDROOT_TAR} -C ${SW_DIR}/
+rm ${BUILDROOT_TAR}
