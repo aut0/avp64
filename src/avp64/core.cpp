@@ -219,16 +219,12 @@ void core::hint(ocx::hint_kind kind) {
     switch (kind) {
     case ocx::HINT_WFI: {
         sync();
-        sc_core::sc_event_or_list list;
         for (auto it : irq) {
-            list |= it.second->default_event();
-            // Treat WFI as NOP if IRQ is pending
-            if (it.second->read()) {
+            if (it.second->read())
                 return;
-            }
         }
         const sc_core::sc_time before_wait = sc_core::sc_time_stamp();
-        sc_core::wait(list);
+        wait_for_interrupt(m_irqev);
         VCML_ERROR_ON(local_time() != sc_core::SC_ZERO_TIME,
                       "core not synchronized");
         const vcml::u64 cycles = (sc_core::sc_time_stamp() - before_wait) /
@@ -282,6 +278,7 @@ void core::timer_irq_trigger(int timer_id) {
 
 void core::interrupt(size_t irq, bool set) {
     m_core->interrupt(irq, set);
+    m_irqev.notify();
 }
 
 void core::simulate(size_t cycles) {
@@ -432,6 +429,7 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
            vcml::u64 coreid):
     vcml::processor(nm, CPU_ARCH),
     m_core(nullptr),
+    m_irqev("irqev"),
     m_core_id(coreid),
     m_run_cycles(0),
     m_sleep_cycles(0),

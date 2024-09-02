@@ -69,6 +69,7 @@ class core : public vcml::processor, private ocx::env
 {
 private:
     ocx::core* m_core;
+    sc_core::sc_event m_irqev;
     vcml::u64 m_core_id;
     vcml::u64 m_run_cycles;
     vcml::u64 m_sleep_cycles;
