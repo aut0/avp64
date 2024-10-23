@@ -74,6 +74,7 @@ private:
     vcml::u64 m_run_cycles;
     vcml::u64 m_sleep_cycles;
     vcml::u64 m_total_cycles;
+    bool m_transport;
     void* m_ocx_handle;
     create_instance_t m_create_instance_func;
     std::vector<std::shared_ptr<core>> m_syscall_subscriber;

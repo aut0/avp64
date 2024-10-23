@@ -126,6 +126,7 @@ void core::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
 }
 
 ocx::response core::transport(const ocx::transaction& tx) {
+    m_transport = true;
     vcml::tlm_sbi info = vcml::SBI_NONE;
     if (tx.is_debug)
         info |= vcml::SBI_DEBUG;
@@ -136,6 +137,7 @@ ocx::response core::transport(const ocx::transaction& tx) {
 
     resp = tx.is_read ? data.read(tx.addr, tx.data, tx.size, info)
                       : data.write(tx.addr, tx.data, tx.size, info);
+    m_transport = false;
 
     switch (resp) {
     case tlm::TLM_OK_RESPONSE:
@@ -294,6 +296,17 @@ bool core::read_reg_dbg(size_t regno, void* buf, size_t len) {
 }
 
 bool core::write_reg_dbg(size_t regno, const void* buf, size_t len) {
+    if (regno == m_core->pc_regid()) {
+        if (len != 8)
+            return false;
+
+        if (*reinterpret_cast<const vcml::u64*>(buf) == program_counter())
+            return true;
+
+        // the pc cannot be changed during an ongoing b_transport
+        if (m_transport)
+            return false;
+    }
     return m_core->write_reg(regno, buf);
 }
 
@@ -434,6 +447,7 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_run_cycles(0),
     m_sleep_cycles(0),
     m_total_cycles(0),
+    m_transport(false),
     m_syscall_subscriber(),
     m_update_mem(),
     m_syscalls(),
