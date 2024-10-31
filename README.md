@@ -20,6 +20,12 @@ The following target software configurations were tested (see [avp64-sw](https:/
 
 ## Build & Installation
 
+This project has a [GitHub action](.github/workflows/cmake.yml) that automatically builds the project and runs the tests.
+The action conatins all steps that are needed to comiple the project on Ubuntu 22.04.
+It can be used as a guideline.
+The needed steps are explained below:
+
+
 1. Clone git repository including submodules:
 
     ```bash
@@ -81,9 +87,150 @@ Run the platform using a config file from the [sw](sw/) folder:
 <install-dir>/bin/avp64-runner -f <install-dir>/sw/<config-file>
 ```
 
-For more details on run parameters please look [here](https://github.com/machineware-gmbh/vcml).  
+For more details on run parameters, you can use the `--help` option:
+
+```bash
+<install-dir>/bin/avp64-runner --help
+```
+
+The output should look like this:
+
+```text
+Usage: avp64-runner <arguments>
+--config, -c <value>   Specify individual property values
+--file, -f <value>     Load configuration from file
+--help, -h             Prints this message
+--license              Prints module license information
+--list-models          Prints all supported models
+--list-properties      Prints a list of all properties
+--log-debug            Activate verbose debug logging
+--log-file, -l <value> Send log output to file
+--log-inscight         Send log output to InSCight database
+--log-stdout           Send log output to stdout
+--trace, -t <value>    Send tracing output to file
+--trace-inscight       Send tracing output to InSCight
+--trace-stdout         Send tracing output to stdout
+--version              Prints module version information
+```
 
 To stop the platform, press <kbd>Ctrl</kbd> + <kbd>a</kbd> + <kbd>x</kbd> .
+
+----
+
+## Tracing
+
+VCML has a tracing feature to trace TLM transactions that are sent during the simulation.
+Tracing is available for all VCML-based protocols:
+
+- TLM
+- GPIO
+- Clock
+- PCI
+- I2C
+- SPI
+- SD command
+- SD data
+- Serial
+- Virtio
+- Ethernet
+- CAN
+- USB
+
+The VCML tracing documentation can be found [here](https://github.com/machineware-gmbh/vcml/blob/main/doc/tracing.md).
+Tracing can be enabled on a per TLM socket basis.
+For example, to trace the UART packets that are sent by the `system.uart0` peripheral via its `serial_tx` socket, you can use the folling command:
+
+```bash
+<install-dir>/bin/avp64-runner                 \
+    -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
+    -c system.uart0.serial_tx.trace=true       \ # enable tracing of the system.uart0.serial_tx socket
+    --trace-stdout                               # send the traces to stdout
+```
+
+Since this produces a lot of output, it makes sense to store the traces in a trace file.
+To do this, use `--trace <trace file>` instead of `--trace-stdout`:
+
+```bash
+<install-dir>/bin/avp64-runner                 \
+    -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
+    -c system.uart0.serial_tx.trace=true       \ # enable tracing of the system.uart0.serial_tx socket
+    --trace my_trace_file.log                    # send the traces to a file
+```
+
+The content of the trace file will look like this:
+
+```text
+[SERIAL 0.001271278] system.uart0.serial_tx >> SERIAL TX [5b] (9600n8)
+[SERIAL 0.001271312] system.uart0.serial_tx >> SERIAL TX [20] (9600n8)
+[SERIAL 0.001271346] system.uart0.serial_tx >> SERIAL TX [20] (9600n8)
+[SERIAL 0.001271380] system.uart0.serial_tx >> SERIAL TX [20] (9600n8)
+[SERIAL 0.001271414] system.uart0.serial_tx >> SERIAL TX [20] (9600n8)
+[SERIAL 0.001271448] system.uart0.serial_tx >> SERIAL TX [30] (9600n8)
+...
+```
+
+To enable tracing for all socket of a peripheral, the `trace` property of the peripheral can be used:
+
+```bash
+<install-dir>/bin/avp64-runner                 \
+    -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
+    -c system.uart0.trace=true                 \ # enable tracing for all sockets of system.uart0
+    --trace my_trace_file.log                    # send the traces to a file
+```
+
+You will then get the traces of all sockets of the `system.uart0` peripheral (`rst`, `in`, `serial_tx`, `serial_rx`, and `irq`):
+
+```text
+[GPIO 0.000000000] system.uart0.rst >> GPIO+
+[GPIO 0.000000000] system.uart0.rst << GPIO+
+[GPIO 0.000000000] system.uart0.rst >> GPIO-
+[GPIO 0.000000000] system.uart0.rst << GPIO-
+[TLM 0.001271270] system.uart0.in >> RD 0x00000018 [00 00 00 00] (TLM_INCOMPLETE_RESPONSE)
+[TLM 0.001271270] system.uart0.fr >> RD 0x00000000 [00 00] (TLM_INCOMPLETE_RESPONSE)
+[TLM 0.001271270] system.uart0.fr << RD 0x00000000 [90 00] (TLM_OK_RESPONSE)
+[TLM 0.001271270] system.uart0.in << RD 0x00000018 [90 00 00 00] (TLM_OK_RESPONSE)
+[TLM 0.001271278] system.uart0.in >> WR 0x00000000 [5b] (TLM_INCOMPLETE_RESPONSE)
+[TLM 0.001271278] system.uart0.dr >> WR 0x00000000 [5b] (TLM_INCOMPLETE_RESPONSE)
+[SERIAL 0.001271278] system.uart0.serial_tx >> SERIAL TX [5b] (9600n8)
+...
+```
+
+----
+
+## Logging
+
+VCML-based model support logging.
+The logging documentation can be found [here](https://github.com/machineware-gmbh/vcml/blob/main/doc/logging.md).
+By default, logging is sent to `stdout`.
+To redirect logging to a file, use the `--log-file <filename>`.
+To enable debug logging, use `--log-debug`.
+The log level can be adjusted on a per model basis.
+
+```bash
+<install-dir>/bin/avp64-runner                 \
+    -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
+    -c system.uart0.loglvl=debug               \ # enable debug logging for system.uart0
+    --log-debug                                \ # enable debug logging in general
+    --log-file my_log_file.log                   # send the log to a file
+```
+
+The log file looks like this:
+
+```text
+[I 0.000000000] system.term1: listening on port 52011
+[I 0.000000000] system.term2: listening on port 52012
+[I 0.000000000] system.term3: listening on port 52013
+[D 0.000000000] created slirp ipv4 network 10.0.0.0/24
+[D 0.000000000] created slirp ipv6 network fec0::
+[I 0.000000000] system: starting infinite simulation using 100 us quantum
+[I 0.000000000] system.cpu: listening for GDB connection on port 5555
+[I 0.000000000] system.cpu.arm0: listening for GDB connection on port 52100
+[D 0.023305928] system.uart0: FIFO enabled
+[D 0.023311996] system.uart0: device enabled
+[D 0.023313989] system.uart0: device disabled
+[D 0.023323269] system.uart0: device enabled
+...
+```
 
 ----
 
@@ -97,7 +244,7 @@ e.g. for target software development.
 To maintain both builds from a single source repository, try the following:
 
 ```bash
-git clone --recurse-submodules https://github.com/aut0/avp64 && cd avp64
+git clone --recursive https://github.com/aut0/avp64 && cd avp64
 
 home=$PWD
 for type in "DEBUG" "RELEASE"; do
@@ -105,7 +252,7 @@ for type in "DEBUG" "RELEASE"; do
     build="$home/BUILD/$type/BUILD"
     mkdir -p $build && cd $build
     cmake -DCMAKE_BUILD_TYPE=$type -DCMAKE_INSTALL_PREFIX=$install $home
-    make install
+    make -j `nproc` install
 done
 ```
 
@@ -128,8 +275,7 @@ See the corresponding [Readme](./vscode-tutorial/README.md) for further details.
 
 ## Documentation
 
-The VCML documentation can be found
-[here](https://github.com/machineware-gmbh/vcml).
+The VCML documentation can be found [here](https://github.com/machineware-gmbh/vcml/tree/main/doc).
 
 ----
 
