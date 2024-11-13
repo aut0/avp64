@@ -158,11 +158,11 @@ ocx::response core::transport(const ocx::transaction& tx) {
 }
 
 void core::log_timing_info() const {
-    vcml::log_info("core %llu", m_core_id);
-    vcml::log_info("  clock speed  : %.1f MHz", clk.read() / 1e6);
-    vcml::log_info("  sim speed    : %.1f MIPS", get_cps() / 1e6);
-    vcml::log_info("  run time     : %.1fs", get_run_time());
-    vcml::log_info("  cycles       : %llu", cycle_count());
+    log_info("core %llu", m_core_id);
+    log_info("  clock speed  : %.1f MHz", clk.read() / 1e6);
+    log_info("  sim speed    : %.1f MIPS", get_cps() / 1e6);
+    log_info("  run time     : %.1fs", get_run_time());
+    log_info("  cycles       : %llu", cycle_count());
 
     for (auto i : irq) {
         vcml::irq_stats stats;
@@ -175,7 +175,7 @@ void core::log_timing_info() const {
         s += vcml::mkstr(", avg %.1fus", stats.irq_uptime.to_seconds() /
                                              stats.irq_count * 1e6);
         s += vcml::mkstr(", max %.1fus", stats.irq_longest.to_seconds() * 1e6);
-        vcml::log_info("%s", s.c_str());
+        log_info("%s", s.c_str());
     }
 }
 
