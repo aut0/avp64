@@ -161,7 +161,7 @@ void core::log_timing_info() const {
     log_info("core %llu", m_core_id);
     log_info("  clock speed  : %.1f MHz", clk.read() / 1e6);
     log_info("  sim speed    : %.1f MIPS", get_cps() / 1e6);
-    log_info("  run time     : %.1fs", get_run_time());
+    log_info("  run time     : %.1f s", get_run_time());
     log_info("  cycles       : %llu", cycle_count());
 
     for (auto i : irq) {
@@ -171,10 +171,11 @@ void core::log_timing_info() const {
 
         std::string s;
         s += vcml::mkstr("  irq %lu status :", stats.irq);
-        s += vcml::mkstr(" %lu#", stats.irq_count);
-        s += vcml::mkstr(", avg %.1fus", stats.irq_uptime.to_seconds() /
-                                             stats.irq_count * 1e6);
-        s += vcml::mkstr(", max %.1fus", stats.irq_longest.to_seconds() * 1e6);
+        s += vcml::mkstr(" %lu #", stats.irq_count);
+        s += vcml::mkstr(", avg %.1f us", stats.irq_uptime.to_seconds() /
+                                              stats.irq_count * 1e6);
+        s += vcml::mkstr(", max %.1f us",
+                         stats.irq_longest.to_seconds() * 1e6);
         log_info("%s", s.c_str());
     }
 }
