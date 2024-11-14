@@ -163,6 +163,9 @@ void core::log_timing_info() const {
     log_info("  sim speed    : %.1f MIPS", get_cps() / 1e6);
     log_info("  run time     : %.1f s", get_run_time());
     log_info("  cycles       : %llu", cycle_count());
+    log_info("  sleep cycles : %llu (%.1f %%)", m_sleep_cycles,
+             static_cast<double>(m_sleep_cycles) * 100.0 /
+                 static_cast<double>(m_sleep_cycles + cycle_count()));
 
     for (auto i : irq) {
         vcml::irq_stats stats;
