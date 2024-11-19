@@ -379,7 +379,7 @@ void core::update_local_time(sc_core::sc_time& local_time,
 }
 
 bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) {
-    size_t bufsz = 100;
+    const size_t bufsz = 100;
     char buf[bufsz];
     vcml::u64 len;
     len = m_core->disassemble(addr, buf, bufsz);
