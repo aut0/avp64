@@ -246,7 +246,7 @@ void core::hint(ocx::hint_kind kind) {
 }
 
 void core::handle_begin_basic_block(ocx::u64 vaddr) {
-    throw std::logic_error("Not implemented");
+    notify_basic_block(vaddr, 0, 0);
 }
 
 bool core::handle_breakpoint(ocx::u64 vaddr) {
@@ -455,11 +455,13 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_syscall_subscriber(),
     m_update_mem(),
     m_syscalls(),
+    bb_trace("bb_trace", false),
     timer_irq_out("TIMER_IRQ_OUT"),
     timer_events(4) {
     symbols.inherit_default();
     async.inherit_default();
     async_rate.inherit_default();
+    bb_trace.inherit_default();
 
     m_ocx_handle = dlopen("libocx-qemu-arm.so", RTLD_LAZY);
     if (!m_ocx_handle)
@@ -473,6 +475,7 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_core = m_create_instance_func(20201012ull, *this, "Cortex-A72");
     if (!m_core)
         VCML_ERROR("Could not create ocx::core instance");
+    m_core->trace_basic_blocks(bb_trace);
 
     set_little_endian();
 

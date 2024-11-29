@@ -19,6 +19,7 @@ cpu::cpu(const sc_core::sc_module_name& nm):
     symbols("symbols", ""),
     async("async", false),
     async_rate("async_rate", 10),
+    bb_trace("bb_trace", false),
     gic_cpuif("addr_gic_cpuif", { GIC_CPUIF_LO, GIC_CPUIF_HI }),
     gic_distif("addr_gic_distif", { GIC_DISTIF_LO, GIC_DISTIF_HI }),
     gic_vifctrl("addr_gic_vifctrl", { GIC_VIFCTRL_LO, GIC_VIFCTRL_HI }),

@@ -104,6 +104,7 @@ protected:
 public:
     using vcml::component::transport; // needed to not hide vcml transport
                                       // function by ocx transport
+    vcml::property<bool> bb_trace;
 
     vcml::gpio_initiator_array timer_irq_out;
     std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
