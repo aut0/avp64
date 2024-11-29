@@ -42,7 +42,6 @@ public:
     vcml::property<std::string> symbols;
     vcml::property<bool> async;
     vcml::property<unsigned int> async_rate;
-    vcml::property<bool> bb_trace;
 
     vcml::property<vcml::range> gic_cpuif;
     vcml::property<vcml::range> gic_distif;
