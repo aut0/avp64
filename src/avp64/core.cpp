@@ -132,6 +132,8 @@ ocx::response core::transport(const ocx::transaction& tx) {
         info |= vcml::SBI_DEBUG;
     if (tx.is_excl)
         info |= vcml::SBI_EXCL;
+    if (tx.is_secure)
+        info |= vcml::SBI_SECURE;
     info.cpuid = core_id();
     tlm::tlm_response_status resp = tlm::TLM_GENERIC_ERROR_RESPONSE;
 
