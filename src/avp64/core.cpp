@@ -17,7 +17,10 @@
 
 namespace avp64 {
 
-memory_protector::memory_protector(): m_protected_pages() {
+const vcml::u64 mem_protector::HOST_PAGE_BITS = mwr::ctz(mwr::get_page_size());
+const vcml::u64 mem_protector::HOST_PAGE_MASK = ~(mwr::get_page_size() - 1);
+
+mem_protector::mem_protector(): m_protected_pages() {
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO;
     ::sigemptyset(&sa.sa_mask);
@@ -26,59 +29,85 @@ memory_protector::memory_protector(): m_protected_pages() {
                   std::strerror(errno));
 }
 
-memory_protector::~memory_protector() {
+mem_protector::~mem_protector() {
     VCML_ERROR_ON(::sigaction(SIGSEGV, &m_sa_orig, nullptr) != 0,
                   "sigaction: %s", std::strerror(errno));
 }
 
-void memory_protector::segfault_handler(int sig, siginfo_t* si, void* arg) {
+void mem_protector::segfault_handler(int sig, siginfo_t* si, void* arg) {
     VCML_ERROR_ON(sig != SIGSEGV, "unexpected signal");
     get_instance().segfault_handler_int(sig, si, arg);
 }
 
-void memory_protector::segfault_handler_int(int sig, siginfo_t* si,
-                                            void* arg) {
-    if (!memory_protector::get_instance().notify_page(si->si_addr)) {
+void mem_protector::segfault_handler_int(int sig, siginfo_t* si, void* arg) {
+    if (!mem_protector::get_instance().notify_page(si->si_addr)) {
         m_sa_orig.sa_sigaction(sig, si, arg);
     }
 }
 
-void memory_protector::register_page(core* core, vcml::u64 page_addr,
-                                     void* host_addr) {
+void mem_protector::register_page(core* core, vcml::u64 page_addr,
+                                  void* host_addr) {
+    VCML_ERROR_ON(
+        mwr::get_page_size() < core->get_page_size(),
+        "host page size is smaller than the target one - not implemented");
+
+    vcml::u64 target_page_bits = mwr::ctz(core->get_page_size());
+    vcml::u64 page_number = mwr::extract(page_addr, target_page_bits,
+                                         HOST_PAGE_BITS - target_page_bits);
+
+    host_addr = reinterpret_cast<void*>(
+        reinterpret_cast<vcml::u64>(host_addr) & HOST_PAGE_MASK);
+    page_addr &= HOST_PAGE_MASK;
+
     auto it = m_protected_pages.find(reinterpret_cast<vcml::u64>(host_addr));
     if (it != m_protected_pages.end()) {
+        it->second.page_number |= (1 << page_number);
+
         if (it->second.locked) {
             if (it->second.page_addr != page_addr) {
                 vcml::log_error("page_addr do not match! %llu vs. %llu",
                                 it->second.page_addr, page_addr);
             }
             return;
-        } else {
-            it->second.locked = true;
         }
+        it->second.locked = true;
     } else {
         struct page_data&
             pd = m_protected_pages[reinterpret_cast<vcml::u64>(host_addr)];
         pd.c = core;
         pd.page_addr = page_addr;
-        pd.page_size = core->get_page_size();
+        pd.page_number = 1 << page_number;
+        pd.page_size = mwr::get_page_size();
         pd.locked = true;
     }
-    VCML_ERROR_ON(::mprotect(host_addr, core->get_page_size(), PROT_READ) != 0,
+    VCML_ERROR_ON(::mprotect(host_addr, mwr::get_page_size(), PROT_READ) != 0,
                   "mprotect: %s", std::strerror(errno));
 }
 
-bool memory_protector::notify_page(void* access_addr) {
-    vcml::u64 host_page_addr = reinterpret_cast<vcml::u64>(access_addr) &
-                               (~0xfffull);
-    auto it = m_protected_pages.find(host_page_addr);
+bool mem_protector::notify_page(void* access_addr) {
+    vcml::u64 page_addr = reinterpret_cast<vcml::u64>(access_addr) &
+                          HOST_PAGE_MASK;
+
+    auto it = m_protected_pages.find(page_addr);
     if (it == m_protected_pages.end()) { // not a locked page
         return false;
     }
-    it->second.c->memory_protector_update(it->second.page_addr);
+
+    vcml::u64 page_number = it->second.page_number;
+    int i = 0;
+    while (page_number != 0) {
+        if (page_number & 1) {
+            it->second.c->memory_protector_update(
+                it->second.page_addr | (i << it->second.c->get_page_size()));
+        }
+
+        ++i;
+        page_number >>= 1;
+    }
+
     it->second.locked = false;
-    return ::mprotect(reinterpret_cast<void*>(host_page_addr),
-                      it->second.page_size, PROT_READ | PROT_WRITE) == 0;
+    return ::mprotect(reinterpret_cast<void*>(page_addr), it->second.page_size,
+                      PROT_READ | PROT_WRITE) == 0;
 }
 
 ocx::u8* core::get_page_ptr_r(ocx::u64 page_paddr) {
@@ -122,7 +151,7 @@ ocx::u8* core::get_page_ptr_w(ocx::u64 page_paddr) {
 }
 
 void core::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
-    memory_protector::get_instance().register_page(this, page_addr, page_ptr);
+    mem_protector::get_instance().register_page(this, page_addr, page_ptr);
 }
 
 ocx::response core::transport(const ocx::transaction& tx) {
