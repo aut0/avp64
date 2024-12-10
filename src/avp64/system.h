@@ -110,6 +110,7 @@ public:
     virtual void end_of_elaboration() override;
 
     const char* version() const override;
+    virtual const char* kind() const override { return "avp64::system"; }
 
 private:
     vcml::generic::clock m_clock_cpu;
