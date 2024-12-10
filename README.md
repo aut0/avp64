@@ -25,6 +25,14 @@ The action contains all steps that are needed to compile the project on Ubuntu 2
 It can be used as a guideline.
 The needed steps are explained below:
 
+1. Install the needed dependencies
+
+    Ubuntu:
+
+    ```bash
+    sudo apt update
+    sudo apt install git build-essential libelf-dev libsdl2-dev libvncserver-dev libslirp-dev
+    ```
 
 1. Clone git repository including submodules:
 
