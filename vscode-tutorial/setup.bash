@@ -29,13 +29,11 @@ LINUX_ARCHIVE="${LINUX_SRC##*/}"
 LINUX_DIRNAME="${LINUX_ARCHIVE%.tar.gz}"
 ROOT_DIR=${DIR}/..
 VSCODE_DIR=${ROOT_DIR}/.vscode
-EXTENSIONS=(llvm-vs-code-extensions.vscode-clangd twxs.cmake ms-vscode.cmake-tools vadimcn.vscode-lldb webfreak.debug)
 
 # fetch sw
-wget ${LINUX_SW}
-tar -xvf linux.tar.gz
+wget ${LINUX_SW} -O linux.tar.gz
+tar -xvf linux.tar.gz -C ${ROOT_DIR}/sw
 rm linux.tar.gz
-mv sw "${ROOT_DIR}/"
 
 # get linux sources
 wget ${LINUX_SRC}
