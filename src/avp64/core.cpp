@@ -236,10 +236,9 @@ ocx::u64 core::get_time_ps() {
 const char* core::get_param(const char* name) {
     if (strcmp("gicv3", name) == 0)
         return "false";
-    else if (strcmp("tbsize", name) == 0)
+    if (strcmp("tbsize", name) == 0)
         return "8MB";
-    else
-        VCML_ERROR("Unimplemented parameter requested");
+    VCML_ERROR("Unimplemented parameter requested");
 }
 
 void core::notify(ocx::u64 eventid, ocx::u64 time_ps) {
@@ -301,10 +300,10 @@ void core::add_syscall_subscriber(const std::shared_ptr<core>& cpu) {
 }
 
 void core::memory_protector_update(vcml::u64 page_addr) {
-    m_core->tb_flush_page(page_addr, page_addr + 4095);
+    m_core->tb_flush_page(page_addr, page_addr + get_page_size() - 1);
     m_core->invalidate_page_ptr(page_addr);
     for (auto const& cpu : m_syscall_subscriber) {
-        cpu->m_core->tb_flush_page(page_addr, page_addr + 4095);
+        cpu->m_core->tb_flush_page(page_addr, page_addr + get_page_size() - 1);
         cpu->m_core->invalidate_page_ptr(page_addr);
     }
 }
@@ -432,21 +431,17 @@ bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) {
 vcml::u64 core::program_counter() {
     ocx::u64 pc_regid = m_core->pc_regid();
     vcml::u64 pc = 0;
-    if (m_core->read_reg(pc_regid, &pc)) {
-        return pc;
-    } else {
-        VCML_ERROR("Could not read program counter");
-    }
+    VCML_ERROR_ON(!m_core->read_reg(pc_regid, &pc),
+                  "Could not read program counter");
+    return pc;
 }
 
 vcml::u64 core::stack_pointer() {
     ocx::u64 sp_regid = m_core->sp_regid();
     vcml::u64 sp = 0;
-    if (m_core->read_reg(sp_regid, &sp)) {
-        return sp;
-    } else {
-        VCML_ERROR("Could not read stack pointer");
-    }
+    VCML_ERROR_ON(!m_core->read_reg(sp_regid, &sp),
+                  "Could not read stack pointer");
+    return sp;
 }
 
 vcml::u64 core::core_id() {
@@ -499,17 +494,18 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     async_rate.inherit_default();
 
     m_ocx_handle = dlopen("libocx-qemu-arm.so", RTLD_LAZY);
-    if (!m_ocx_handle)
-        VCML_ERROR("Could not load libocx-qemu-arm.so: %s", dlerror());
-    m_create_instance_func = (create_instance_t)dlsym(
-        m_ocx_handle, "_ZN3ocx15create_instanceEmRNS_3envEPKc");
-    const char* dlsym_err = dlerror();
-    if (dlsym_err)
-        VCML_ERROR("Could not load symbol create_instance: %s", dlsym_err);
+    VCML_ERROR_ON(!m_ocx_handle, "Could not load libocx-qemu-arm.so: %s",
+                  dlerror());
 
-    m_core = m_create_instance_func(20201012ull, *this, "Cortex-A72");
-    if (!m_core)
-        VCML_ERROR("Could not create ocx::core instance");
+    create_instance_t create_instance_func = (create_instance_t)dlsym(
+        m_ocx_handle, "_ZN3ocx15create_instanceEmRNS_3envEPKc");
+
+    const char* dlsym_err = dlerror();
+    VCML_ERROR_ON(dlsym_err, "Could not load symbol create_instance: %s",
+                  dlsym_err);
+
+    m_core = create_instance_func(20201012ull, *this, "Cortex-A72");
+    VCML_ERROR_ON(!m_core, "Could not create ocx::core instance");
 
     set_little_endian();
 

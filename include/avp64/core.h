@@ -81,7 +81,6 @@ private:
     vcml::u64 m_total_cycles;
     bool m_transport;
     void* m_ocx_handle;
-    create_instance_t m_create_instance_func;
     std::vector<std::shared_ptr<core>> m_syscall_subscriber;
     std::unordered_set<vcml::u64> m_update_mem;
     std::list<std::pair<int, std::shared_ptr<void>>> m_syscalls;
