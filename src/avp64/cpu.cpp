@@ -16,7 +16,7 @@ cpu::cpu(const sc_core::sc_module_name& nm):
     vcml::component(nm),
     ncores("ncores", 1),
     clusterid("clusterid", 0),
-    symbols("symbols", ""),
+    symbols("symbols"),
     async("async", false),
     async_rate("async_rate", 10),
     gic_cpuif("addr_gic_cpuif", { GIC_CPUIF_LO, GIC_CPUIF_HI }),
