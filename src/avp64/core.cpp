@@ -473,6 +473,22 @@ void core::end_of_elaboration() {
     vcml::processor::end_of_elaboration();
 }
 
+void core::load_symbols() {
+    for (const std::string& s : symbols) {
+        std::string symfile = mwr::trim(s);
+        if (symfile.empty())
+            continue;
+
+        if (!mwr::file_exists(symfile)) {
+            log_warn("cannot open file '%s'", symfile.c_str());
+            continue;
+        }
+
+        vcml::u64 n = load_symbols_from_elf(symfile);
+        log_debug("loaded %llu symbols from '%s'", n, symfile.c_str());
+    }
+}
+
 core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
            vcml::u64 coreid):
     vcml::processor(nm, CPU_ARCH),
@@ -492,6 +508,9 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     symbols.inherit_default();
     async.inherit_default();
     async_rate.inherit_default();
+
+    if (symbols.is_default() && !symbols.get().empty())
+        load_symbols();
 
     m_ocx_handle = dlopen("libocx-qemu-arm.so", RTLD_LAZY);
     VCML_ERROR_ON(!m_ocx_handle, "Could not load libocx-qemu-arm.so: %s",

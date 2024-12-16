@@ -88,6 +88,7 @@ private:
 
     void timer_irq_trigger(int timer_id);
     static void segfault_handler(int sig, siginfo_t* si, void* unused);
+    void load_symbols();
 
 protected:
     virtual void interrupt(size_t irq, bool set) override;
