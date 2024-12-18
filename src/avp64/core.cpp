@@ -318,11 +318,6 @@ void core::interrupt(size_t irq, bool set) {
 }
 
 void core::simulate(size_t cycles) {
-    if (m_bb_trace != is_tracing_basic_blocks()) {
-        m_bb_trace = is_tracing_basic_blocks();
-        m_core->trace_basic_blocks(m_bb_trace);
-    }
-
     // insn_count() is only reset at the beginning of step(), but not at
     // the end, so the number of cycles can only be summed up in the
     // following quantum
@@ -397,6 +392,16 @@ bool core::remove_watchpoint(const vcml::range& mem, vcml::vcml_access acs) {
         log_error("Unsupported watchpoint");
         return false;
     }
+}
+
+bool core::start_basic_block_trace() {
+    m_core->trace_basic_blocks(true);
+    return true;
+}
+
+bool core::stop_basic_block_trace() {
+    m_core->trace_basic_blocks(false);
+    return true;
 }
 
 vcml::u64 core::cycle_count() const {
@@ -502,7 +507,6 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_syscall_subscriber(),
     m_update_mem(),
     m_syscalls(),
-    m_bb_trace(false),
     timer_irq_out("TIMER_IRQ_OUT"),
     timer_events(4) {
     symbols.inherit_default();

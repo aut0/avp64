@@ -84,7 +84,6 @@ private:
     std::vector<std::shared_ptr<core>> m_syscall_subscriber;
     std::unordered_set<vcml::u64> m_update_mem;
     std::list<std::pair<int, std::shared_ptr<void>>> m_syscalls;
-    bool m_bb_trace;
 
     void timer_irq_trigger(int timer_id);
     static void segfault_handler(int sig, siginfo_t* si, void* unused);
@@ -106,6 +105,9 @@ protected:
                                    vcml::vcml_access acs) override;
     virtual bool remove_watchpoint(const vcml::range& mem,
                                    vcml::vcml_access acs) override;
+
+    virtual bool start_basic_block_trace() override;
+    virtual bool stop_basic_block_trace() override;
 
 public:
     using vcml::component::transport; // needed to not hide vcml transport
