@@ -59,7 +59,7 @@ enum : mwr::u64 {
     CAN_MSGRAM_HI = CAN_MSGRAM_LO + 0x4000 - 1,
 
     FB0MEM_LO = 0x20000000,
-    FB0MEM_HI = FB0MEM_LO +  0x400000 - 1,
+    FB0MEM_HI = FB0MEM_LO + 0x400000 - 1,
 };
 
 enum : mwr::u64 {
