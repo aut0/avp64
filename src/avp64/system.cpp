@@ -15,6 +15,7 @@ namespace avp64 {
 void system::construct_system_arm64() {
     clk_bind(m_clock_cpu, "clk", m_bus, "clk");
     clk_bind(m_clock_cpu, "clk", m_ram, "clk");
+    clk_bind(m_clock_cpu, "clk", m_fb0mem, "clk");
     clk_bind(m_clock_cpu, "clk", m_uart0, "clk");
     clk_bind(m_clock_cpu, "clk", m_uart1, "clk");
     clk_bind(m_clock_cpu, "clk", m_uart2, "clk");
@@ -31,8 +32,12 @@ void system::construct_system_arm64() {
     clk_bind(m_clock_cpu, "clk", m_can, "clk");
     clk_bind(m_clock_cpu, "clk", m_can_msgram, "clk");
 
+    clk_bind(m_fb0fps, "clk", m_fb0, "clk");
+
     gpio_bind(m_reset, "rst", m_bus, "rst");
     gpio_bind(m_reset, "rst", m_ram, "rst");
+    gpio_bind(m_reset, "rst", m_fb0, "rst");
+    gpio_bind(m_reset, "rst", m_fb0mem, "rst");
     gpio_bind(m_reset, "rst", m_uart0, "rst");
     gpio_bind(m_reset, "rst", m_uart1, "rst");
     gpio_bind(m_reset, "rst", m_uart2, "rst");
@@ -51,6 +56,8 @@ void system::construct_system_arm64() {
 
     tlm_bind(m_bus, m_cpu, "bus");
     tlm_bind(m_bus, m_ram, "in", addr_ram);
+    tlm_bind(m_bus, m_fb0, "out");
+    tlm_bind(m_bus, m_fb0mem, "in", addr_fb0mem);
     tlm_bind(m_bus, m_uart0, "in", addr_uart0);
     tlm_bind(m_bus, m_uart1, "in", addr_uart1);
     tlm_bind(m_bus, m_uart2, "in", addr_uart2);
@@ -110,6 +117,7 @@ void system::construct_system_arm64() {
 system::system(const sc_core::sc_module_name& nm):
     vcml::system(nm),
     addr_ram("addr_ram", { RAM_LO, RAM_HI }),
+    addr_fb0mem("addr_fb0mem", { FB0MEM_LO, FB0MEM_HI }),
     addr_uart0("addr_uart0", { UART0_LO, UART0_HI }),
     addr_uart1("addr_uart1", { UART1_LO, UART1_HI }),
     addr_uart2("addr_uart2", { UART2_LO, UART2_HI }),
@@ -133,10 +141,13 @@ system::system(const sc_core::sc_module_name& nm):
     irq_can0("irq_can0", CAN_0),
     irq_can1("irq_can1", CAN_1),
     m_clock_cpu("clock_cpu", 1 * mwr::GHz),
+    m_fb0fps("fb0fps", 60 * mwr::Hz),
     m_reset("reset"),
     m_throttle("throttle"),
     m_bus("bus"),
     m_ram("ram", addr_ram.get().length()),
+    m_fb0("fb0"),
+    m_fb0mem("fb0_mem", addr_fb0mem.get().length()),
     m_uart0("uart0"),
     m_uart1("uart1"),
     m_uart2("uart2"),

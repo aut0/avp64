@@ -57,6 +57,9 @@ enum : mwr::u64 {
 
     CAN_MSGRAM_LO = 0x10022000,
     CAN_MSGRAM_HI = CAN_MSGRAM_LO + 0x4000 - 1,
+
+    FB0MEM_LO = 0x20000000,
+    FB0MEM_HI = FB0MEM_LO +  0x400000 - 1,
 };
 
 enum : mwr::u64 {
@@ -76,6 +79,7 @@ class system : public vcml::system
 public:
     // properties
     vcml::property<vcml::range> addr_ram;
+    vcml::property<vcml::range> addr_fb0mem;
     vcml::property<vcml::range> addr_uart0;
     vcml::property<vcml::range> addr_uart1;
     vcml::property<vcml::range> addr_uart2;
@@ -114,11 +118,14 @@ public:
 
 private:
     vcml::generic::clock m_clock_cpu;
+    vcml::generic::clock m_fb0fps;
     vcml::generic::reset m_reset;
     vcml::meta::throttle m_throttle;
 
     vcml::generic::bus m_bus;
     vcml::generic::memory m_ram;
+    vcml::generic::fbdev m_fb0;
+    vcml::generic::memory m_fb0mem;
     vcml::serial::pl011 m_uart0;
     vcml::serial::pl011 m_uart1;
     vcml::serial::pl011 m_uart2;
