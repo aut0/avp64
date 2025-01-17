@@ -58,8 +58,14 @@ enum : mwr::u64 {
     CAN_MSGRAM_LO = 0x10022000,
     CAN_MSGRAM_HI = CAN_MSGRAM_LO + 0x4000 - 1,
 
-    FB0MEM_LO = 0x20000000,
+    VIRTIO0_LO = 0x10026000,
+    VIRTIO0_HI = VIRTIO0_LO + 0x1000 - 1,
+
+    FB0MEM_LO = 0x10200000,
     FB0MEM_HI = FB0MEM_LO + 0x400000 - 1,
+
+    FB1MEM_LO = 0x10600000,
+    FB1MEM_HI = FB1MEM_LO + 0x200000 - 1,
 };
 
 enum : mwr::u64 {
@@ -70,8 +76,9 @@ enum : mwr::u64 {
     SPI_LAN0 = 9,
     SPI_SDHCI = 10,
     SPI_SPI = 11,
-    CAN_0 = 14,
-    CAN_1 = 15,
+    SPI_CAN_0 = 14,
+    SPI_CAN_1 = 15,
+    SPI_VIRTIO0 = 16,
 };
 
 class system : public vcml::system
@@ -80,6 +87,7 @@ public:
     // properties
     vcml::property<vcml::range> addr_ram;
     vcml::property<vcml::range> addr_fb0mem;
+    vcml::property<vcml::range> addr_fb1mem;
     vcml::property<vcml::range> addr_uart0;
     vcml::property<vcml::range> addr_uart1;
     vcml::property<vcml::range> addr_uart2;
@@ -93,6 +101,7 @@ public:
     vcml::property<vcml::range> addr_gpio;
     vcml::property<vcml::range> addr_can;
     vcml::property<vcml::range> addr_can_msgram;
+    vcml::property<vcml::range> addr_virtio0;
 
     vcml::property<int> irq_uart0;
     vcml::property<int> irq_uart1;
@@ -103,6 +112,7 @@ public:
     vcml::property<int> irq_spi;
     vcml::property<int> irq_can0;
     vcml::property<int> irq_can1;
+    vcml::property<int> irq_virtio0;
 
     system(const sc_core::sc_module_name& name);
     system() = delete;
@@ -119,6 +129,7 @@ public:
 private:
     vcml::generic::clock m_clock_cpu;
     vcml::generic::clock m_fb0fps;
+    vcml::generic::clock m_fb1fps;
     vcml::generic::reset m_reset;
     vcml::meta::throttle m_throttle;
 
@@ -126,6 +137,8 @@ private:
     vcml::generic::memory m_ram;
     vcml::generic::fbdev m_fb0;
     vcml::generic::memory m_fb0mem;
+    vcml::generic::fbdev m_fb1;
+    vcml::generic::memory m_fb1mem;
     vcml::serial::pl011 m_uart0;
     vcml::serial::pl011 m_uart1;
     vcml::serial::pl011 m_uart2;
@@ -149,6 +162,8 @@ private:
     vcml::generic::memory m_can_msgram;
     vcml::can::m_can m_can;
     vcml::can::bridge m_canbridge;
+    vcml::virtio::mmio m_virtio0;
+    vcml::virtio::input m_virtio_input;
 
     cpu m_cpu;
 

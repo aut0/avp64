@@ -16,6 +16,7 @@ void system::construct_system_arm64() {
     clk_bind(m_clock_cpu, "clk", m_bus, "clk");
     clk_bind(m_clock_cpu, "clk", m_ram, "clk");
     clk_bind(m_clock_cpu, "clk", m_fb0mem, "clk");
+    clk_bind(m_clock_cpu, "clk", m_fb1mem, "clk");
     clk_bind(m_clock_cpu, "clk", m_uart0, "clk");
     clk_bind(m_clock_cpu, "clk", m_uart1, "clk");
     clk_bind(m_clock_cpu, "clk", m_uart2, "clk");
@@ -31,13 +32,17 @@ void system::construct_system_arm64() {
     clk_bind(m_clock_cpu, "clk", m_cpu, "clk");
     clk_bind(m_clock_cpu, "clk", m_can, "clk");
     clk_bind(m_clock_cpu, "clk", m_can_msgram, "clk");
+    clk_bind(m_clock_cpu, "clk", m_virtio0, "clk");
 
     clk_bind(m_fb0fps, "clk", m_fb0, "clk");
+    clk_bind(m_fb1fps, "clk", m_fb1, "clk");
 
     gpio_bind(m_reset, "rst", m_bus, "rst");
     gpio_bind(m_reset, "rst", m_ram, "rst");
     gpio_bind(m_reset, "rst", m_fb0, "rst");
     gpio_bind(m_reset, "rst", m_fb0mem, "rst");
+    gpio_bind(m_reset, "rst", m_fb1, "rst");
+    gpio_bind(m_reset, "rst", m_fb1mem, "rst");
     gpio_bind(m_reset, "rst", m_uart0, "rst");
     gpio_bind(m_reset, "rst", m_uart1, "rst");
     gpio_bind(m_reset, "rst", m_uart2, "rst");
@@ -53,11 +58,14 @@ void system::construct_system_arm64() {
     gpio_bind(m_reset, "rst", m_cpu, "rst");
     gpio_bind(m_reset, "rst", m_can, "rst");
     gpio_bind(m_reset, "rst", m_can_msgram, "rst");
+    gpio_bind(m_reset, "rst", m_virtio0, "rst");
 
     tlm_bind(m_bus, m_cpu, "bus");
     tlm_bind(m_bus, m_ram, "in", addr_ram);
     tlm_bind(m_bus, m_fb0, "out");
     tlm_bind(m_bus, m_fb0mem, "in", addr_fb0mem);
+    tlm_bind(m_bus, m_fb1, "out");
+    tlm_bind(m_bus, m_fb1mem, "in", addr_fb1mem);
     tlm_bind(m_bus, m_uart0, "in", addr_uart0);
     tlm_bind(m_bus, m_uart1, "in", addr_uart1);
     tlm_bind(m_bus, m_uart2, "in", addr_uart2);
@@ -73,6 +81,8 @@ void system::construct_system_arm64() {
     tlm_bind(m_bus, m_can, "in", addr_can);
     tlm_bind(m_bus, m_can, "dma");
     tlm_bind(m_bus, m_can_msgram, "in", addr_can_msgram);
+    tlm_bind(m_bus, m_virtio0, "in", addr_virtio0);
+    tlm_bind(m_bus, m_virtio0, "out");
 
     // Connect network to eth
     eth_bind(m_net, "eth_tx", 0, m_lan0, "eth_rx");
@@ -112,12 +122,17 @@ void system::construct_system_arm64() {
     gpio_bind(m_spi, "irq", m_cpu, "spi", irq_spi);
     gpio_bind(m_can, "irq0", m_cpu, "spi", irq_can0);
     gpio_bind(m_can, "irq1", m_cpu, "spi", irq_can1);
+    gpio_bind(m_virtio0, "irq", m_cpu, "spi", irq_virtio0);
+
+    // VIRTIO
+    virtio_bind(m_virtio0, "virtio_out", m_virtio_input, "virtio_in");
 }
 
 system::system(const sc_core::sc_module_name& nm):
     vcml::system(nm),
     addr_ram("addr_ram", { RAM_LO, RAM_HI }),
     addr_fb0mem("addr_fb0mem", { FB0MEM_LO, FB0MEM_HI }),
+    addr_fb1mem("addr_fb1mem", { FB1MEM_LO, FB1MEM_HI }),
     addr_uart0("addr_uart0", { UART0_LO, UART0_HI }),
     addr_uart1("addr_uart1", { UART1_LO, UART1_HI }),
     addr_uart2("addr_uart2", { UART2_LO, UART2_HI }),
@@ -131,6 +146,7 @@ system::system(const sc_core::sc_module_name& nm):
     addr_gpio("addr_gpio", { GPIO_LO, GPIO_HI }),
     addr_can("addr_can", { CAN_LO, CAN_HI }),
     addr_can_msgram("addr_can_msgram", { CAN_MSGRAM_LO, CAN_MSGRAM_HI }),
+    addr_virtio0("addr_virtio0", { VIRTIO0_LO, VIRTIO0_HI }),
     irq_uart0("irq_uart0", SPI_UART0),
     irq_uart1("irq_uart1", SPI_UART1),
     irq_uart2("irq_uart2", SPI_UART2),
@@ -138,16 +154,20 @@ system::system(const sc_core::sc_module_name& nm):
     irq_lan0("irq_lan0", SPI_LAN0),
     irq_sdhci("irq_sdhci", SPI_SDHCI),
     irq_spi("irq_spi", SPI_SPI),
-    irq_can0("irq_can0", CAN_0),
-    irq_can1("irq_can1", CAN_1),
+    irq_can0("irq_can0", SPI_CAN_0),
+    irq_can1("irq_can1", SPI_CAN_1),
+    irq_virtio0("irq_virtio0", SPI_VIRTIO0),
     m_clock_cpu("clock_cpu", 1 * mwr::GHz),
     m_fb0fps("fb0fps", 60 * mwr::Hz),
+    m_fb1fps("fb1fps", 60 * mwr::Hz),
     m_reset("reset"),
     m_throttle("throttle"),
     m_bus("bus"),
     m_ram("ram", addr_ram.get().length()),
     m_fb0("fb0"),
     m_fb0mem("fb0_mem", addr_fb0mem.get().length()),
+    m_fb1("fb1"),
+    m_fb1mem("fb1_mem", addr_fb1mem.get().length()),
     m_uart0("uart0"),
     m_uart1("uart1"),
     m_uart2("uart2"),
@@ -171,6 +191,8 @@ system::system(const sc_core::sc_module_name& nm):
     m_can_msgram("can_msgram", addr_can_msgram.get().length()),
     m_can("can", addr_can_msgram.get()),
     m_canbridge("canbridge"),
+    m_virtio0("virtio0"),
+    m_virtio_input("virtio_input"),
     m_cpu("cpu") {
     construct_system_arm64();
 }
