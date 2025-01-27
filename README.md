@@ -242,6 +242,31 @@ The log file looks like this:
 
 ----
 
+## InSCight™ Simulation Database
+
+By default (if the `SYSTEMC_HOME` environment variable is not set to point to a custom SystemC source), [MachineWare's SystemC kernel](https://github.com/machineware-gmbh/systemc) is used.
+This kernel supports the InSCight™ database (more information here: [SystemC Fika](https://www.youtube.com/watch?v=BUoVm30XAIs)) to store simulation data in csv or SQLite-based databases.
+
+To enable InSCight™, set the `INSCIGHT` environment variable before starting the simulation.
+Possible values are
+
+| INSCIGHT | Database                                   | Database Name            |
+|:--------:|--------------------------------------------|--------------------------|
+| csv      | one csv file per database table            | `<table_name>.<pid>.csv` |
+| sqlite   | SQLite-based database with multiple tables | `sim.<pid>.db`           |
+
+The databases are stored in the current working directory.
+
+To store logging/tracing information in the database, use the `--log-inscight`, and`--trace-inscight` command-line options (see [Run Section](#run)).
+
+Example command to run the VP with InSCight™ enabled and forwarded tracing messages:
+
+```bash
+INSCIGHT=sqlite <install-dir>/bin/avp64-runner -f <install-dir>/sw/buildroot_6_6_6-x1.cfg --trace-inscight
+```
+
+----
+
 ## Maintaining Multiple Builds
 
 Debug builds (i.e. `-DCMAKE_BUILD_TYPE=DEBUG`) are intended for developers
