@@ -31,3 +31,5 @@ BUILDROOT_TAR="${BUILDROOT##*/}"
 wget ${BUILDROOT}
 tar -xvf ${BUILDROOT_TAR} -C ${SW_DIR}/
 rm ${BUILDROOT_TAR}
+
+echo "${BUILDROOT_TAR} extracted to ${SW_DIR}"
