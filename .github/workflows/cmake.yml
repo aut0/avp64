@@ -28,7 +28,7 @@ jobs:
       - name: Download software
         working-directory: ./sw
         run: |
-          wget https://github.com/aut0/avp64_sw/releases/download/v2024.08.02/buildroot_6_5_6.tar.gz
+          wget https://github.com/aut0/avp64_sw/releases/download/v2025.01.27/buildroot_6_5_6.tar.gz
           tar -xvf buildroot_6_5_6.tar.gz
           rm buildroot_6_5_6.tar.gz
 

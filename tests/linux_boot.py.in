@@ -17,7 +17,16 @@ import time
 sim='$<TARGET_FILE:avp64-runner>'
 cfg='@config@'
 
-cmdline = f'{sim} -f {cfg} -c system.term0.backends=term'
+properties = {
+    'system.term0.backends': 'term',
+    'system.term1.backends': '',
+    'system.term2.backends': '',
+    'system.term3.backends': '',
+    'system.fb0.displays': '',
+    'system.fb1.displays': '',
+}
+
+cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])
 
 print(cmdline)
 
@@ -32,6 +41,8 @@ p.expect('10009000.uart: ttyAMA0 at MMIO 0x10009000')
 p.expect('1000a000.uart: ttyAMA1 at MMIO 0x1000a000')
 p.expect('1000b000.uart: ttyAMA2 at MMIO 0x1000b000')
 p.expect('1000c000.uart: ttyAMA3 at MMIO 0x1000c000')
+p.expect('simple-framebuffer 10200000.framebuffer: framebuffer at 0x10200000')
+p.expect('simple-framebuffer 10600000.framebuffer: framebuffer at 0x10600000')
 p.expect('timeriomem_rng 10007000.rng: 32bits')
 p.expect('spi_oc_tiny 10020000.spi')
 p.expect('m_can_platform 10021000.can: m_can device registered')
