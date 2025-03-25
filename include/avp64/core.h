@@ -66,6 +66,7 @@ enum arm_generic_timer_type {
     ARM_TIMER_VIRT = 1,
     ARM_TIMER_HYP = 2,
     ARM_TIMER_SEC = 3,
+    ARM_TIMER_COUNT = 4,
 };
 
 typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
@@ -113,7 +114,7 @@ public:
     using vcml::component::transport; // needed to not hide vcml transport
                                       // function by ocx transport
 
-    vcml::gpio_initiator_array timer_irq_out;
+    vcml::gpio_initiator_array<ARM_TIMER_COUNT> timer_irq_out;
     std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
 
     void log_timing_info() const;

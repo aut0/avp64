@@ -12,6 +12,7 @@
 
 #include "vcml.h"
 #include "avp64/core.h"
+#include "vcml/models/arm/gic400.h"
 
 #include <memory>
 #include <vector>
@@ -60,7 +61,7 @@ public:
     vcml::property<int> gdb_port;
 
     tlm::tlm_initiator_socket<> bus;
-    vcml::gpio_target_array spi;
+    vcml::gpio_target_array<vcml::arm::gic400::NSPI> spi;
 
     cpu(const sc_core::sc_module_name& nm);
     cpu() = delete;
