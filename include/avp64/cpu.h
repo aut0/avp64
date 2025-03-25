@@ -12,7 +12,6 @@
 
 #include "vcml.h"
 #include "avp64/core.h"
-#include "vcml/models/arm/gic400.h"
 
 #include <memory>
 #include <vector>
