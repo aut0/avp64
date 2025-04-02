@@ -19,7 +19,7 @@ include(cmake/common.cmake)
 find_github_repo(vcml "machineware-gmbh/vcml")
 
 set(OCX_QEMU_ARM_BUILD_TESTS OFF CACHE BOOL "disable ocx tests")
-find_github_repo(ocx-qemu-arm "snps-virtualprototyping/ocx-qemu-arm")
+find_github_repo(ocx-qemu-arm "nbosb/ocx-qemu-arm" "avp64")
 
 set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
