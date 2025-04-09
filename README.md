@@ -21,7 +21,7 @@ The following target software configurations were tested (see [avp64-sw](https:/
 ## Build & Installation
 
 This project has a [GitHub action](.github/workflows/cmake.yml) that automatically builds the project and runs the tests.
-The action contains all steps that are needed to compile the project on Ubuntu 22.04.
+The action contains all steps that are needed to compile the project on Ubuntu 22.04 and 24.04 for x86 and ARM based host machines.
 It can be used as a guideline.
 The needed steps are explained below:
 

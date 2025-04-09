@@ -47,11 +47,13 @@ void mem_protector::segfault_handler_int(int sig, siginfo_t* si, void* arg) {
 
 void mem_protector::register_page(core* core, vcml::u64 page_addr,
                                   void* host_addr) {
+    vcml::u64 core_page_size = core->get_page_size();
     VCML_ERROR_ON(
-        mwr::get_page_size() < core->get_page_size(),
+        mwr::get_page_size() < core_page_size,
         "host page size is smaller than the target one - not implemented");
+    VCML_ERROR_ON(core_page_size == 0, "page size is 0");
 
-    vcml::u64 target_page_bits = mwr::ctz(core->get_page_size());
+    vcml::u64 target_page_bits = mwr::ctz(core_page_size);
     vcml::u64 page_number = mwr::extract(page_addr, target_page_bits,
                                          HOST_PAGE_BITS - target_page_bits);
 
