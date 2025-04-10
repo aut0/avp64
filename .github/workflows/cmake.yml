@@ -45,13 +45,16 @@ jobs:
       - name: Download software
         working-directory: ./sw
         run: |
-          wget https://github.com/aut0/avp64_sw/releases/download/v2025.04.07/buildroot_6_5_6.tar.gz
+          wget https://github.com/aut0/avp64_sw/releases/download/v2025.04.10/buildroot_6_5_6.tar.gz
           tar -xvf buildroot_6_5_6.tar.gz
           rm buildroot_6_5_6.tar.gz
 
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: |
+          python3 -m venv .vevnv
+          source .vevnv/bin/activate
+          pip3 install -r ${{github.workspace}}/tests/requirements.txt
           ctest -C ${{matrix.BUILD_TYPE}} --output-on-failure --output-junit testreport.xml
 
       - name: Publish Test Report

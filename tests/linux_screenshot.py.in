@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+
+##############################################################################
+#                                                                            #
+# Copyright 2025 Nils Bosbach                                                #
+#                                                                            #
+# This software is licensed under the MIT license.                           #
+# A copy of the license can be found in the LICENSE file at the root         #
+# of the source tree.                                                        #
+#                                                                            #
+##############################################################################
+
+import sys
+import pexpect
+import os
+from PIL import Image, ImageChops
+from pyvp.vcml.session import Session
+
+file_dir = os.path.dirname(os.path.abspath(__file__))
+
+sim='$<TARGET_FILE:avp64-runner>'
+cfg='@config@'
+ref='@ref@'
+session_port = 8888
+
+properties = {
+    'system.term0.backends': 'term',
+    'system.term1.backends': '',
+    'system.term2.backends': '',
+    'system.term3.backends': '',
+    'system.fb0.displays': '',
+    'system.fb1.displays': '',
+    'system.virtio_input.displays': '',
+    'system.session': session_port,
+}
+
+cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])
+
+print(cmdline)
+
+p = pexpect.spawn(cmdline, logfile=sys.stdout, timeout=None, encoding='utf-8')
+
+p.expect(f'vspserver waiting on port {session_port}')
+session = Session(f'localhost:{session_port}')
+session.run()
+
+# did we get a login prompt?
+p.expect('avp64 login:')
+p.sendline('root')
+
+def check_file_exists(filename):
+    p.expect('# ')
+    p.sendline(f'test -f {filename}')
+    p.expect('# ')
+    p.sendline('echo $?')
+    if p.expect(['0', '1']) != 0:
+        print(f'{filename} not found')
+        sys.exit(1)
+
+check_file_exists('/root/png_to_fb/png_to_fb')
+check_file_exists('/root/png_to_fb/test_card.png')
+
+# start application
+p.expect('# ')
+p.sendline("/root/png_to_fb/png_to_fb /root/png_to_fb/test_card.png /dev/fb1")
+
+p.expect("# ")
+
+# take screenshot
+screenshot_path = os.path.join(file_dir, 'fb.bmp')
+fb = session.find_module("system.fb1")
+screenshot = fb.find_command("screenshot")
+session.stop()
+screenshot.execute((screenshot_path,))
+
+# stop vp
+session.kill()
+p.expect(pexpect.EOF)
+
+def compare_images(image1_path, image2_path):
+    img1 = Image.open(image1_path)
+    img2 = Image.open(image2_path)
+
+    # Ensure images have the same mode and size
+    if img1.mode != img2.mode or img1.size != img2.size:
+        return False
+
+    diff = ImageChops.difference(img1, img2)
+
+    return diff.getbbox() is None
+
+if not compare_images(ref, screenshot_path):
+    exit(1)

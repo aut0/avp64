@@ -24,6 +24,7 @@ properties = {
     'system.term3.backends': '',
     'system.fb0.displays': '',
     'system.fb1.displays': '',
+    'system.virtio_input.displays': '',
 }
 
 cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])
