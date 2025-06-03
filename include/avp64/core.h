@@ -161,6 +161,7 @@ public:
 
     core() = delete;
     core(const core&) = delete;
+    core& operator=(const core&) = delete;
     explicit core(const sc_core::sc_module_name& name, vcml::u64 procid,
                   vcml::u64 coreid);
     virtual ~core() override;
