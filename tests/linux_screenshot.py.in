@@ -32,6 +32,7 @@ properties = {
     'system.fb1.displays': '',
     'system.virtio_input.displays': '',
     'system.session': session_port,
+    'system.throttle.rtf': '0',
 }
 
 cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])

@@ -25,6 +25,7 @@ properties = {
     'system.fb0.displays': '',
     'system.fb1.displays': '',
     'system.virtio_input.displays': '',
+    'system.throttle.rtf': '0',
 }
 
 cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])
@@ -94,4 +95,3 @@ with open('system.canbridge.tx', 'r') as f:
 # test ok - shut down simulation
 p.sendline('devmem 0x10008000 32 1')
 p.expect(pexpect.EOF)
-
