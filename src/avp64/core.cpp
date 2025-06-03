@@ -615,5 +615,4 @@ T core::get_ocx_function_ptr(const char* name) {
     return func;
 }
 
-
 } // namespace avp64
