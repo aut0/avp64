@@ -79,7 +79,6 @@ private:
     vcml::u64 m_core_id;
     vcml::u64 m_run_cycles;
     vcml::u64 m_sleep_cycles;
-    vcml::u64 m_total_cycles;
     bool m_transport;
     void* m_ocx_handle;
     std::vector<std::shared_ptr<core>> m_syscall_subscriber;
@@ -147,8 +146,6 @@ public:
     void inject_cpu(core* cpu);
 
     virtual vcml::u64 cycle_count() const override;
-    virtual void update_local_time(sc_core::sc_time& local_time,
-                                   sc_core::sc_process_b* proc) override;
     virtual bool disassemble(vcml::u8* ibuf, vcml::u64& addr,
                              std::string& code) override;
     virtual vcml::u64 program_counter() override;

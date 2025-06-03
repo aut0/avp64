@@ -198,7 +198,7 @@ void core::log_timing_info() const {
     log_info("  cycles       : %llu", cycle_count());
     log_info("  sleep cycles : %llu (%.1f %%)", m_sleep_cycles,
              static_cast<double>(m_sleep_cycles) * 100.0 /
-                 static_cast<double>(m_sleep_cycles + cycle_count()));
+                 static_cast<double>(cycle_count() + m_sleep_cycles));
 
     for (auto i : irq) {
         vcml::irq_stats stats;
@@ -268,7 +268,6 @@ void core::hint(ocx::hint_kind kind) {
         const vcml::u64 cycles = (sc_core::sc_time_stamp() - before_wait) /
                                  clock_cycle();
         m_sleep_cycles += cycles;
-        m_total_cycles += cycles;
         m_core->stop();
         break;
     }
@@ -410,16 +409,6 @@ vcml::u64 core::cycle_count() const {
     return m_run_cycles + m_core->insn_count();
 }
 
-void core::update_local_time(sc_core::sc_time& local_time,
-                             sc_core::sc_process_b* proc) {
-    if (is_local_process(proc)) {
-        vcml::u64 cycles = cycle_count() + m_sleep_cycles;
-        VCML_ERROR_ON(cycles < m_total_cycles, "cycle count goes down");
-        local_time += clock_cycles(cycles - m_total_cycles);
-        m_total_cycles = cycles;
-    }
-}
-
 bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) {
     const size_t bufsz = 100;
     char buf[bufsz];
@@ -504,7 +493,6 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_core_id(coreid),
     m_run_cycles(0),
     m_sleep_cycles(0),
-    m_total_cycles(0),
     m_transport(false),
     m_syscall_subscriber(),
     m_update_mem(),
