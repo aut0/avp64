@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2024 Lukas Jünger, Nils Bosbach                                  *
+ * Copyright 2025 Nils Bosbach                                                *
  *                                                                            *
  * This software is licensed under the MIT license found in the               *
  * LICENSE file at the root directory of this source tree.                    *
@@ -22,7 +22,7 @@ public:
     }
 };
 
-TEST(avp64, simple) {
+TEST(avp64, reset) {
     arm64_core_test test_cpu;
 
     mwr::hz_t defclk = 1 * mwr::kHz;
@@ -77,4 +77,15 @@ TEST(avp64, simple) {
     EXPECT_EQ(pc, 0x8);
     EXPECT_EQ(x0, 0xcafe);
     EXPECT_EQ(x1, 0x0);
+
+    // Reset the CPU
+    reset.rst.pulse();
+
+    EXPECT_TRUE(test_cpu.read_reg(32, &pc, 8));
+    EXPECT_TRUE(test_cpu.read_reg(0, &x0, 8));
+    EXPECT_TRUE(test_cpu.read_reg(1, &x1, 8));
+    EXPECT_EQ(pc, 0x0);
+    EXPECT_EQ(x0, 0x0);
+    EXPECT_EQ(x1, 0x0);
+    EXPECT_EQ(test_cpu.cycle_count(), 0);
 }

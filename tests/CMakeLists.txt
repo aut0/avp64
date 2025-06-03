@@ -29,6 +29,7 @@ macro(new_test test)
 endmacro()
 
 new_test(arm64_core_test)
+new_test(arm64_reset_test)
 if (AVP64_BUILD_RUNNER)
     function(linux name input_script nrcpu config timeout)
         set(config ${CMAKE_SOURCE_DIR}/sw/${config})

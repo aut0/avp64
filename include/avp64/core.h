@@ -70,6 +70,7 @@ enum arm_generic_timer_type {
 };
 
 typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
+typedef void (*delete_instance_t)(ocx::core*);
 
 class core : public vcml::processor, private ocx::env
 {
@@ -77,10 +78,13 @@ private:
     ocx::core* m_core;
     sc_core::sc_event m_irqev;
     vcml::u64 m_core_id;
+    vcml::u64 m_proc_id;
     vcml::u64 m_run_cycles;
     vcml::u64 m_sleep_cycles;
     bool m_transport;
     void* m_ocx_handle;
+    create_instance_t m_create_instance;
+    delete_instance_t m_delete_instance;
     std::vector<std::shared_ptr<core>> m_syscall_subscriber;
     std::unordered_set<vcml::u64> m_update_mem;
     std::list<std::pair<int, std::shared_ptr<void>>> m_syscalls;
@@ -88,6 +92,12 @@ private:
     void timer_irq_trigger(int timer_id);
     static void segfault_handler(int sig, siginfo_t* si, void* unused);
     void load_symbols();
+
+    template <typename T>
+    T get_ocx_function_ptr(const char* fn);
+
+    void open_core();
+    void close_core();
 
 protected:
     virtual void interrupt(size_t irq, bool set) override;
@@ -108,6 +118,8 @@ protected:
 
     virtual bool start_basic_block_trace() override;
     virtual bool stop_basic_block_trace() override;
+
+    virtual void reset() override;
 
 public:
     using vcml::component::transport; // needed to not hide vcml transport

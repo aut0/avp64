@@ -484,9 +484,13 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_core(nullptr),
     m_irqev("irqev"),
     m_core_id(coreid),
+    m_proc_id(procid),
     m_run_cycles(0),
     m_sleep_cycles(0),
     m_transport(false),
+    m_ocx_handle(nullptr),
+    m_create_instance(nullptr),
+    m_delete_instance(nullptr),
     m_syscall_subscriber(),
     m_update_mem(),
     m_syscalls(),
@@ -503,15 +507,12 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     VCML_ERROR_ON(!m_ocx_handle, "Could not load libocx-qemu-arm.so: %s",
                   dlerror());
 
-    create_instance_t create_instance_func = (create_instance_t)dlsym(
-        m_ocx_handle, "_ZN3ocx15create_instanceEmRNS_3envEPKc");
+    m_create_instance = get_ocx_function_ptr<create_instance_t>(
+        "_ZN3ocx15create_instanceEmRNS_3envEPKc");
+    m_delete_instance = get_ocx_function_ptr<delete_instance_t>(
+        "_ZN3ocx15delete_instanceEPNS_4coreE");
 
-    const char* dlsym_err = dlerror();
-    VCML_ERROR_ON(dlsym_err, "Could not load symbol create_instance: %s",
-                  dlsym_err);
-
-    m_core = create_instance_func(20201012ull, *this, "Cortex-A72");
-    VCML_ERROR_ON(!m_core, "Could not create ocx::core instance");
+    open_core();
 
     set_little_endian();
 
@@ -544,7 +545,6 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     define_cpureg_rw(192, "FPSR", 4);
     define_cpureg_rw(193, "FPCR", 4);
 
-    m_core->set_id(procid, coreid);
     data.set_cpuid(m_core_id);
     insn.set_cpuid(m_core_id);
     timer_events[ARM_TIMER_PHYS] = std::make_shared<sc_core::sc_event>(
@@ -557,9 +557,63 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
         "arm_timer_s");
 }
 
+void core::reset() {
+    vcml::processor::reset();
+
+    m_run_cycles = 0;
+    m_sleep_cycles = 0;
+    m_transport = false;
+
+    close_core();
+    open_core();
+
+    reset_cpuregs();
+    flush_cpuregs();
+
+    // reset all timers
+    for (size_t i = 0; i < ARM_TIMER_COUNT; ++i) {
+        timer_irq_out[i].lower();
+        timer_events[i]->cancel();
+    }
+}
+
+void core::open_core() {
+    VCML_ERROR_ON(m_core, "core already initialized");
+    VCML_ERROR_ON(!m_ocx_handle, "OCX handle is not initialized");
+    VCML_ERROR_ON(!m_create_instance,
+                  "OCX create_instance function not found");
+
+    m_core = m_create_instance(20201012ull, *this, "Cortex-A72");
+    VCML_ERROR_ON(!m_core, "Could not create ocx::core instance");
+
+    m_core->set_id(m_proc_id, m_core_id);
+}
+
+void core::close_core() {
+    if (m_core) {
+        m_delete_instance(m_core);
+        m_core = nullptr;
+    }
+}
+
 core::~core() {
+    close_core();
+
+    m_create_instance = nullptr;
+    m_delete_instance = nullptr;
     dlclose(m_ocx_handle);
     m_ocx_handle = nullptr;
 }
+
+template <typename T>
+T core::get_ocx_function_ptr(const char* name) {
+    VCML_ERROR_ON(!m_ocx_handle, "OCX handle is not initialized");
+
+    T func = (T)dlsym(m_ocx_handle, name);
+    const char* dlsym_err = dlerror();
+    VCML_ERROR_ON(dlsym_err, "Could not load symbol %s: %s", name, dlsym_err);
+    return func;
+}
+
 
 } // namespace avp64
