@@ -121,15 +121,17 @@ void cpu::end_of_simulation() {
 
     for (const auto& c : m_cores)
         c->log_timing_info();
+
     log_info("total - cluster %zu", clusterid.get());
     log_info("  instructions : %llu", cycle_count());
 }
 
 vcml::u64 cpu::cycle_count() const {
     vcml::u64 total_insn = 0;
-    for (const auto& c : m_cores) {
+
+    for (const auto& c : m_cores)
         total_insn += c->cycle_count();
-    }
+
     return total_insn;
 }
 

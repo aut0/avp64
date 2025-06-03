@@ -40,9 +40,8 @@ void mem_protector::segfault_handler(int sig, siginfo_t* si, void* arg) {
 }
 
 void mem_protector::segfault_handler_int(int sig, siginfo_t* si, void* arg) {
-    if (!mem_protector::get_instance().notify_page(si->si_addr)) {
+    if (!mem_protector::get_instance().notify_page(si->si_addr))
         m_sa_orig.sa_sigaction(sig, si, arg);
-    }
 }
 
 void mem_protector::register_page(core* core, vcml::u64 page_addr,
@@ -91,9 +90,8 @@ bool mem_protector::notify_page(void* access_addr) {
                           HOST_PAGE_MASK;
 
     auto it = m_protected_pages.find(page_addr);
-    if (it == m_protected_pages.end()) { // not a locked page
+    if (it == m_protected_pages.end()) // not a locked page
         return false;
-    }
 
     vcml::u64 page_number = it->second.page_number;
     int i = 0;
@@ -217,22 +215,18 @@ void core::log_timing_info() const {
 }
 
 void core::signal(ocx::u64 sigid, bool set) {
-    if (timer_irq_out[sigid] != set) {
-        timer_irq_out[sigid] = set;
-    }
+    timer_irq_out[sigid] = set;
 }
 
 void core::broadcast_syscall(int callno, std::shared_ptr<void> arg,
                              bool async) {
     handle_syscall(callno, arg);
-    for (auto const& cpu : m_syscall_subscriber) {
+    for (auto const& cpu : m_syscall_subscriber)
         cpu->handle_syscall(callno, arg);
-    }
 }
 
 ocx::u64 core::get_time_ps() {
-    return sc_core::sc_time_stamp().value() /
-           sc_core::sc_time(1, sc_core::SC_PS).value();
+    return vcml::time_to_ps(sc_core::sc_time_stamp());
 }
 
 const char* core::get_param(const char* name) {
@@ -244,7 +238,7 @@ const char* core::get_param(const char* name) {
 }
 
 void core::notify(ocx::u64 eventid, ocx::u64 time_ps) {
-    sc_core::sc_time notify_time = vcml::time_from_value(time_ps);
+    sc_core::sc_time notify_time = sc_core::sc_time(time_ps, sc_core::SC_PS);
     sc_core::sc_time delta = notify_time - sc_core::sc_time_stamp();
     timer_events[eventid]->notify(delta);
 }
@@ -415,9 +409,8 @@ bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) {
     vcml::u64 len;
     len = m_core->disassemble(addr, buf, bufsz);
 
-    if (len == 0) {
+    if (len == 0)
         return false;
-    }
 
     code = std::string(buf);
     addr += len;
@@ -566,6 +559,7 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
 
 core::~core() {
     dlclose(m_ocx_handle);
+    m_ocx_handle = nullptr;
 }
 
 } // namespace avp64
