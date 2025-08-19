@@ -83,7 +83,7 @@ private:
     vcml::arm::gic400 m_gic;
     vcml::generic::bus m_corebus;
 
-    std::shared_ptr<vcml::debugging::gdbserver> m_gdb;
+    std::unique_ptr<vcml::debugging::gdbserver> m_gdb;
 };
 } // namespace avp64
 #endif

@@ -104,8 +104,8 @@ void cpu::end_of_elaboration() {
         for (const auto& c : m_cores)
             tgts.push_back(c.get());
 
-        m_gdb = std::make_shared<vcml::debugging::gdbserver>(gdb_port, tgts,
-                                                             run);
+        m_gdb = std::make_unique<vcml::debugging::gdbserver>(
+            gdb_port, std::move(tgts), run);
         m_gdb->echo(gdb_echo);
 
         if (gdb_port == 0)
