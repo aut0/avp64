@@ -24,7 +24,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR=${DIR}/..
 SW_DIR=${ROOT_DIR}/sw
 
-BUILDROOT=https://github.com/aut0/avp64_sw/releases/download/v2025.04.07/buildroot_6_5_6.tar.gz
+BUILDROOT=https://github.com/aut0/avp64_sw/releases/download/v2025.08.22/buildroot_6_5_6.tar.gz
 BUILDROOT_TAR="${BUILDROOT##*/}"
 
 # fetch sw
