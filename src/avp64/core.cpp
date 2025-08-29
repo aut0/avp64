@@ -271,11 +271,11 @@ void core::hint(ocx::hint_kind kind) {
 }
 
 void core::handle_begin_basic_block(ocx::u64 vaddr) {
-    notify_basic_block(vaddr, 0, 0);
+    notify_basic_block(vaddr, 0, 0, local_time_stamp());
 }
 
 bool core::handle_breakpoint(ocx::u64 vaddr) {
-    notify_breakpoint_hit(vaddr);
+    notify_breakpoint_hit(vaddr, local_time_stamp());
     return true;
 }
 
@@ -284,9 +284,9 @@ bool core::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data,
     const vcml::range range(vaddr, vaddr + size);
 
     if (iswr)
-        notify_watchpoint_write(range, data);
+        notify_watchpoint_write(range, &data, local_time_stamp());
     else
-        notify_watchpoint_read(range);
+        notify_watchpoint_read(range, local_time_stamp());
     return true;
 }
 
