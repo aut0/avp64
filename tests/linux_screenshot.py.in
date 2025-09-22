@@ -33,6 +33,7 @@ properties = {
     'system.virtio_input.displays': '',
     'system.session': session_port,
     'system.throttle.rtf': '0',
+    'system.session_host': '127.0.0.1',
 }
 
 cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])
@@ -42,7 +43,7 @@ print(cmdline)
 p = pexpect.spawn(cmdline, logfile=sys.stdout, timeout=None, encoding='utf-8')
 
 p.expect(f'vspserver waiting on port {session_port}')
-session = Session(f'localhost:{session_port}')
+session = Session(f'127.0.0.1:{session_port}')
 session.run()
 
 # did we get a login prompt?
