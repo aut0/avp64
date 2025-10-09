@@ -51,6 +51,7 @@ public:
 
     static void segfault_handler(int sig, siginfo_t* si, void*);
     void register_page(core* cpu, vcml::u64 page_addr, void* host_addr);
+    void deregister_page(core* cpu, vcml::u64 page_addr);
     bool notify_page(void* access_addr);
 };
 
@@ -120,6 +121,7 @@ protected:
     virtual bool stop_basic_block_trace() override;
 
     virtual void reset() override;
+    virtual void invalidate_dmi(vcml::u64 start, vcml::u64 end) override;
 
 public:
     using vcml::component::transport; // needed to not hide vcml transport

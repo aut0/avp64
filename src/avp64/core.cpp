@@ -110,6 +110,17 @@ bool mem_protector::notify_page(void* access_addr) {
                       PROT_READ | PROT_WRITE) == 0;
 }
 
+void mem_protector::deregister_page(core* cpu, vcml::u64 page_addr) {
+    for (auto it = m_protected_pages.begin(); it != m_protected_pages.end();
+         ++it) {
+        if (it->second.page_addr != page_addr)
+            continue;
+
+        m_protected_pages.erase(it);
+        break;
+    }
+}
+
 ocx::u8* core::get_page_ptr_r(ocx::u64 page_paddr) {
     tlm::tlm_dmi dmi;
     vcml::u64 page_size = get_page_size();
@@ -148,6 +159,18 @@ ocx::u8* core::get_page_ptr_w(ocx::u64 page_paddr) {
         return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
     }
     return nullptr;
+}
+
+void core::invalidate_dmi(vcml::u64 start, vcml::u64 end) {
+    vcml::processor::invalidate_dmi(start, end);
+
+    vcml::u64 page_size = get_page_size();
+
+    for (vcml::u64 page_addr = start & (page_size - 1);
+         page_addr + page_size - 1 <= end; page_addr += page_size) {
+        m_core->invalidate_page_ptr(page_addr);
+        mem_protector::get_instance().deregister_page(this, page_addr);
+    }
 }
 
 void core::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {
