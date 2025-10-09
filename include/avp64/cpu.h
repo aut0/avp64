@@ -85,5 +85,7 @@ private:
 
     std::unique_ptr<vcml::debugging::gdbserver> m_gdb;
 };
+
 } // namespace avp64
+
 #endif
