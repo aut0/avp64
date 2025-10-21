@@ -213,7 +213,7 @@ ocx::response core::transport(const ocx::transaction& tx) {
 
 void core::log_timing_info() const {
     log_info("core %llu", m_core_id);
-    log_info("  clock speed  : %.1f MHz", clk.read() / 1e6);
+    log_info("  clock speed  : %.1f MHz", clock_hz() / 1e6);
     log_info("  sim speed    : %.1f MIPS", get_cps() / 1e6);
     log_info("  run time     : %.1f s", get_run_time());
     log_info("  cycles       : %llu", cycle_count());
