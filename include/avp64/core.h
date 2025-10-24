@@ -17,45 +17,6 @@
 
 namespace avp64 {
 
-class core;
-
-class mem_protector
-{
-private:
-    struct page_data {
-        core* c;
-        vcml::u64 page_addr;
-        vcml::u64 page_number;
-        vcml::u64 page_size;
-        bool locked;
-    };
-
-    static const vcml::u64 HOST_PAGE_BITS;
-    static const vcml::u64 HOST_PAGE_MASK;
-
-    std::map<vcml::u64, struct page_data> m_protected_pages;
-    struct sigaction m_sa_orig;
-
-    mem_protector();
-    void segfault_handler_int(int sig, siginfo_t* si, void*);
-
-public:
-    static mem_protector& get_instance() {
-        static mem_protector inst;
-        return inst;
-    }
-
-    mem_protector(const mem_protector&) = delete;
-    void operator=(mem_protector const&) = delete;
-    virtual ~mem_protector();
-
-    static void segfault_handler(int sig, siginfo_t* si, void*);
-    void register_page(core* cpu, vcml::u64 page_addr, void* host_addr);
-    void deregister_pages(core* cpu, vcml::u64 start, vcml::u64 end);
-    void deregister_page(core* cpu, vcml::u64 page_addr);
-    bool notify_page(void* access_addr);
-};
-
 enum : size_t {
     INTERRUPT_IRQ = 0,
     INTERRUPT_FIQ = 1,

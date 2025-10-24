@@ -17,6 +17,40 @@
 
 namespace avp64 {
 
+class mem_protector
+{
+private:
+    struct page_data {
+        core* c;
+        vcml::u64 page_addr;
+        vcml::u64 page_number;
+        vcml::u64 page_size;
+        bool locked;
+    };
+
+    static const vcml::u64 HOST_PAGE_BITS;
+    static const vcml::u64 HOST_PAGE_MASK;
+
+    std::map<vcml::u64, struct page_data> m_protected_pages;
+    struct sigaction m_sa_orig;
+
+    mem_protector();
+    void segfault_handler_int(int sig, siginfo_t* si, void*);
+
+public:
+    static mem_protector& get_instance();
+
+    mem_protector(const mem_protector&) = delete;
+    void operator=(mem_protector const&) = delete;
+    virtual ~mem_protector();
+
+    static void segfault_handler(int sig, siginfo_t* si, void*);
+    void register_page(core* cpu, vcml::u64 page_addr, void* host_addr);
+    void deregister_pages(core* cpu, vcml::u64 start, vcml::u64 end);
+    void deregister_page(core* cpu, vcml::u64 page_addr);
+    bool notify_page(void* access_addr);
+};
+
 const vcml::u64 mem_protector::HOST_PAGE_BITS = mwr::ctz(mwr::get_page_size());
 const vcml::u64 mem_protector::HOST_PAGE_MASK = ~(mwr::get_page_size() - 1);
 
@@ -133,6 +167,11 @@ void mem_protector::deregister_pages(core* cpu, vcml::u64 start,
         protected_pages_new.emplace(*it);
     }
     m_protected_pages = std::move(protected_pages_new);
+}
+
+mem_protector& mem_protector::get_instance() {
+    static mem_protector inst;
+    return inst;
 }
 
 ocx::u8* core::get_page_ptr_r(ocx::u64 page_paddr) {
