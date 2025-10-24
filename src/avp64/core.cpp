@@ -121,6 +121,20 @@ void mem_protector::deregister_page(core* cpu, vcml::u64 page_addr) {
     }
 }
 
+void mem_protector::deregister_pages(core* cpu, vcml::u64 start,
+                                     vcml::u64 end) {
+    std::map<vcml::u64, struct page_data> protected_pages_new;
+    for (auto it = m_protected_pages.begin(); it != m_protected_pages.end();
+         ++it) {
+        if (it->second.page_addr + getpagesize() - 1 < start ||
+            it->second.page_addr > end)
+            continue;
+
+        protected_pages_new.emplace(*it);
+    }
+    m_protected_pages = std::move(protected_pages_new);
+}
+
 ocx::u8* core::get_page_ptr_r(ocx::u64 page_paddr) {
     tlm::tlm_dmi dmi;
     vcml::u64 page_size = get_page_size();
@@ -164,13 +178,9 @@ ocx::u8* core::get_page_ptr_w(ocx::u64 page_paddr) {
 void core::invalidate_dmi(vcml::u64 start, vcml::u64 end) {
     vcml::processor::invalidate_dmi(start, end);
 
-    vcml::u64 page_size = get_page_size();
-
-    for (vcml::u64 page_addr = start & (page_size - 1);
-         page_addr + page_size - 1 <= end; page_addr += page_size) {
-        m_core->invalidate_page_ptr(page_addr);
-        mem_protector::get_instance().deregister_page(this, page_addr);
-    }
+    dynamic_cast<ocx::core_inv_range_extension*>(m_core)->invalidate_page_ptrs(
+        start, end);
+    mem_protector::get_instance().deregister_pages(this, start, end);
 }
 
 void core::protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) {

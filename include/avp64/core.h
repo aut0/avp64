@@ -51,6 +51,7 @@ public:
 
     static void segfault_handler(int sig, siginfo_t* si, void*);
     void register_page(core* cpu, vcml::u64 page_addr, void* host_addr);
+    void deregister_pages(core* cpu, vcml::u64 start, vcml::u64 end);
     void deregister_page(core* cpu, vcml::u64 page_addr);
     bool notify_page(void* access_addr);
 };
