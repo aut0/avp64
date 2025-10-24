@@ -42,7 +42,7 @@ TEST(avp64, simple) {
     // Sockets are bound, but only DATA is used for MMIO
     test_cpu.insn.bind(imem.in);
     test_cpu.data.bind(dmem.in);
-    for (size_t i = 0; i < avp64::ARM_TIMER_COUNT; ++i)
+    for (size_t i = 0; i < avp64::core::ARM_TIMER_COUNT; ++i)
         test_cpu.timer_irq_out[i].stub();
 
     vcml::u64 pc, x0, x1;

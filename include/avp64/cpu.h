@@ -18,24 +18,6 @@
 
 namespace avp64 {
 
-enum : mwr::u64 {
-    GIC_DISTIF_LO = 0x10140000,
-    GIC_DISTIF_HI = GIC_DISTIF_LO + 0x1000 - 1,
-    GIC_CPUIF_LO = 0x10141000,
-    GIC_CPUIF_HI = GIC_CPUIF_LO + 0x2000 - 1,
-    GIC_VIFCTRL_LO = 0x10143000,
-    GIC_VIFCTRL_HI = GIC_VIFCTRL_LO + 0x2000 - 1,
-    GIC_VCPUIF_LO = 0x10145000,
-    GIC_VCPUIF_HI = GIC_VCPUIF_LO + 0x2000 - 1,
-};
-
-enum : mwr::u64 {
-    PPI_GT_NS = 14,
-    PPI_GT_S = 13,
-    PPI_GT_VIRT = 11,
-    PPI_GT_HYP = 10,
-};
-
 class cpu : public vcml::component
 {
 public:
@@ -78,6 +60,24 @@ protected:
     virtual void end_of_simulation() override;
 
 private:
+    enum : mwr::u64 {
+        GIC_DISTIF_LO = 0x10140000,
+        GIC_DISTIF_HI = GIC_DISTIF_LO + 0x1000 - 1,
+        GIC_CPUIF_LO = 0x10141000,
+        GIC_CPUIF_HI = GIC_CPUIF_LO + 0x2000 - 1,
+        GIC_VIFCTRL_LO = 0x10143000,
+        GIC_VIFCTRL_HI = GIC_VIFCTRL_LO + 0x2000 - 1,
+        GIC_VCPUIF_LO = 0x10145000,
+        GIC_VCPUIF_HI = GIC_VCPUIF_LO + 0x2000 - 1,
+    };
+
+    enum : mwr::u64 {
+        PPI_GT_NS = 14,
+        PPI_GT_S = 13,
+        PPI_GT_VIRT = 11,
+        PPI_GT_HYP = 10,
+    };
+
     std::vector<std::shared_ptr<core>> m_cores;
 
     vcml::arm::gic400 m_gic;

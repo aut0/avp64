@@ -43,18 +43,18 @@ cpu::cpu(const sc_core::sc_module_name& nm):
         auto nm = vcml::mkstr("arm%zu", id);
         m_cores[id] = std::make_shared<core>(nm.c_str(), clusterid, id);
 
-        m_cores[id]->irq[INTERRUPT_IRQ].bind(m_gic.irq_out[id]);
-        m_cores[id]->irq[INTERRUPT_FIQ].bind(m_gic.fiq_out[id]);
-        m_cores[id]->irq[INTERRUPT_VIRQ].bind(m_gic.virq_out[id]);
-        m_cores[id]->irq[INTERRUPT_VFIQ].bind(m_gic.vfiq_out[id]);
+        m_cores[id]->irq[core::INTERRUPT_IRQ].bind(m_gic.irq_out[id]);
+        m_cores[id]->irq[core::INTERRUPT_FIQ].bind(m_gic.fiq_out[id]);
+        m_cores[id]->irq[core::INTERRUPT_VIRQ].bind(m_gic.virq_out[id]);
+        m_cores[id]->irq[core::INTERRUPT_VFIQ].bind(m_gic.vfiq_out[id]);
 
-        m_cores[id]->timer_irq_out[ARM_TIMER_PHYS].bind(
+        m_cores[id]->timer_irq_out[core::ARM_TIMER_PHYS].bind(
             m_gic.ppi(id, irq_gt_ns));
-        m_cores[id]->timer_irq_out[ARM_TIMER_VIRT].bind(
+        m_cores[id]->timer_irq_out[core::ARM_TIMER_VIRT].bind(
             m_gic.ppi(id, irq_gt_virt));
-        m_cores[id]->timer_irq_out[ARM_TIMER_HYP].bind(
+        m_cores[id]->timer_irq_out[core::ARM_TIMER_HYP].bind(
             m_gic.ppi(id, irq_gt_hyp));
-        m_cores[id]->timer_irq_out[ARM_TIMER_SEC].bind(
+        m_cores[id]->timer_irq_out[core::ARM_TIMER_SEC].bind(
             m_gic.ppi(id, irq_gt_s));
 
         for (size_t core = 0; core < id; ++core) {

@@ -17,21 +17,6 @@
 
 namespace avp64 {
 
-enum : size_t {
-    INTERRUPT_IRQ = 0,
-    INTERRUPT_FIQ = 1,
-    INTERRUPT_VIRQ = 2,
-    INTERRUPT_VFIQ = 3,
-};
-
-enum arm_generic_timer_type {
-    ARM_TIMER_PHYS = 0,
-    ARM_TIMER_VIRT = 1,
-    ARM_TIMER_HYP = 2,
-    ARM_TIMER_SEC = 3,
-    ARM_TIMER_COUNT = 4,
-};
-
 typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
 typedef void (*delete_instance_t)(ocx::core*);
 
@@ -87,6 +72,21 @@ protected:
 public:
     using vcml::component::transport; // needed to not hide vcml transport
                                       // function by ocx transport
+
+    enum : size_t {
+        INTERRUPT_IRQ = 0,
+        INTERRUPT_FIQ = 1,
+        INTERRUPT_VIRQ = 2,
+        INTERRUPT_VFIQ = 3,
+    };
+
+    enum arm_generic_timer_type : size_t {
+        ARM_TIMER_PHYS = 0,
+        ARM_TIMER_VIRT = 1,
+        ARM_TIMER_HYP = 2,
+        ARM_TIMER_SEC = 3,
+        ARM_TIMER_COUNT = 4,
+    };
 
     vcml::gpio_initiator_array<ARM_TIMER_COUNT> timer_irq_out;
     std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
