@@ -278,10 +278,9 @@ void core::log_timing_info() const {
         string s;
         s += mwr::mkstr("  irq %lu status :", stats.irq);
         s += mwr::mkstr(" %lu #", stats.irq_count);
-        s += mwr::mkstr(", avg %.1f us", stats.irq_uptime.to_seconds() /
-                                              stats.irq_count * 1e6);
-        s += mwr::mkstr(", max %.1f us",
-                         stats.irq_longest.to_seconds() * 1e6);
+        s += mwr::mkstr(", avg %.1f us",
+                        stats.irq_uptime.to_seconds() / stats.irq_count * 1e6);
+        s += mwr::mkstr(", max %.1f us", stats.irq_longest.to_seconds() * 1e6);
         log_info("%s", s.c_str());
     }
 }
