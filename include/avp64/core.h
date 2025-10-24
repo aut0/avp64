@@ -49,7 +49,6 @@ private:
     create_instance_t m_create_instance;
     delete_instance_t m_delete_instance;
     std::vector<std::shared_ptr<core>> m_syscall_subscriber;
-    std::unordered_set<vcml::u64> m_update_mem;
     std::list<std::pair<int, std::shared_ptr<void>>> m_syscalls;
 
     void timer_irq_trigger(int timer_id);

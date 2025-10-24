@@ -564,7 +564,6 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_create_instance(nullptr),
     m_delete_instance(nullptr),
     m_syscall_subscriber(),
-    m_update_mem(),
     m_syscalls(),
     timer_irq_out("TIMER_IRQ_OUT"),
     timer_events(4) {
