@@ -40,7 +40,7 @@ cpu::cpu(const sc_core::sc_module_name& nm):
 
     // initialize cores and bind interrupts
     for (size_t id = 0; id < ncores; ++id) {
-        auto nm = vcml::mkstr("arm%zu", id);
+        auto nm = mwr::mkstr("arm%zu", id);
         m_cores[id] = std::make_shared<core>(nm.c_str(), clusterid, id);
 
         m_cores[id]->irq[core::INTERRUPT_IRQ].bind(m_gic.irq_out[id]);
@@ -98,7 +98,7 @@ void cpu::end_of_elaboration() {
     if (gdb_port >= 0) {
         auto run = gdb_wait ? vcml::debugging::GDB_STOPPED
                             : vcml::debugging::GDB_RUNNING;
-        std::vector<vcml::debugging::target*> tgts;
+        vector<vcml::debugging::target*> tgts;
 
         tgts.reserve(m_cores.size());
         for (const auto& c : m_cores)

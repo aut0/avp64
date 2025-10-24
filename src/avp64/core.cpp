@@ -275,12 +275,12 @@ void core::log_timing_info() const {
         if (!get_irq_stats(i.first, stats) || stats.irq_count == 0)
             continue;
 
-        std::string s;
-        s += vcml::mkstr("  irq %lu status :", stats.irq);
-        s += vcml::mkstr(" %lu #", stats.irq_count);
-        s += vcml::mkstr(", avg %.1f us", stats.irq_uptime.to_seconds() /
+        string s;
+        s += mwr::mkstr("  irq %lu status :", stats.irq);
+        s += mwr::mkstr(" %lu #", stats.irq_count);
+        s += mwr::mkstr(", avg %.1f us", stats.irq_uptime.to_seconds() /
                                               stats.irq_count * 1e6);
-        s += vcml::mkstr(", max %.1f us",
+        s += mwr::mkstr(", max %.1f us",
                          stats.irq_longest.to_seconds() * 1e6);
         log_info("%s", s.c_str());
     }
@@ -290,8 +290,7 @@ void core::signal(ocx::u64 sigid, bool set) {
     timer_irq_out[sigid] = set;
 }
 
-void core::broadcast_syscall(int callno, std::shared_ptr<void> arg,
-                             bool async) {
+void core::broadcast_syscall(int callno, shared_ptr<void> arg, bool async) {
     handle_syscall(callno, arg);
     for (auto const& cpu : m_syscall_subscriber)
         cpu->handle_syscall(callno, arg);
@@ -362,7 +361,7 @@ bool core::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data,
     return true;
 }
 
-void core::add_syscall_subscriber(const std::shared_ptr<core>& cpu) {
+void core::add_syscall_subscriber(const shared_ptr<core>& cpu) {
     m_syscall_subscriber.push_back(cpu);
 }
 
@@ -475,7 +474,7 @@ vcml::u64 core::cycle_count() const {
     return m_run_cycles + m_core->insn_count();
 }
 
-bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) {
+bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, string& code) {
     const size_t bufsz = 100;
     char buf[bufsz];
     vcml::u64 len;
@@ -484,7 +483,7 @@ bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, std::string& code) {
     if (len == 0)
         return false;
 
-    code = std::string(buf);
+    code = string(buf);
     addr += len;
     return true;
 }
@@ -509,7 +508,7 @@ vcml::u64 core::core_id() {
     return m_core_id;
 }
 
-void core::handle_syscall(int callno, std::shared_ptr<void> arg) {
+void core::handle_syscall(int callno, shared_ptr<void> arg) {
     m_core->handle_syscall(callno, std::move(arg));
 }
 
@@ -535,8 +534,8 @@ void core::end_of_elaboration() {
 }
 
 void core::load_symbols() {
-    for (const std::string& s : symbols) {
-        std::string symfile = mwr::trim(s);
+    for (const string& s : symbols) {
+        string symfile = mwr::trim(s);
         if (symfile.empty())
             continue;
 

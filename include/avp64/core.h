@@ -10,7 +10,7 @@
 #ifndef AVP64_CORE_H
 #define AVP64_CORE_H
 
-#include "vcml.h"
+#include "avp64/common.h"
 #include "ocx/ocx.h"
 
 #include <signal.h>
@@ -33,8 +33,8 @@ private:
     void* m_ocx_handle;
     create_instance_t m_create_instance;
     delete_instance_t m_delete_instance;
-    std::vector<std::shared_ptr<core>> m_syscall_subscriber;
-    std::list<std::pair<int, std::shared_ptr<void>>> m_syscalls;
+    vector<shared_ptr<core>> m_syscall_subscriber;
+    list<pair<int, shared_ptr<void>>> m_syscalls;
 
     void timer_irq_trigger(int timer_id);
     static void segfault_handler(int sig, siginfo_t* si, void* unused);
@@ -89,7 +89,7 @@ public:
     };
 
     vcml::gpio_initiator_array<ARM_TIMER_COUNT> timer_irq_out;
-    std::vector<std::shared_ptr<sc_core::sc_event>> timer_events;
+    vector<shared_ptr<sc_core::sc_event>> timer_events;
 
     void log_timing_info() const;
 
@@ -102,7 +102,7 @@ public:
     virtual ocx::response transport(const ocx::transaction& tx) override;
     virtual void signal(ocx::u64 sigid, bool set) override;
 
-    virtual void broadcast_syscall(int callno, std::shared_ptr<void> arg,
+    virtual void broadcast_syscall(int callno, shared_ptr<void> arg,
                                    bool async) override;
 
     virtual ocx::u64 get_time_ps() override;
@@ -122,13 +122,13 @@ public:
 
     virtual vcml::u64 cycle_count() const override;
     virtual bool disassemble(vcml::u8* ibuf, vcml::u64& addr,
-                             std::string& code) override;
+                             string& code) override;
     virtual vcml::u64 program_counter() override;
     virtual vcml::u64 stack_pointer() override;
     virtual vcml::u64 core_id() override;
 
-    void handle_syscall(int callno, std::shared_ptr<void> arg);
-    void add_syscall_subscriber(const std::shared_ptr<core>& cpu);
+    void handle_syscall(int callno, shared_ptr<void> arg);
+    void add_syscall_subscriber(const shared_ptr<core>& cpu);
     vcml::u64 get_page_size();
 
     core() = delete;
@@ -137,7 +137,7 @@ public:
     explicit core(const sc_core::sc_module_name& name, vcml::u64 procid,
                   vcml::u64 coreid);
     virtual ~core() override;
-    virtual const char* kind() const override { return "avp64::core"; }
+    AVP64_KIND("core");
 };
 
 } // namespace avp64

@@ -10,11 +10,8 @@
 #ifndef AVP64_CPU_H
 #define AVP64_CPU_H
 
-#include "vcml.h"
+#include "avp64/common.h"
 #include "avp64/core.h"
-
-#include <memory>
-#include <vector>
 
 namespace avp64 {
 
@@ -23,7 +20,7 @@ class cpu : public vcml::component
 public:
     vcml::property<size_t> ncores;
     vcml::property<size_t> clusterid;
-    vcml::property<std::vector<std::string>> symbols;
+    vcml::property<vector<string>> symbols;
     vcml::property<bool> async;
     vcml::property<unsigned int> async_rate;
 
@@ -48,7 +45,7 @@ public:
     cpu() = delete;
     cpu(const cpu&) = delete;
     virtual ~cpu() = default;
-    virtual const char* kind() const override { return "avp64::cpu"; }
+    AVP64_KIND("cpu");
 
     vcml::u64 cycle_count() const;
 
@@ -78,7 +75,7 @@ private:
         PPI_GT_HYP = 10,
     };
 
-    std::vector<std::shared_ptr<core>> m_cores;
+    vector<shared_ptr<core>> m_cores;
 
     vcml::arm::gic400 m_gic;
     vcml::generic::bus m_corebus;
