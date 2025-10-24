@@ -160,7 +160,7 @@ void mem_protector::deregister_pages(core* cpu, vcml::u64 start,
     std::map<vcml::u64, struct page_data> protected_pages_new;
     for (auto it = m_protected_pages.begin(); it != m_protected_pages.end();
          ++it) {
-        if (it->second.page_addr + getpagesize() - 1 < start ||
+        if (it->second.page_addr + mwr::get_page_size() - 1 < start ||
             it->second.page_addr > end)
             continue;
 
