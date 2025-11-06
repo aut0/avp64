@@ -31,6 +31,7 @@ configure_file(${src}/avp64/version.h.in
 set(sources
     ${src}/avp64/core.cpp
     ${src}/avp64/cpu.cpp
+    ${src}/avp64/systemc.cpp
 )
 
 add_library(avp64 STATIC ${sources})

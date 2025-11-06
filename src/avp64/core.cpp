@@ -9,6 +9,8 @@
 
 #include "avp64/core.h"
 
+#include "avp64/systemc.h"
+
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <stdexcept>
@@ -308,7 +310,7 @@ const char* core::get_param(const char* name) {
 }
 
 void core::notify(ocx::u64 eventid, ocx::u64 time_ps) {
-    sc_core::sc_time notify_time = sc_core::sc_time(time_ps, sc_core::SC_PS);
+    sc_core::sc_time notify_time = time_from_ps(time_ps);
     sc_core::sc_time delta = notify_time - sc_core::sc_time_stamp();
     timer_events[eventid]->notify(delta);
 }

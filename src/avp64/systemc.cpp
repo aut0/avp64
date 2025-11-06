@@ -1,22 +1,19 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2024 Lukas Jünger, Nils Bosbach                                  *
+ * Copyright 2025 Nils Bosbach                                                *
  *                                                                            *
  * This software is licensed under the MIT license found in the               *
  * LICENSE file at the root directory of this source tree.                    *
  *                                                                            *
  ******************************************************************************/
 
-#ifndef AVP64_H
-#define AVP64_H
-
-#include "avp64/core.h"
-#include "avp64/cpu.h"
 #include "avp64/systemc.h"
-#include "avp64/version.h"
 
-#include <mwr.h>
+namespace avp64 {
 
-MWR_DECLARE_MODULE(AVP64, "avp64", "MIT");
+sc_core::sc_time time_from_ps(vcml::u64 time_ps) {
+    return vcml::time_from_value(
+        time_ps * sc_core::sc_time(1.0, sc_core::SC_PS).value());
+}
 
-#endif
+} // namespace avp64
