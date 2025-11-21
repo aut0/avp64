@@ -14,7 +14,7 @@ import sys
 import pexpect
 import time
 
-sim='$<TARGET_FILE:avp64-runner>'
+sim='$<TARGET_FILE:avp64-vp>'
 cfg='@config@'
 
 properties = {

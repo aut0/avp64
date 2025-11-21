@@ -18,7 +18,7 @@ from pyvp.vcml.session import Session
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 
-sim='$<TARGET_FILE:avp64-runner>'
+sim='$<TARGET_FILE:avp64-vp>'
 cfg='@config@'
 ref='@ref@'
 session_port = 8888

@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 3.12)
 project(avp64 VERSION 2025.08.22 LANGUAGES C CXX)
 
 option(AVP64_BUILD_TESTS "Build unit tests" OFF)
-option(AVP64_BUILD_RUNNER "Build avp64 runner" ON)
+option(AVP64_BUILD_VP "Build the avp64 VP" ON)
 set(AVP64_LINTER "" CACHE STRING "Code linter to use")
 
 include(cmake/common.cmake)
@@ -67,26 +67,26 @@ if(AVP64_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(AVP64_BUILD_RUNNER)
-    add_executable(avp64-runner
+if(AVP64_BUILD_VP)
+    add_executable(avp64-vp
         ${src}/avp64/system.cpp
         ${src}/avp64/main.cpp
     )
 
-    target_compile_options(avp64-runner PRIVATE ${MWR_COMPILER_WARN_FLAGS})
-    target_include_directories(avp64-runner PRIVATE ${src})
-    set_target_properties(avp64-runner PROPERTIES CXX_STANDARD 17)
-    set_target_properties(avp64-runner PROPERTIES CXX_CLANG_TIDY "${AVP64_LINTER}")
-    set_target_properties(avp64-runner PROPERTIES VERSION "${AVP64_VERSION}")
-    set_target_properties(avp64-runner PROPERTIES SOVERSION "${AVP64_VERSION_MAJOR}")
-    target_link_whole_archives(avp64-runner avp64)
-    target_link_whole_archives(avp64-runner vcml)
+    target_compile_options(avp64-vp PRIVATE ${MWR_COMPILER_WARN_FLAGS})
+    target_include_directories(avp64-vp PRIVATE ${src})
+    set_target_properties(avp64-vp PROPERTIES CXX_STANDARD 17)
+    set_target_properties(avp64-vp PROPERTIES CXX_CLANG_TIDY "${AVP64_LINTER}")
+    set_target_properties(avp64-vp PROPERTIES VERSION "${AVP64_VERSION}")
+    set_target_properties(avp64-vp PROPERTIES SOVERSION "${AVP64_VERSION_MAJOR}")
+    target_link_whole_archives(avp64-vp avp64)
+    target_link_whole_archives(avp64-vp vcml)
 
     if(NOT ${AVP64_LINTER} STREQUAL "")
         # -std=c++17 is not passed to the compiler if it is the comiler's default
         # this caused problems with clang-tidy
-        set_target_properties(avp64-runner PROPERTIES CXX_STANDARD_REQUIRED ON)
+        set_target_properties(avp64-vp PROPERTIES CXX_STANDARD_REQUIRED ON)
     endif()
 
-    install(TARGETS avp64-runner)
+    install(TARGETS avp64-vp)
 endif()

@@ -30,7 +30,7 @@ endmacro()
 
 new_test(arm64_core_test)
 new_test(arm64_reset_test)
-if (AVP64_BUILD_RUNNER)
+if (AVP64_BUILD_VP)
     function(linux name input_script nrcpu config timeout)
         set(config ${CMAKE_SOURCE_DIR}/sw/${config})
         set(script ${CMAKE_CURRENT_BINARY_DIR}/${name}.py)

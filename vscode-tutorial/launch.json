@@ -5,7 +5,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug AVP64",
-            "program": "${workspaceFolder}/build/debug/bin/avp64-runner",
+            "program": "${workspaceFolder}/build/debug/bin/avp64-vp",
             "args": [
                 "-f", "sw/buildroot_6_5_6-x2.cfg", // the config file that should be used by avp64
                 "-c", "system.cpu.gdb_wait=true" // wait until the target software debugger is connected

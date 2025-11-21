@@ -69,7 +69,7 @@ The needed steps are explained below:
 1. After installation, the following new files should be present:
 
     ```bash
-    <install-dir>/bin/avp64-runner        # executable program
+    <install-dir>/bin/avp64-vp           # executable program
     <install-dir>/lib/libocx-qemu-arm.so
     ```
 
@@ -92,19 +92,19 @@ This script downloads the latest prebuilt linux image and configuration files an
 Run the platform using a config file from the [sw](sw/) folder:
 
 ```bash
-<install-dir>/bin/avp64-runner -f <install-dir>/sw/<config-file>
+<install-dir>/bin/avp64-vp -f <install-dir>/sw/<config-file>
 ```
 
 For more details on run parameters, you can use the `--help` option:
 
 ```bash
-<install-dir>/bin/avp64-runner --help
+<install-dir>/bin/avp64-vp --help
 ```
 
 The output should look like this:
 
 ```text
-Usage: avp64-runner <arguments>
+Usage: avp64-vp <arguments>
 --config, -c <value>   Specify individual property values
 --file, -f <value>     Load configuration from file
 --help, -h             Prints this message
@@ -149,7 +149,7 @@ Tracing can be enabled on a per TLM socket basis.
 For example, to trace the UART packets that are sent by the `system.uart0` peripheral via its `serial_tx` socket, you can use the folling command:
 
 ```bash
-<install-dir>/bin/avp64-runner                 \
+<install-dir>/bin/avp64-vp                     \
     -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
     -c system.uart0.serial_tx.trace=true       \ # enable tracing of the system.uart0.serial_tx socket
     --trace-stdout                               # send the traces to stdout
@@ -159,7 +159,7 @@ Since this produces a lot of output, it makes sense to store the traces in a tra
 To do this, use `--trace <trace file>` instead of `--trace-stdout`:
 
 ```bash
-<install-dir>/bin/avp64-runner                 \
+<install-dir>/bin/avp64-vp                     \
     -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
     -c system.uart0.serial_tx.trace=true       \ # enable tracing of the system.uart0.serial_tx socket
     --trace my_trace_file.log                    # send the traces to a file
@@ -180,7 +180,7 @@ The content of the trace file will look like this:
 To enable tracing for all socket of a peripheral, the `trace` property of the peripheral can be used:
 
 ```bash
-<install-dir>/bin/avp64-runner                 \
+<install-dir>/bin/avp64-vp                     \
     -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
     -c system.uart0.trace=true                 \ # enable tracing for all sockets of system.uart0
     --trace my_trace_file.log                    # send the traces to a file
@@ -215,7 +215,7 @@ To enable debug logging, use `--log-debug`.
 The log level can be adjusted on a per model basis.
 
 ```bash
-<install-dir>/bin/avp64-runner                 \
+<install-dir>/bin/avp64-vp                     \
     -f <install-dir>/sw/buildroot_6_6_6-x1.cfg \ # the configuration file to use
     -c system.uart0.loglvl=debug               \ # enable debug logging for system.uart0
     --log-debug                                \ # enable debug logging in general
@@ -262,7 +262,7 @@ To store logging/tracing information in the database, use the `--log-inscight`, 
 Example command to run the VP with InSCight™ enabled and forwarded tracing messages:
 
 ```bash
-INSCIGHT=sqlite <install-dir>/bin/avp64-runner -f <install-dir>/sw/buildroot_6_6_6-x1.cfg --trace-inscight
+INSCIGHT=sqlite <install-dir>/bin/avp64-vp -f <install-dir>/sw/buildroot_6_6_6-x1.cfg --trace-inscight
 ```
 
 ----
