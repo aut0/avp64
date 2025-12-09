@@ -7,10 +7,11 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "avp64/cpu.h"
+#include "avp64/psp/cpu.h"
 #include "avp64/version.h"
 
 namespace avp64 {
+namespace psp {
 
 cpu::cpu(const sc_core::sc_module_name& nm):
     vcml::component(nm),
@@ -140,7 +141,8 @@ const char* cpu::version() const {
 }
 
 VCML_EXPORT_MODEL(avp64::cpu, name, args) {
-    return new avp64::cpu(name);
+    return new cpu(name);
 }
 
+} // namespace psp
 } // namespace avp64

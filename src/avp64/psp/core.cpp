@@ -7,9 +7,9 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "avp64/core.h"
+#include "avp64/psp/core.h"
 
-#include "avp64/systemc.h"
+#include "avp64/psp/systemc.h"
 
 #include <dlfcn.h>
 #include <sys/mman.h>
@@ -18,6 +18,7 @@
 #define CPU_ARCH "aarch64"
 
 namespace avp64 {
+namespace psp {
 
 class mem_protector
 {
@@ -686,4 +687,5 @@ T core::get_ocx_function_ptr(const char* name) {
     return func;
 }
 
+} // namespace psp
 } // namespace avp64

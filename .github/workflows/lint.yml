@@ -35,8 +35,8 @@ jobs:
         cmake \
           -B ${{github.workspace}}/build \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DAVP64_BUILD_TESTS=OFF \
-          -DAVP64_BUILD_RUNNER=ON \
+          -DAVP64_TESTS=OFF \
+          -DAVP64_VP=ON \
           -DAVP64_LINTER="clang-tidy"
 
     - name: Build

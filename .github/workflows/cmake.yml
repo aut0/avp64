@@ -36,8 +36,8 @@ jobs:
           cmake \
             -B ${{github.workspace}}/build \
             -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} \
-            -DAVP64_BUILD_TESTS=ON \
-            -DAVP64_BUILD_RUNNER=ON
+            -DAVP64_TESTS=ON \
+            -DAVP64_VP=ON
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{matrix.BUILD_TYPE}} -j $(nproc)

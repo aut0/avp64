@@ -14,7 +14,7 @@ get_target_property(ld_library_path ocx-qemu-arm BINARY_DIR)
 
 add_library(test_main test_main.cpp)
 target_link_libraries(test_main PUBLIC gtest)
-target_link_libraries(test_main PUBLIC avp64)
+target_link_libraries(test_main PUBLIC avp64-psp)
 target_link_libraries(test_main PUBLIC vcml)
 set(PYTHON_PACKAGES_HOME "${CMAKE_CURRENT_BINARY_DIR}/python")
 

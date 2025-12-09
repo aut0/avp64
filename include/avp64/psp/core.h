@@ -7,8 +7,8 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef AVP64_CORE_H
-#define AVP64_CORE_H
+#ifndef AVP64_PSP_CORE_H
+#define AVP64_PSP_CORE_H
 
 #include "avp64/common.h"
 #include "ocx/ocx.h"
@@ -16,6 +16,7 @@
 #include <signal.h>
 
 namespace avp64 {
+namespace psp {
 
 typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
 typedef void (*delete_instance_t)(ocx::core*);
@@ -137,9 +138,10 @@ public:
     explicit core(const sc_core::sc_module_name& name, vcml::u64 procid,
                   vcml::u64 coreid);
     virtual ~core() override;
-    AVP64_KIND("core");
+    AVP64_KIND("psp::core");
 };
 
+} // namespace psp
 } // namespace avp64
 
 #endif

@@ -165,7 +165,7 @@ private:
     vcml::virtio::mmio m_virtio0;
     vcml::virtio::input m_virtio_input;
 
-    cpu m_cpu;
+    psp::cpu m_cpu;
 
     void construct_system_arm64();
 };

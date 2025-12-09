@@ -10,9 +10,9 @@
 #ifndef AVP64_H
 #define AVP64_H
 
-#include "avp64/core.h"
-#include "avp64/cpu.h"
-#include "avp64/systemc.h"
+#include "avp64/psp/core.h"
+#include "avp64/psp/cpu.h"
+#include "avp64/psp/systemc.h"
 #include "avp64/version.h"
 
 #include <mwr.h>

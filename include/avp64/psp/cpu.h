@@ -7,13 +7,14 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef AVP64_CPU_H
-#define AVP64_CPU_H
+#ifndef AVP64_PSP_CPU_H
+#define AVP64_PSP_CPU_H
 
 #include "avp64/common.h"
-#include "avp64/core.h"
+#include "avp64/psp/core.h"
 
 namespace avp64 {
+namespace psp {
 
 class cpu : public vcml::component
 {
@@ -45,7 +46,7 @@ public:
     cpu() = delete;
     cpu(const cpu&) = delete;
     virtual ~cpu() = default;
-    AVP64_KIND("cpu");
+    AVP64_KIND("psp::cpu");
 
     vcml::u64 cycle_count() const;
 
@@ -83,6 +84,7 @@ private:
     std::unique_ptr<vcml::debugging::gdbserver> m_gdb;
 };
 
+} // namespace psp
 } // namespace avp64
 
 #endif

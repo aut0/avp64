@@ -8,12 +8,12 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-#include "avp64/core.h"
+#include "avp64/psp/core.h"
 
-class arm64_core_test : public avp64::core
+class arm64_core_test : public avp64::psp::core
 {
 public:
-    arm64_core_test(): avp64::core("test_core", 0, 1){};
+    arm64_core_test(): avp64::psp::core("test_core", 0, 1){};
     bool read_reg(id_t regno, void* buf, size_t len) {
         return read_reg_dbg(regno, buf, len);
     }
@@ -42,7 +42,7 @@ TEST(avp64, reset) {
     // Sockets are bound, but only DATA is used for MMIO
     test_cpu.insn.bind(imem.in);
     test_cpu.data.bind(dmem.in);
-    for (size_t i = 0; i < avp64::core::ARM_TIMER_COUNT; ++i)
+    for (size_t i = 0; i < avp64::psp::core::ARM_TIMER_COUNT; ++i)
         test_cpu.timer_irq_out[i].stub();
 
     vcml::u64 pc, x0, x1;

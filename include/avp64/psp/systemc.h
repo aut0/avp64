@@ -7,13 +7,17 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "avp64/systemc.h"
+#ifndef AVP64_PSP_SYSTEMC_H
+#define AVP64_PSP_SYSTEMC_H
+
+#include "avp64/common.h"
 
 namespace avp64 {
+namespace psp {
 
-sc_core::sc_time time_from_ps(vcml::u64 time_ps) {
-    return vcml::time_from_value(
-        time_ps * sc_core::sc_time(1.0, sc_core::SC_PS).value());
-}
+sc_core::sc_time time_from_ps(vcml::u64 time_ps);
 
+} // namespace psp
 } // namespace avp64
+
+#endif
