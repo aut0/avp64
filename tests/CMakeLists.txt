@@ -30,7 +30,7 @@ endmacro()
 
 new_test(arm64_core_test)
 new_test(arm64_reset_test)
-if (AVP64_BUILD_VP)
+if (AVP64_VP)
     function(linux name input_script nrcpu config timeout)
         set(config ${CMAKE_SOURCE_DIR}/sw/${config})
         set(script ${CMAKE_CURRENT_BINARY_DIR}/${name}.py)
@@ -45,6 +45,10 @@ if (AVP64_BUILD_VP)
         linux("linux-boot-${nrcpu}-cpus" linux_boot.py.in ${nrcpu} ${config} ${timeout})
     endfunction()
 
+    function(linux_boot_minimal nrcpu config timeout)
+        linux("linux-boot-minimal-${nrcpu}-cpus" linux_boot_minimal.py.in ${nrcpu} ${config} ${timeout})
+    endfunction()
+
     function(linux_screenshot nrcpu config timeout)
         set(ref ${CMAKE_SOURCE_DIR}/tests/asset/test_card_reference.bmp)
         set(name "linux-screenshot-${nrcpu}-cpus")
@@ -57,12 +61,17 @@ if (AVP64_BUILD_VP)
     endfunction()
 
     linux_boot(1 buildroot_6_5_6-x1.cfg 600)
+    linux_boot_minimal(1 buildroot_6_5_6-x1_minimal.cfg 600)
 
     string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
     if(BUILD_TYPE_UPPER STREQUAL RELEASE)
         linux_boot(2 buildroot_6_5_6-x2.cfg 600)
         linux_boot(4 buildroot_6_5_6-x4.cfg 600)
         linux_boot(8 buildroot_6_5_6-x8.cfg 600)
+
+        linux_boot_minimal(2 buildroot_6_5_6-x2_minimal.cfg 600)
+        linux_boot_minimal(4 buildroot_6_5_6-x4_minimal.cfg 600)
+        linux_boot_minimal(8 buildroot_6_5_6-x8_minimal.cfg 600)
 
         # screenshot
         set(PYVP_HOME ${PYTHON_PACKAGES_HOME}/pyvp)

@@ -64,26 +64,28 @@ if(AVP64_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(AVP64_VP)
-    add_executable(avp64
-        ${src}/avp64/system.cpp
-        ${src}/avp64/main.cpp
-    )
+macro(avp64_vp name)
+    add_executable(${name} ${src}/avp64/${name}.cpp)
 
-    target_compile_options(avp64 PRIVATE ${MWR_COMPILER_WARN_FLAGS})
-    target_include_directories(avp64 PRIVATE ${src})
-    set_target_properties(avp64 PROPERTIES CXX_STANDARD 17)
-    set_target_properties(avp64 PROPERTIES CXX_CLANG_TIDY "${AVP64_LINTER}")
-    set_target_properties(avp64 PROPERTIES VERSION "${AVP64_VERSION}")
-    set_target_properties(avp64 PROPERTIES SOVERSION "${AVP64_VERSION_MAJOR}")
-    target_link_whole_archives(avp64 avp64-psp)
-    target_link_whole_archives(avp64 vcml)
+    target_compile_options(${name} PRIVATE ${MWR_COMPILER_WARN_FLAGS})
+    target_include_directories(${name} PRIVATE ${src})
+    set_target_properties(${name} PROPERTIES CXX_STANDARD 17)
+    set_target_properties(${name} PROPERTIES CXX_CLANG_TIDY "${AVP64_LINTER}")
+    set_target_properties(${name} PROPERTIES VERSION "${AVP64_VERSION}")
+    set_target_properties(${name} PROPERTIES SOVERSION "${AVP64_VERSION_MAJOR}")
+    target_link_whole_archives(${name} avp64-psp)
+    target_link_whole_archives(${name} vcml)
 
     if(NOT ${AVP64_LINTER} STREQUAL "")
         # -std=c++17 is not passed to the compiler if it is the comiler's default
         # this caused problems with clang-tidy
-        set_target_properties(avp64 PROPERTIES CXX_STANDARD_REQUIRED ON)
+        set_target_properties(${name} PROPERTIES CXX_STANDARD_REQUIRED ON)
     endif()
 
-    install(TARGETS avp64)
+    install(TARGETS ${name})
+endmacro()
+
+if(AVP64_VP)
+    avp64_vp(avp64)
+    avp64_vp(avp64_minimal)
 endif()

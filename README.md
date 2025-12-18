@@ -51,7 +51,7 @@ The needed steps are explained below:
 1. Configure and build the project using `cmake`. During configuration you must
    state whether or not to build the runner (vp executable) and the unit tests:
 
-     - `-DAVP64_VP=[ON|OFF]`: build the VP executable (default: `ON`)
+     - `-DAVP64_VP=[ON|OFF]`: build the VP executables (default: `ON`)
      - `-DAVP64_TESTS=[ON|OFF]`: build unit tests (default: `OFF`)
 
    Release and debug build configurations are controlled via the regular cmake parameters:
@@ -69,7 +69,8 @@ The needed steps are explained below:
 1. After installation, the following new files should be present:
 
     ```bash
-    <install-dir>/bin/avp64              # executable program
+    <install-dir>/bin/avp64              # full VP executable program
+    <install-dir>/bin/avp64_miminal      # minimal VP executable program
     <install-dir>/lib/libocx-qemu-arm.so
     ```
 
@@ -87,7 +88,10 @@ To run the platform, a configuration and the corresponding target software files
 Examples can be found in the [avp64-sw](https://github.com/aut0/avp64_sw) repository.
 The configuration files and target software can be placed in the [sw](sw/) folder to be automatically copied to the install directory on `make install`.
 To fetch the latest buildroot Linux build, the [utils/fetch_buildroot_linux](./utils/fetch_buildroot_linux) script can be used.
-This script downloads the latest prebuilt linux image and configuration files and places them in the [sw](sw/) folder.  
+This script downloads the latest prebuilt linux image and configuration files and places them in the [sw](sw/) folder.
+This projects builds two VPs: `avp64` and `avp64_minimal`.
+This minimal VP contains less peripherals and is simpler.
+To use the minimal VP, the `_minimal` configs file (e.g., `buildroot_6_5_6-x1_minimal.cfg`) must be used.
 
 Run the platform using a config file from the [sw](sw/) folder:
 
