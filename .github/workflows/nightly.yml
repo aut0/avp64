@@ -10,13 +10,12 @@ env:
 
 jobs:
   build:
+    name: Build & Test AVP64
     runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04, ubuntu-22.04-arm, ubuntu-24.04-arm]
-
-    name: Build AVP64
 
     steps:
       - name: Checkout
@@ -40,7 +39,7 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
 
-      - name: Download software
+      - name: Download Software
         working-directory: ./sw
         run: |
           wget https://github.com/aut0/avp64_sw/releases/download/v2025.08.22/buildroot_6_5_6.tar.gz

@@ -15,5 +15,5 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Check code style
+    - name: Check Code Style
       run: ./utils/format -n
