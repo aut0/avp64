@@ -51,8 +51,8 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: |
-          python3 -m venv .vevnv
-          source .vevnv/bin/activate
+          python3 -m venv .venv
+          source .venv/bin/activate
           pip3 install -r ${{github.workspace}}/tests/requirements.txt
           ctest -C ${{matrix.BUILD_TYPE}} --output-on-failure --output-junit testreport.xml
 
