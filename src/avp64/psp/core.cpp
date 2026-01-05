@@ -115,7 +115,6 @@ void mem_protector::register_page(core* core, vcml::u64 page_addr,
         pd.c = core;
         pd.page_addr = page_addr;
         pd.page_number = 1 << page_number;
-        pd.page_size = mwr::get_page_size();
         pd.locked = true;
     }
     VCML_ERROR_ON(::mprotect(host_addr, mwr::get_page_size(), PROT_READ) != 0,
@@ -143,7 +142,7 @@ bool mem_protector::notify_page(void* access_addr) {
     }
 
     it->second.locked = false;
-    return ::mprotect(reinterpret_cast<void*>(page_addr), it->second.page_size,
+    return ::mprotect(reinterpret_cast<void*>(page_addr), mwr::get_page_size(),
                       PROT_READ | PROT_WRITE) == 0;
 }
 
