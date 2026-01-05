@@ -15,6 +15,7 @@ The following target software configurations were tested (see [avp64-sw](https:/
 - STREAM
 - Linux single-, dual-, quad-, octa-core
 - Xen single- and dual-core
+- Zephyr application single-, dual-, quand-, octa-core
 
 ----
 
