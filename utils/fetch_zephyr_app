@@ -1,0 +1,35 @@
+#!/bin/env bash
+
+##############################################################################
+#                                                                            #
+# Copyright 2026 Nils Bosbach                                                #
+#                                                                            #
+# This software is licensed under the MIT license.                           #
+# A copy of the license can be found in the LICENSE file at the root         #
+# of the source tree.                                                        #
+#                                                                            #
+##############################################################################
+
+# Get directory of script itself
+SOURCE="${BASH_SOURCE[0]}"
+# resolve $SOURCE until the file is no longer a symlink
+while [ -h "$SOURCE" ]; do
+        DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+        SOURCE="$(readlink "$SOURCE")"
+        # if $SOURCE was a relative symlink, we need to resolve it relative to the
+        # path where the symlink file was located
+        [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR=${DIR}/..
+SW_DIR=${ROOT_DIR}/sw
+
+ZEPHYR=https://github.com/nbosb/avp64_sw_zephyr/releases/download/v2026.01.05/hello_world.tar.gz
+ZEPHYR_TAR="${ZEPHYR##*/}"
+
+# fetch sw
+wget ${ZEPHYR}
+tar -xvf ${ZEPHYR_TAR} -C ${SW_DIR}/
+rm ${ZEPHYR_TAR}
+
+echo "${ZEPHYR_TAR} extracted to ${SW_DIR}"

@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+##############################################################################
+#                                                                            #
+# Copyright 2026 Nils Bosbach                                                #
+#                                                                            #
+# This software is licensed under the MIT license.                           #
+# A copy of the license can be found in the LICENSE file at the root         #
+# of the source tree.                                                        #
+#                                                                            #
+##############################################################################
+
+import sys
+import pexpect
+import time
+
+sim='$<TARGET_FILE:avp64_minimal>'
+cfg='@config@'
+
+properties = {
+    'system.term0.backends': 'term',
+}
+
+cmdline = f'{sim} -f {cfg} ' + ' '.join([f'-c {prop}={properties[prop]}' for prop in properties])
+
+print(cmdline)
+
+p = pexpect.spawn(cmdline, logfile=sys.stdout, timeout=None, encoding='utf-8')
+
+# did all secondary cpus boot?
+for cpu in range(1, @nrcpu@-1):
+    p.expect(rf'Secondary CPU core {cpu} \(MPID:0x{cpu-1:x}\) is up')
+
+p.expect('<inf> main: Hello World')
+p.expect('<inf> main: Stopping in 1s...')
+p.expect(pexpect.EOF)

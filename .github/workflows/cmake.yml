@@ -42,11 +42,10 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{matrix.BUILD_TYPE}} -j $(nproc)
 
       - name: Download Software
-        working-directory: ./sw
+        working-directory: ./utils
         run: |
-          wget https://github.com/aut0/avp64_sw/releases/download/v2025.12.18/buildroot_6_5_6.tar.gz
-          tar -xvf buildroot_6_5_6.tar.gz
-          rm buildroot_6_5_6.tar.gz
+          ./fetch_buildroot_linux
+          ./fetch_zephyr_app
 
       - name: Test
         working-directory: ${{github.workspace}}/build

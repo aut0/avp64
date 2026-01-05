@@ -1,6 +1,6 @@
 ##############################################################################
 #                                                                            #
-# Copyright 2024 Lukas Jünger, Nils Bosbach                                  #
+# Copyright 2026 Lukas Jünger, Nils Bosbach                                  #
 #                                                                            #
 # This software is licensed under the MIT license.                           #
 # A copy of the license can be found in the LICENSE file at the root         #
@@ -31,7 +31,7 @@ endmacro()
 new_test(arm64_core_test)
 new_test(arm64_reset_test)
 if (AVP64_VP)
-    function(linux name input_script nrcpu config timeout)
+    function(pexpect_vp name input_script nrcpu config timeout)
         set(config ${CMAKE_SOURCE_DIR}/sw/${config})
         set(script ${CMAKE_CURRENT_BINARY_DIR}/${name}.py)
         configure_file(${input_script} ${script})
@@ -42,17 +42,17 @@ if (AVP64_VP)
     endfunction()
 
     function(linux_boot nrcpu config timeout)
-        linux("linux-boot-${nrcpu}-cpus" linux_boot.py.in ${nrcpu} ${config} ${timeout})
+        pexpect_vp("linux-boot-${nrcpu}-cpus" linux_boot.py.in ${nrcpu} ${config} ${timeout})
     endfunction()
 
     function(linux_boot_minimal nrcpu config timeout)
-        linux("linux-boot-minimal-${nrcpu}-cpus" linux_boot_minimal.py.in ${nrcpu} ${config} ${timeout})
+        pexpect_vp("linux-boot-minimal-${nrcpu}-cpus" linux_boot_minimal.py.in ${nrcpu} ${config} ${timeout})
     endfunction()
 
     function(linux_screenshot nrcpu config timeout)
         set(ref ${CMAKE_SOURCE_DIR}/tests/asset/test_card_reference.bmp)
         set(name "linux-screenshot-${nrcpu}-cpus")
-        linux(${name} linux_screenshot.py.in ${nrcpu} ${config} ${timeout})
+        pexpect_vp(${name} linux_screenshot.py.in ${nrcpu} ${config} ${timeout})
 
         # set python path
         get_test_property(${name} ENVIRONMENT test_env)
@@ -60,8 +60,13 @@ if (AVP64_VP)
         set_tests_properties(${name} PROPERTIES ENVIRONMENT "${test_env}")
     endfunction()
 
+    function(zephyr_hello_world nrcpu timeout)
+        pexpect_vp("zephyr-hello-world-${nrcpu}-cpus" zephyr_app.py.in ${nrcpu} hello_worldx${nrcpu}.cfg ${timeout})
+    endfunction()
+
     linux_boot(1 buildroot_6_5_6-x1.cfg 600)
     linux_boot_minimal(1 buildroot_6_5_6-x1_minimal.cfg 600)
+    zephyr_hello_world(1 30)
 
     string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
     if(BUILD_TYPE_UPPER STREQUAL RELEASE)
@@ -80,5 +85,9 @@ if (AVP64_VP)
             clone_github_repo(pyvp ${PYVP_REPO})
         endif()
         linux_screenshot(1 buildroot_6_5_6-x1.cfg 600)
+
+        zephyr_hello_world(2 30)
+        zephyr_hello_world(4 30)
+        zephyr_hello_world(8 30)
     endif()
 endif()
