@@ -130,11 +130,17 @@ bool mem_protector::notify_page(void* access_addr) {
         return false;
 
     vcml::u64 page_number = it->second.page_number;
-    int i = 0;
+    vcml::u64 i = 0;
     while (page_number != 0) {
         if (page_number & 1) {
-            it->second.c->memory_protector_update(
-                it->second.page_addr | (i << it->second.c->get_page_size()));
+            static const vcml::u64 number_shift = mwr::ctz(
+                mwr::get_page_size());
+            VCML_ERROR_ON(i != 0ull || number_shift > mwr::clz(i) ||
+                              number_shift >= 64ull,
+                          "shift overflow");
+
+            it->second.c->memory_protector_update(it->second.page_addr |
+                                                  (i << number_shift));
         }
 
         ++i;
