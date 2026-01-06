@@ -26,18 +26,25 @@ jobs:
       - name: Setup Dependencies
         run: |
           sudo apt-get update -y -qq
-          sudo apt-get install build-essential libelf-dev libsdl2-dev libvncserver-dev libslirp-dev
+          sudo apt-get install \
+            build-essential \
+            libelf-dev \
+            libsdl2-dev \
+            libvncserver-dev \
+            libslirp-dev \
+            ninja-build
 
       - name: Configure
         run: |
           cmake \
+            -G Ninja \
             -B ${{github.workspace}}/build \
-            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} \
             -DAVP64_TESTS=ON \
             -DAVP64_VP=ON
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.BUILD_TYPE}} -j $(nproc)
 
       - name: Download Software
         working-directory: ./utils

@@ -9,6 +9,8 @@ on:
 env:
   BUILD_TYPE: Release
   TARGET_ARCH: linux64
+  CXX: clang++
+  CC: clang
 
 jobs:
   lint:
@@ -19,25 +21,32 @@ jobs:
       fail-fast: false
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
-    - name: Setup Dependencies
-      run: |
-        sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
-        sudo apt-get update -y -qq
-        sudo apt-get install build-essential libelf-dev libsdl2-dev libvncserver-dev libslirp-dev clang-tidy
+      - name: Setup Dependencies
+        run: |
+            sudo apt-get update -y -qq
+            sudo apt-get install \
+              build-essential \
+              libelf-dev \
+              libsdl2-dev \
+              libvncserver-dev \
+              libslirp-dev \
+              ninja-build \
+              clang-tidy
 
-    - name: Configure
-      run: |
-        cmake \
-          -B ${{github.workspace}}/build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DAVP64_TESTS=OFF \
-          -DAVP64_VP=ON \
-          -DAVP64_LINTER="clang-tidy"
+      - name: Configure
+        run: |
+          cmake \
+            -G Ninja \
+            -B ${{github.workspace}}/build \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DAVP64_TESTS=OFF \
+            -DAVP64_VP=ON \
+            -DAVP64_LINTER="clang-tidy"
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
