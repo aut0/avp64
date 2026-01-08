@@ -113,9 +113,10 @@ public:
     vcml::property<int> irq_can1;
     vcml::property<int> irq_virtio0;
 
-    system(const sc_core::sc_module_name& name);
+    explicit system(const sc_core::sc_module_name& name);
     system() = delete;
     system(const system&) = delete;
+    system& operator=(const system&) = delete;
     virtual ~system() = default;
 
     int run() override;

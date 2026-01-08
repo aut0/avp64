@@ -42,9 +42,10 @@ public:
     tlm::tlm_initiator_socket<> bus;
     vcml::gpio_target_array<vcml::arm::gic400::NSPI> spi;
 
-    cpu(const sc_core::sc_module_name& nm);
+    explicit cpu(const sc_core::sc_module_name& nm);
     cpu() = delete;
     cpu(const cpu&) = delete;
+    cpu& operator=(const cpu&) = delete;
     virtual ~cpu() = default;
     AVP64_KIND("psp::cpu");
 
