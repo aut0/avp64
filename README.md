@@ -291,7 +291,6 @@ for type in "DEBUG" "RELEASE"; do
     mkdir -p $build && cd $build
     cmake -DCMAKE_BUILD_TYPE=$type -DCMAKE_INSTALL_PREFIX=$install $home
     cmake --build . -j `nproc`
-    cmake --install .
 done
 ```
 
