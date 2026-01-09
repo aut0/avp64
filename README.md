@@ -61,8 +61,8 @@ The needed steps are explained below:
    mkdir -p <build-dir>
    cd <build-dir>
    cmake -DCMAKE_INSTALL_PREFIX=<install-dir> -DCMAKE_BUILD_TYPE=RELEASE <source-dir>
-   make -j `nproc`
-   sudo make install
+   cmake --build . -j `nproc`
+   cmake --install .
    ```
 
    If building with `-DAVP64_TESTS=ON` you can run all unit tests using `make test` within `<build-dir>`.
@@ -290,7 +290,8 @@ for type in "DEBUG" "RELEASE"; do
     build="$home/BUILD/$type/BUILD"
     mkdir -p $build && cd $build
     cmake -DCMAKE_BUILD_TYPE=$type -DCMAKE_INSTALL_PREFIX=$install $home
-    make -j `nproc` install
+    cmake --build . -j `nproc`
+    cmake --install .
 done
 ```
 
