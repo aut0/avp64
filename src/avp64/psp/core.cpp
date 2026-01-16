@@ -135,7 +135,7 @@ bool mem_protector::notify_page(void* access_addr) {
         if (page_number & 1) {
             static const vcml::u64 number_shift = mwr::ctz(
                 mwr::get_page_size());
-            VCML_ERROR_ON(i != 0ull || number_shift > mwr::clz(i) ||
+            VCML_ERROR_ON((i != 0ull && number_shift > mwr::clz(i)) ||
                               number_shift >= 64ull,
                           "shift overflow");
 
@@ -168,10 +168,10 @@ void mem_protector::deregister_pages(core* cpu, vcml::u64 start,
     std::map<vcml::u64, struct page_data> protected_pages_new;
     for (auto it = m_protected_pages.begin(); it != m_protected_pages.end();
          ++it) {
-        if (it->second.page_addr + mwr::get_page_size() - 1 >= start &&
-            it->second.page_addr <= end)
-
+        if (it->second.page_addr + mwr::get_page_size() - 1 < start ||
+            it->second.page_addr > end) {
             protected_pages_new.emplace(*it);
+        }
     }
     m_protected_pages = std::move(protected_pages_new);
 }
