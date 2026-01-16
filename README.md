@@ -15,7 +15,7 @@ The following target software configurations were tested (see [avp64-sw](https:/
 - STREAM
 - Linux single-, dual-, quad-, octa-core
 - Xen single- and dual-core
-- Zephyr application single-, dual-, quand-, octa-core
+- Zephyr application single-, dual-, quad-, octa-core
 
 ----
 
@@ -71,7 +71,7 @@ The needed steps are explained below:
 
     ```bash
     <install-dir>/bin/avp64              # full VP executable program
-    <install-dir>/bin/avp64_miminal      # minimal VP executable program
+    <install-dir>/bin/avp64_minimal      # minimal VP executable program
     <install-dir>/lib/libocx-qemu-arm.so
     ```
 
@@ -151,7 +151,7 @@ Tracing is available for all VCML-based protocols:
 
 The VCML tracing documentation can be found [here](https://github.com/machineware-gmbh/vcml/blob/main/doc/tracing.md).
 Tracing can be enabled on a per TLM socket basis.
-For example, to trace the UART packets that are sent by the `system.uart0` peripheral via its `serial_tx` socket, you can use the folling command:
+For example, to trace the UART packets that are sent by the `system.uart0` peripheral via its `serial_tx` socket, you can use the following command:
 
 ```bash
 <install-dir>/bin/avp64                        \
@@ -305,7 +305,7 @@ Afterward, you can find the builds in:
 
 ## Tutorial
 
-A baisc tutorial that shows how to debug the executed target software using [Visual Studio Code](https://code.visualstudio.com/) can be found in the [vscode-tutorial](./vscode-tutorial/) folder.
+A basic tutorial that shows how to debug the executed target software using [Visual Studio Code](https://code.visualstudio.com/) can be found in the [vscode-tutorial](./vscode-tutorial/) folder.
 Run the [vscode-tutorial/setup.bash](./vscode-tutorial/setup.bash) script to download the Linux image and Linux Kernel Source files and setup Visual Studio Code.
 See the corresponding [Readme](./vscode-tutorial/README.md) for further details.
 
