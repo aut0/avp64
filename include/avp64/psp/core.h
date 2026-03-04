@@ -90,7 +90,7 @@ public:
     };
 
     vcml::gpio_initiator_array<ARM_TIMER_COUNT> timer_irq_out;
-    vector<shared_ptr<sc_core::sc_event>> timer_events;
+    array<sc_core::sc_event, ARM_TIMER_COUNT> timer_events;
 
     void log_timing_info() const;
 

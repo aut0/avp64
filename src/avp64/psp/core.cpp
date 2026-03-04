@@ -317,11 +317,11 @@ const char* core::get_param(const char* name) {
 void core::notify(ocx::u64 eventid, ocx::u64 time_ps) {
     sc_core::sc_time notify_time = time_from_ps(time_ps);
     sc_core::sc_time delta = notify_time - sc_core::sc_time_stamp();
-    timer_events[eventid]->notify(delta);
+    timer_events[eventid].notify(delta);
 }
 
 void core::cancel(ocx::u64 eventid) {
-    timer_events[eventid]->cancel();
+    timer_events[eventid].cancel();
 }
 
 void core::hint(ocx::hint_kind kind) {
@@ -523,18 +523,17 @@ vcml::u64 core::get_page_size() {
 }
 
 void core::end_of_elaboration() {
-    for (auto it = timer_events.begin(); it != timer_events.end(); ++it) {
-        std::unique_ptr<sc_core::sc_spawn_options> opts(
-            new sc_core::sc_spawn_options());
-        opts->spawn_method();
-        opts->set_sensitivity((*it).get());
-        opts->dont_initialize();
+    for (size_t i = 0; i < timer_events.size(); ++i) {
+        sc_core::sc_spawn_options opts;
+        opts.spawn_method();
+        opts.set_sensitivity(&timer_events[i]);
+        opts.dont_initialize();
+
         std::stringstream ss;
-        ss << (*it)->basename() << "_trigger";
-        int index = std::distance(timer_events.begin(), it);
-        sc_core::sc_spawn(sc_bind(&core::timer_irq_trigger, this, index),
+        ss << timer_events[i].basename() << "_trigger";
+        sc_core::sc_spawn(sc_bind(&core::timer_irq_trigger, this, i),
                           sc_core::sc_gen_unique_name(ss.str().c_str()),
-                          opts.get());
+                          &opts);
     }
     vcml::processor::end_of_elaboration();
 }
@@ -571,7 +570,10 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
     m_syscall_subscriber(),
     m_syscalls(),
     timer_irq_out("TIMER_IRQ_OUT"),
-    timer_events(4) {
+    timer_events{ { sc_core::sc_event("arm_timer_ns"),
+                    sc_core::sc_event("arm_timer_virt"),
+                    sc_core::sc_event("arm_timer_hyp"),
+                    sc_core::sc_event("arm_timer_s") } } {
     symbols.inherit_default();
     async.inherit_default();
     async_rate.inherit_default();
@@ -616,14 +618,6 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
 
     data.set_cpuid(m_core_id);
     insn.set_cpuid(m_core_id);
-    timer_events[ARM_TIMER_PHYS] = std::make_shared<sc_core::sc_event>(
-        "arm_timer_ns");
-    timer_events[ARM_TIMER_VIRT] = std::make_shared<sc_core::sc_event>(
-        "arm_timer_virt");
-    timer_events[ARM_TIMER_HYP] = std::make_shared<sc_core::sc_event>(
-        "arm_timer_hyp");
-    timer_events[ARM_TIMER_SEC] = std::make_shared<sc_core::sc_event>(
-        "arm_timer_s");
 }
 
 void core::reset() {
@@ -642,7 +636,7 @@ void core::reset() {
     // reset all timers
     for (size_t i = 0; i < ARM_TIMER_COUNT; ++i) {
         timer_irq_out[i].lower();
-        timer_events[i]->cancel();
+        timer_events[i].cancel();
     }
 }
 
