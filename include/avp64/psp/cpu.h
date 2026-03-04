@@ -82,7 +82,7 @@ private:
     vcml::arm::gic400 m_gic;
     vcml::generic::bus m_corebus;
 
-    std::unique_ptr<vcml::debugging::gdbserver> m_gdb;
+    unique_ptr<vcml::debugging::gdbserver> m_gdb;
 };
 
 } // namespace psp

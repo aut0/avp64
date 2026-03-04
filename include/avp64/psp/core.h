@@ -34,7 +34,7 @@ private:
     void* m_ocx_handle;
     create_instance_t m_create_instance;
     delete_instance_t m_delete_instance;
-    vector<shared_ptr<core>> m_syscall_subscriber;
+    vector<weak_ptr<core>> m_syscall_subscriber;
     list<pair<int, shared_ptr<void>>> m_syscalls;
 
     void timer_irq_trigger(int timer_id);
@@ -129,7 +129,7 @@ public:
     virtual vcml::u64 core_id() override;
 
     void handle_syscall(int callno, shared_ptr<void> arg);
-    void add_syscall_subscriber(const shared_ptr<core>& cpu);
+    void add_syscall_subscriber(const weak_ptr<core>& cpu);
     vcml::u64 get_page_size();
 
     core() = delete;

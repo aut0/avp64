@@ -298,8 +298,16 @@ void core::signal(ocx::u64 sigid, bool set) {
 
 void core::broadcast_syscall(int callno, shared_ptr<void> arg, bool async) {
     handle_syscall(callno, arg);
-    for (auto const& cpu : m_syscall_subscriber)
-        cpu->handle_syscall(callno, arg);
+    for (auto it = m_syscall_subscriber.begin();
+         it != m_syscall_subscriber.end();) {
+        auto cpu_ptr = it->lock();
+        if (!cpu_ptr) {
+            it = m_syscall_subscriber.erase(it);
+            continue;
+        }
+        cpu_ptr->handle_syscall(callno, arg);
+        ++it;
+    }
 }
 
 ocx::u64 core::get_time_ps() {
@@ -367,16 +375,26 @@ bool core::handle_watchpoint(ocx::u64 vaddr, ocx::u64 size, ocx::u64 data,
     return true;
 }
 
-void core::add_syscall_subscriber(const shared_ptr<core>& cpu) {
+void core::add_syscall_subscriber(const weak_ptr<core>& cpu) {
     m_syscall_subscriber.push_back(cpu);
 }
 
 void core::memory_protector_update(vcml::u64 page_addr) {
     m_core->tb_flush_page(page_addr, page_addr + get_page_size() - 1);
     m_core->invalidate_page_ptr(page_addr);
-    for (auto const& cpu : m_syscall_subscriber) {
-        cpu->m_core->tb_flush_page(page_addr, page_addr + get_page_size() - 1);
-        cpu->m_core->invalidate_page_ptr(page_addr);
+    for (auto it = m_syscall_subscriber.begin();
+         it != m_syscall_subscriber.end();) {
+        auto cpu_ptr = it->lock();
+
+        if (!cpu_ptr) {
+            it = m_syscall_subscriber.erase(it);
+            continue;
+        }
+
+        cpu_ptr->m_core->tb_flush_page(page_addr,
+                                       page_addr + get_page_size() - 1);
+        cpu_ptr->m_core->invalidate_page_ptr(page_addr);
+        ++it;
     }
 }
 
