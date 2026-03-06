@@ -612,27 +612,34 @@ core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
 
     set_little_endian();
 
-    const size_t num_regs = m_core->num_regs();
-    for (size_t i = 0; i < num_regs; ++i) {
-        const size_t reg_size = m_core->reg_size(i);
-        if (reg_size == 0 || reg_size > 8)
-            continue;
+    // X0 - X30
+    for (id_t i = 0; i < 31; ++i)
+        define_cpureg_rw(i, mwr::mkstr("X%u", i), 8);
 
-        const static std::unordered_map<string, string> reg_name_overwrite = {
-            { "cpsr64", "cpsr" },
-        };
+    define_cpureg_rw(31, "SP", 8);
+    define_cpureg_rw(32, "PC", 8);
 
-        vcml::u64 val = 0;
-        int prot = vcml::VCML_ACCESS_NONE;
-        prot |= m_core->read_reg(i, &val) ? vcml::VCML_ACCESS_READ : 0;
-        prot |= m_core->write_reg(i, &val) ? vcml::VCML_ACCESS_WRITE : 0;
+    // aarch64 status register and bitfields
+    define_cpureg_rw(33, "CPSR", 4);
+    define_cpureg_rw(50, "SPSR_EL1", 4);
+    define_cpureg_rw(64, "SPSR_EL2", 4);
+    define_cpureg_rw(78, "SPSR_EL3", 4);
+    define_cpureg_rw(92, "SP_EL0", 8);
+    define_cpureg_rw(93, "SP_EL1", 8);
+    define_cpureg_rw(94, "SP_EL2", 8);
+    define_cpureg_rw(95, "SP_EL3", 8);
+    define_cpureg_rw(96, "ELR_EL0", 8);
+    define_cpureg_rw(97, "ELR_EL1", 8);
+    define_cpureg_rw(98, "ELR_EL2", 8);
+    define_cpureg_rw(99, "ELR_EL3", 8);
 
-        string reg_name = mwr::to_lower(m_core->reg_name(i));
-        if (reg_name_overwrite.count(reg_name))
-            reg_name = reg_name_overwrite.at(reg_name);
+    // aarch64 floating point registers
+    for (id_t i = 0; i < 32; ++i)
+        define_cpureg_rw(i + 449, mwr::mkstr("D%u", i), 8);
 
-        define_cpureg(i, reg_name, reg_size, 1, prot);
-    }
+    // aarch64 floating point status registers
+    define_cpureg_rw(192, "FPSR", 4);
+    define_cpureg_rw(193, "FPCR", 4);
 
     data.set_cpuid(m_core_id);
     insn.set_cpuid(m_core_id);
