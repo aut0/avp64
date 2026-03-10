@@ -92,7 +92,7 @@ To fetch the latest buildroot Linux build, the [utils/fetch_buildroot_linux](./u
 This script downloads the latest prebuilt linux image and configuration files and places them in the [sw](sw/) folder.
 This projects builds two VPs: `avp64` and `avp64_minimal`.
 This minimal VP contains less peripherals and is simpler.
-To use the minimal VP, the `_minimal` configs file (e.g., `buildroot_6_5_6-x1_minimal.cfg`) must be used.
+To use the minimal VP, the `_minimal` configs file (e.g., `buildroot_6_18_7-x1_minimal.cfg`) must be used.
 
 Run the platform using a config file from the [sw](sw/) folder:
 

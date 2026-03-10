@@ -7,7 +7,7 @@
             "name": "Debug AVP64",
             "program": "${workspaceFolder}/build/debug/bin/avp64",
             "args": [
-                "-f", "sw/buildroot_6_5_6-x2.cfg", // the config file that should be used by avp64
+                "-f", "sw/buildroot_6_18_7-x2.cfg", // the config file that should be used by avp64
                 "-c", "system.cpu.gdb_wait=true" // wait until the target software debugger is connected
             ],
             "cwd": "${workspaceFolder}/build/debug",
@@ -28,9 +28,9 @@
             "printCalls": true,
             "cwd": "${workspaceFolder}/linux-src",
             "valuesFormatting": "parseText",
-            "executable": "${workspaceFolder}/build/debug/sw/buildroot_6_5_6/buildroot.elf", // elf file of the software that is executed
+            "executable": "${workspaceFolder}/build/debug/sw/buildroot_6_18_7/buildroot.elf", // elf file of the software that is executed
             "pathSubstitutions": {
-                "/app/build/buildroot/output/linux/build/linux-6.5.6": "${workspaceFolder}/linux-src"
+                "/app/build/buildroot/output/linux/build/linux-6.18.7": "${workspaceFolder}/linux-src"
             },
             "stopAtConnect": true
         }

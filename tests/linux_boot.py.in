@@ -75,7 +75,9 @@ p.expect('can0:')
 
 # can we bringup the can controller?
 p.expect('# ')
-p.sendline('ip link set can0 up type can bitrate 1000000')
+p.sendline('ip link set can0 type can bitrate 1000000')
+p.expect('# ')
+p.sendline('ip link set can0 up')
 
 # is the can if up?
 p.expect('# ')
