@@ -9,7 +9,7 @@
 ##############################################################################
 
 cmake_minimum_required(VERSION 3.12)
-project(avp64 VERSION 2025.08.22 LANGUAGES C CXX)
+project(avp64 VERSION 2026.03.10 LANGUAGES C CXX)
 
 option(AVP64_TESTS "Build unit tests" OFF)
 option(AVP64_VP "Build the avp64 VP" ON)
