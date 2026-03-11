@@ -14,6 +14,7 @@ get_target_property(ld_library_path ocx-qemu-arm BINARY_DIR)
 
 add_library(test_main test_main.cpp)
 target_link_libraries(test_main PUBLIC gtest)
+target_link_libraries(test_main PUBLIC gmock)
 target_link_libraries(test_main PUBLIC avp64-psp)
 target_link_libraries(test_main PUBLIC vcml)
 set(PYTHON_PACKAGES_HOME "${CMAKE_CURRENT_BINARY_DIR}/python")
@@ -30,6 +31,8 @@ endmacro()
 
 new_test(arm64_core_test)
 new_test(arm64_reset_test)
+new_test(mem_protector)
+
 if (AVP64_VP)
     function(pexpect_vp name input_script nrcpu config timeout)
         set(config ${CMAKE_SOURCE_DIR}/sw/${config})

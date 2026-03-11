@@ -32,6 +32,7 @@ configure_file(${src}/avp64/version.h.in
 add_library(avp64-psp STATIC
     ${src}/avp64/psp/core.cpp
     ${src}/avp64/psp/cpu.cpp
+    ${src}/avp64/psp/mem_protector.cpp
     ${src}/avp64/psp/systemc.cpp
 )
 

@@ -11,9 +11,8 @@
 #define AVP64_PSP_CORE_H
 
 #include "avp64/common.h"
+#include "avp64/psp/mem_protector.h"
 #include "ocx/ocx.h"
-
-#include <signal.h>
 
 namespace avp64 {
 namespace psp {
@@ -21,7 +20,7 @@ namespace psp {
 typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
 typedef void (*delete_instance_t)(ocx::core*);
 
-class core : public vcml::processor, private ocx::env
+class core : public vcml::processor, private ocx::env, private mem_protector_if
 {
 private:
     ocx::core* m_core;
@@ -38,7 +37,6 @@ private:
     list<pair<int, shared_ptr<void>>> m_syscalls;
 
     void timer_irq_trigger(int timer_id);
-    static void segfault_handler(int sig, siginfo_t* si, void* unused);
     void load_symbols();
 
     template <typename T>
@@ -98,7 +96,7 @@ public:
     virtual ocx::u8* get_page_ptr_w(ocx::u64 page_paddr) override;
 
     virtual void protect_page(ocx::u8* page_ptr, ocx::u64 page_addr) override;
-    void memory_protector_update(vcml::u64 page_addr);
+    virtual void update_page(vcml::u64 page_addr) override;
 
     virtual ocx::response transport(const ocx::transaction& tx) override;
     virtual void signal(ocx::u64 sigid, bool set) override;
@@ -130,7 +128,7 @@ public:
 
     void handle_syscall(int callno, shared_ptr<void> arg);
     void add_syscall_subscriber(const weak_ptr<core>& cpu);
-    vcml::u64 get_page_size();
+    virtual vcml::u64 page_size() override;
 
     core() = delete;
     core(const core&) = delete;
