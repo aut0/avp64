@@ -136,7 +136,7 @@ public:
     explicit core(const sc_core::sc_module_name& name, vcml::u64 procid,
                   vcml::u64 coreid);
     virtual ~core() override;
-    AVP64_KIND("psp::core");
+    AVP64_KIND(psp::core);
 };
 
 } // namespace psp

@@ -47,7 +47,7 @@ public:
     cpu(const cpu&) = delete;
     cpu& operator=(const cpu&) = delete;
     virtual ~cpu() = default;
-    AVP64_KIND("psp::cpu");
+    AVP64_KIND(psp::cpu);
 
     vcml::u64 cycle_count() const;
 
