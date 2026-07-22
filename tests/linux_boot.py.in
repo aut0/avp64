@@ -92,7 +92,7 @@ p.expect('# ')
 # check if can packed arrived
 with open('system.canbridge.tx', 'r') as f:
     line = f.readline()
-    assert('frame #1 CAN 123 [00] de ad be ef' in line)
+    assert('frame #1 CAN 123 [4] de ad be ef' in line)
 
 # test ok - shut down simulation
 p.sendline('devmem 0x10008000 32 1')
