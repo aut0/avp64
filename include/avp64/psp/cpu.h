@@ -39,8 +39,8 @@ public:
     vcml::property<bool> gdb_echo;
     vcml::property<int> gdb_port;
 
-    tlm::tlm_initiator_socket<> bus;
-    vcml::gpio_target_array<vcml::arm::gic400::NSPI> spi;
+    vcml::tlm_base_initiator_socket bus;
+    vcml::gpio_base_target_array<vcml::arm::gic400::NSPI> spi;
 
     explicit cpu(const sc_core::sc_module_name& nm);
     cpu() = delete;
@@ -55,7 +55,6 @@ public:
 
 protected:
     virtual void end_of_elaboration() override;
-    virtual void before_end_of_elaboration() override;
     virtual void end_of_simulation() override;
 
 private:

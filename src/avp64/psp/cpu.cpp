@@ -88,6 +88,8 @@ cpu::cpu(const sc_core::sc_module_name& nm):
         rst.bind(m_cores[id]->rst);
     }
 
+    spi.bind(m_gic.spi_in);
+
     m_corebus.bind(m_gic.cpuif.in, gic_cpuif);
     m_corebus.bind(m_gic.distif.in, gic_distif);
     m_corebus.bind(m_gic.vifctrl.in, gic_vifctrl);
@@ -100,15 +102,6 @@ cpu::cpu(const sc_core::sc_module_name& nm):
 
     rst.bind(m_corebus.rst);
     rst.bind(m_gic.rst);
-}
-
-void cpu::before_end_of_elaboration() {
-    vcml::component::before_end_of_elaboration();
-
-    for (auto [idx, port] : spi) {
-        log_debug("binding spi %zu to gic", idx);
-        port->bind(m_gic.spi_in[idx]);
-    }
 }
 
 void cpu::end_of_elaboration() {
