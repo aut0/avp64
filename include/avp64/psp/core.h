@@ -17,12 +17,12 @@
 namespace avp64 {
 namespace psp {
 
-typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
-typedef void (*delete_instance_t)(ocx::core*);
-
 class core : public vcml::processor, private ocx::env, private mem_protector_if
 {
 private:
+    typedef ocx::core* (*create_instance_t)(ocx::u64, ocx::env&, const char*);
+    typedef void (*delete_instance_t)(ocx::core*);
+
     ocx::core* m_core;
     sc_core::sc_event m_irqev;
     vcml::u64 m_core_id;
