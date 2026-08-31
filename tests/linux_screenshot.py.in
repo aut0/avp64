@@ -28,9 +28,8 @@ properties = {
     'system.term1.backends': '',
     'system.term2.backends': '',
     'system.term3.backends': '',
-    'system.fb0.displays': '',
-    'system.fb1.displays': '',
-    'system.virtio_input.displays': '',
+    'system.console0.backends': '',
+    'system.console1.backends': '',
     'system.session': session_port,
     'system.throttle.rtf': '0',
     'system.session_host': '127.0.0.1',
@@ -70,8 +69,7 @@ p.expect("# ")
 
 # take screenshot
 screenshot_path = os.path.join(file_dir, 'fb.bmp')
-fb = session.find_module("system.fb1")
-screenshot = fb.find_command("screenshot")
+screenshot = session.find_module("system.console1").find_command("screenshot")
 session.stop()
 screenshot.execute((screenshot_path,))
 

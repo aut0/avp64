@@ -164,6 +164,8 @@ private:
     vcml::can::bridge m_canbridge;
     vcml::virtio::mmio m_virtio0;
     vcml::virtio::input m_virtio_input;
+    vcml::ui::console m_console0;
+    vcml::ui::console m_console1;
 
     psp::cpu m_cpu;
 };
@@ -233,6 +235,8 @@ system::system(const sc_core::sc_module_name& nm):
     m_canbridge("canbridge"),
     m_virtio0("virtio0"),
     m_virtio_input("virtio_input"),
+    m_console0("console0"),
+    m_console1("console1"),
     m_cpu("cpu") {
     clk_bind(m_clock_cpu, "clk", m_bus, "clk");
     clk_bind(m_clock_cpu, "clk", m_ram, "clk");

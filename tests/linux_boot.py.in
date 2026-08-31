@@ -22,9 +22,8 @@ properties = {
     'system.term1.backends': '',
     'system.term2.backends': '',
     'system.term3.backends': '',
-    'system.fb0.displays': '',
-    'system.fb1.displays': '',
-    'system.virtio_input.displays': '',
+    'system.console0.backends': '',
+    'system.console1.backends': '',
     'system.throttle.rtf': '0',
 }
 
