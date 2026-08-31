@@ -14,8 +14,8 @@
 namespace avp64 {
 namespace psp {
 
-const vcml::u64 mem_protector::HOST_PAGE_BITS = mwr::ctz(mwr::get_page_size());
-const vcml::u64 mem_protector::HOST_PAGE_MASK = ~(mwr::get_page_size() - 1);
+const u64 mem_protector::HOST_PAGE_BITS = mwr::ctz(mwr::get_page_size());
+const u64 mem_protector::HOST_PAGE_MASK = ~(mwr::get_page_size() - 1);
 
 mem_protector::mem_protector(): m_protected_pages() {
     struct sigaction sa;
@@ -41,7 +41,7 @@ void mem_protector::segfault_handler_int(int sig, siginfo_t* si, void* arg) {
         m_sa_orig.sa_sigaction(sig, si, arg);
 }
 
-void mem_protector::register_page(mem_protector_if* core, vcml::u64 page_addr,
+void mem_protector::register_page(mem_protector_if* core, u64 page_addr,
                                   void* host_addr) {
     vcml::u64 target_page_size = core->page_size();
     VCML_ERROR_ON(
@@ -50,7 +50,7 @@ void mem_protector::register_page(mem_protector_if* core, vcml::u64 page_addr,
     VCML_ERROR_ON(target_page_size == 0, "page size is 0");
 
     void* host_page_addr = reinterpret_cast<void*>(
-        reinterpret_cast<vcml::u64>(host_addr) & HOST_PAGE_MASK);
+        reinterpret_cast<u64>(host_addr) & HOST_PAGE_MASK);
 
     auto& host_page = m_protected_pages[host_page_addr];
     bool target_page_found = false;
@@ -78,22 +78,20 @@ void mem_protector::register_page(mem_protector_if* core, vcml::u64 page_addr,
 }
 
 bool mem_protector::protect_page(void* addr) {
-    VCML_ERROR_ON(reinterpret_cast<vcml::u64>(addr) & ~HOST_PAGE_MASK,
-                  "invalid page address: %llu",
-                  reinterpret_cast<vcml::u64>(addr));
+    VCML_ERROR_ON(reinterpret_cast<u64>(addr) & ~HOST_PAGE_MASK,
+                  "invalid page address: %llu", reinterpret_cast<u64>(addr));
     return ::mprotect(addr, mwr::get_page_size(), PROT_READ) == 0;
 }
 
 bool mem_protector::unprotect_page(void* addr) {
-    VCML_ERROR_ON(reinterpret_cast<vcml::u64>(addr) & ~HOST_PAGE_MASK,
-                  "invalid page address: %llu",
-                  reinterpret_cast<vcml::u64>(addr));
+    VCML_ERROR_ON(reinterpret_cast<u64>(addr) & ~HOST_PAGE_MASK,
+                  "invalid page address: %llu", reinterpret_cast<u64>(addr));
     return ::mprotect(addr, mwr::get_page_size(), PROT_READ | PROT_WRITE) == 0;
 }
 
 bool mem_protector::notify_page(void* access_addr) {
     void* page_addr = reinterpret_cast<void*>(
-        reinterpret_cast<vcml::u64>(access_addr) & HOST_PAGE_MASK);
+        reinterpret_cast<u64>(access_addr) & HOST_PAGE_MASK);
 
     if (!m_protected_pages.count(page_addr)) // not a locked page
         return false;
@@ -111,8 +109,7 @@ bool mem_protector::notify_page(void* access_addr) {
     return false;
 }
 
-void mem_protector::deregister_page(mem_protector_if* cpu,
-                                    vcml::u64 page_addr) {
+void mem_protector::deregister_page(mem_protector_if* cpu, u64 page_addr) {
     for (auto host_page_it = m_protected_pages.begin();
          host_page_it != m_protected_pages.end();) {
         auto& target_pages = host_page_it->second.target_pages;
@@ -136,17 +133,17 @@ void mem_protector::deregister_page(mem_protector_if* cpu,
     }
 }
 
-void mem_protector::deregister_pages(mem_protector_if* cpu, vcml::u64 start,
-                                     vcml::u64 end) {
+void mem_protector::deregister_pages(mem_protector_if* cpu, u64 start,
+                                     u64 end) {
     for (auto host_page_it = m_protected_pages.begin();
          host_page_it != m_protected_pages.end();) {
         auto& target_pages = host_page_it->second.target_pages;
 
         for (auto target_page_it = target_pages.begin();
              target_page_it != target_pages.end();) {
-            vcml::u64 target_page_start = target_page_it->page_addr;
-            vcml::u64 target_page_end = target_page_start +
-                                        target_page_it->page_size - 1;
+            u64 target_page_start = target_page_it->page_addr;
+            u64 target_page_end = target_page_start +
+                                  target_page_it->page_size - 1;
 
             if (target_page_start >= start && target_page_end <= end) {
                 target_page_it = target_pages.erase(target_page_it);

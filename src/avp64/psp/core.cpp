@@ -21,7 +21,7 @@ constexpr const char* CPU_VARIANT = "Cortex-A72";
 
 ocx::u8* core::get_page_ptr_r(ocx::u64 page_paddr) {
     tlm::tlm_dmi dmi;
-    vcml::u64 target_page_size = page_size();
+    u64 target_page_size = page_size();
     if (insn.dmi_cache().lookup(page_paddr, target_page_size,
                                 tlm::TLM_READ_COMMAND, dmi)) {
         return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
@@ -41,7 +41,7 @@ ocx::u8* core::get_page_ptr_r(ocx::u64 page_paddr) {
 
 ocx::u8* core::get_page_ptr_w(ocx::u64 page_paddr) {
     tlm::tlm_dmi dmi;
-    vcml::u64 target_page_size = page_size();
+    u64 target_page_size = page_size();
     if (insn.dmi_cache().lookup(page_paddr, target_page_size,
                                 tlm::TLM_WRITE_COMMAND, dmi)) {
         return dmi.get_dmi_ptr() + page_paddr - dmi.get_start_address();
@@ -59,7 +59,7 @@ ocx::u8* core::get_page_ptr_w(ocx::u64 page_paddr) {
     return nullptr;
 }
 
-void core::invalidate_dmi(vcml::u64 start, vcml::u64 end) {
+void core::invalidate_dmi(u64 start, u64 end) {
     vcml::processor::invalidate_dmi(start, end);
 
     dynamic_cast<ocx::core_inv_range_extension*>(m_core)->invalidate_page_ptrs(
@@ -182,8 +182,8 @@ void core::hint(ocx::hint_kind kind) {
         wait_for_interrupt(m_irqev);
         VCML_ERROR_ON(local_time() != sc_core::SC_ZERO_TIME,
                       "core not synchronized");
-        const vcml::u64 cycles = (sc_core::sc_time_stamp() - before_wait) /
-                                 clock_cycle();
+        const u64 cycles = (sc_core::sc_time_stamp() - before_wait) /
+                           clock_cycle();
         m_sleep_cycles += cycles;
         m_core->stop();
         break;
@@ -217,9 +217,7 @@ void core::add_syscall_subscriber(const weak_ptr<core>& cpu) {
     m_syscall_subscriber.push_back(cpu);
 }
 
-void core::update_page(vcml::u64 page_addr) {
-    m_core->tb_flush_page(page_addr, page_addr + page_size() - 1);
-    m_core->invalidate_page_ptr(page_addr);
+void core::update_page(u64 page_addr) {
     for (auto it = m_syscall_subscriber.begin();
          it != m_syscall_subscriber.end();) {
         auto cpu_ptr = it->lock();
@@ -261,7 +259,7 @@ bool core::write_reg_dbg(size_t regno, const void* buf, size_t len) {
         if (len != 8)
             return false;
 
-        if (*reinterpret_cast<const vcml::u64*>(buf) == program_counter())
+        if (*reinterpret_cast<const u64*>(buf) == program_counter())
             return true;
 
         // the pc cannot be changed during an ongoing b_transport
@@ -271,23 +269,23 @@ bool core::write_reg_dbg(size_t regno, const void* buf, size_t len) {
     return m_core->write_reg(regno, buf);
 }
 
-bool core::page_size(vcml::u64& size) {
+bool core::page_size(u64& size) {
     size = m_core->page_size();
     return true;
 }
 
-bool core::virt_to_phys(vcml::u64 vaddr, vcml::u64& paddr) {
+bool core::virt_to_phys(u64 vaddr, u64& paddr) {
     ocx::u64 paddr_ocx = paddr;
     bool ret_val = m_core->virt_to_phys(vaddr, paddr_ocx);
     paddr = paddr_ocx;
     return ret_val;
 }
 
-bool core::insert_breakpoint(vcml::u64 addr) {
+bool core::insert_breakpoint(u64 addr) {
     return m_core->add_breakpoint(addr);
 }
 
-bool core::remove_breakpoint(vcml::u64 addr) {
+bool core::remove_breakpoint(u64 addr) {
     return m_core->remove_breakpoint(addr);
 }
 
@@ -331,14 +329,14 @@ bool core::stop_basic_block_trace() {
     return true;
 }
 
-vcml::u64 core::cycle_count() const {
+u64 core::cycle_count() const {
     return m_run_cycles + m_core->insn_count();
 }
 
-bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, string& code) {
+bool core::disassemble(u8* ibuf, u64& addr, string& code) {
     const size_t bufsz = 100;
     char buf[bufsz];
-    vcml::u64 len;
+    u64 len;
     len = m_core->disassemble(addr, buf, bufsz);
 
     if (len == 0)
@@ -349,23 +347,23 @@ bool core::disassemble(vcml::u8* ibuf, vcml::u64& addr, string& code) {
     return true;
 }
 
-vcml::u64 core::program_counter() {
+u64 core::program_counter() {
     ocx::u64 pc_regid = m_core->pc_regid();
-    vcml::u64 pc = 0;
+    u64 pc = 0;
     VCML_ERROR_ON(!m_core->read_reg(pc_regid, &pc),
                   "Could not read program counter");
     return pc;
 }
 
-vcml::u64 core::stack_pointer() {
+u64 core::stack_pointer() {
     ocx::u64 sp_regid = m_core->sp_regid();
-    vcml::u64 sp = 0;
+    u64 sp = 0;
     VCML_ERROR_ON(!m_core->read_reg(sp_regid, &sp),
                   "Could not read stack pointer");
     return sp;
 }
 
-vcml::u64 core::core_id() {
+u64 core::core_id() {
     return m_core_id;
 }
 
@@ -373,7 +371,7 @@ void core::handle_syscall(int callno, shared_ptr<void> arg) {
     m_core->handle_syscall(callno, std::move(arg));
 }
 
-vcml::u64 core::page_size() {
+u64 core::page_size() {
     return m_core->page_size();
 }
 
@@ -404,13 +402,12 @@ void core::load_symbols() {
             continue;
         }
 
-        vcml::u64 n = load_symbols_from_elf(symfile);
+        u64 n = load_symbols_from_elf(symfile);
         log_debug("loaded %llu symbols from '%s'", n, symfile.c_str());
     }
 }
 
-core::core(const sc_core::sc_module_name& nm, vcml::u64 procid,
-           vcml::u64 coreid):
+core::core(const sc_core::sc_module_name& nm, u64 procid, u64 coreid):
     vcml::processor(nm, CPU_ARCH),
     m_core(nullptr),
     m_irqev("irqev"),

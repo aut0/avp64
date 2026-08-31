@@ -19,25 +19,25 @@ namespace psp {
 class cpu : public vcml::component
 {
 public:
-    const vcml::property<size_t> ncores;
-    const vcml::property<size_t> clusterid;
-    const vcml::property<vector<string>> symbols;
-    vcml::property<bool> async;
-    vcml::property<unsigned int> async_rate;
+    const property<size_t> ncores;
+    const property<size_t> clusterid;
+    const property<vector<string>> symbols;
+    property<bool> async;
+    property<unsigned int> async_rate;
 
-    const vcml::property<vcml::range> gic_cpuif;
-    const vcml::property<vcml::range> gic_distif;
-    const vcml::property<vcml::range> gic_vifctrl;
-    const vcml::property<vcml::range> gic_vcpuif;
+    const property<range> gic_cpuif;
+    const property<range> gic_distif;
+    const property<range> gic_vifctrl;
+    const property<range> gic_vcpuif;
 
-    const vcml::property<int> irq_gt_hyp;
-    const vcml::property<int> irq_gt_virt;
-    const vcml::property<int> irq_gt_ns;
-    const vcml::property<int> irq_gt_s;
+    const property<int> irq_gt_hyp;
+    const property<int> irq_gt_virt;
+    const property<int> irq_gt_ns;
+    const property<int> irq_gt_s;
 
-    const vcml::property<bool> gdb_wait;
-    const vcml::property<bool> gdb_echo;
-    vcml::property<int> gdb_port;
+    const property<bool> gdb_wait;
+    const property<bool> gdb_echo;
+    property<int> gdb_port;
 
     vcml::tlm_base_initiator_socket bus;
     vcml::gpio_base_target_array<vcml::arm::gic400::NSPI> spi;
@@ -49,7 +49,7 @@ public:
     virtual ~cpu() = default;
     AVP64_KIND(psp::cpu);
 
-    vcml::u64 cycle_count() const;
+    u64 cycle_count() const;
 
     virtual const char* version() const override;
 
