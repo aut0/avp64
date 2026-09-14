@@ -15,7 +15,7 @@
 namespace avp64 {
 namespace psp {
 
-sc_core::sc_time time_from_ps(vcml::u64 time_ps);
+sc_core::sc_time time_from_ps(u64 time_ps);
 
 } // namespace psp
 } // namespace avp64

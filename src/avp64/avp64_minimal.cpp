@@ -65,10 +65,6 @@ public:
     system& operator=(const system&) = delete;
     virtual ~system() = default;
 
-    int run() override;
-
-    virtual void end_of_elaboration() override;
-
     const char* version() const override;
     virtual const char* kind() const override { return "avp64::system"; }
 
@@ -170,33 +166,6 @@ system::system(const sc_core::sc_module_name& nm):
     gpio_bind(m_uart0, "irq", m_cpu, "spi", irq_uart0);
     gpio_bind(m_lan0, "irq", m_cpu, "spi", irq_lan0);
     gpio_bind(m_sdhci, "irq", m_cpu, "spi", irq_sdhci);
-}
-
-int system::run() {
-    double simstart = mwr::timestamp();
-    int result = vcml::system::run();
-    double realtime = mwr::timestamp() - simstart;
-    double duration = sc_core::sc_time_stamp().to_seconds();
-    vcml::u64 ninsn = m_cpu.cycle_count();
-
-    double mips = realtime == 0.0 ? 0.0 : ninsn / realtime / 1e6;
-    log_info("total");
-    log_info("  duration       : %.9fs", duration);
-    log_info("  runtime        : %.4fs", realtime);
-    log_info("  instructions   : %llu", ninsn);
-    log_info("  sim speed      : %.1f MIPS", mips);
-    log_info("  realtime ratio : %.2f / 1s",
-             realtime == 0.0 ? 0.0 : realtime / duration);
-
-    return result;
-}
-
-void system::end_of_elaboration() {
-    vcml::system::end_of_elaboration();
-
-    std::stringstream ss;
-    m_bus.execute("show", ss);
-    log_debug("%s", ss.str().c_str());
 }
 
 const char* system::version() const {

@@ -13,7 +13,7 @@
 namespace avp64 {
 namespace psp {
 
-enum : mwr::u64 {
+enum : u64 {
     GIC_DISTIF_LO = 0x10140000,
     GIC_DISTIF_HI = GIC_DISTIF_LO + 0x1000 - 1,
     GIC_CPUIF_LO = 0x10141000,
@@ -24,7 +24,7 @@ enum : mwr::u64 {
     GIC_VCPUIF_HI = GIC_VCPUIF_LO + 0x2000 - 1,
 };
 
-enum : mwr::u64 {
+enum : u64 {
     PPI_GT_NS = 14,
     PPI_GT_S = 13,
     PPI_GT_VIRT = 11,
@@ -134,12 +134,12 @@ void cpu::end_of_simulation() {
     for (const auto& c : m_cores)
         c->log_timing_info();
 
-    log_info("total - cluster %zu", clusterid.get());
+    log_info("cluster %zu", clusterid.get());
     log_info("  instructions : %llu", cycle_count());
 }
 
-vcml::u64 cpu::cycle_count() const {
-    vcml::u64 total_insn = 0;
+u64 cpu::cycle_count() const {
+    u64 total_insn = 0;
 
     for (const auto& c : m_cores)
         total_insn += c->cycle_count();

@@ -43,7 +43,7 @@ void mem_protector::segfault_handler_int(int sig, siginfo_t* si, void* arg) {
 
 void mem_protector::register_page(mem_protector_if* core, u64 page_addr,
                                   void* host_addr) {
-    vcml::u64 target_page_size = core->page_size();
+    u64 target_page_size = core->page_size();
     VCML_ERROR_ON(
         mwr::get_page_size() < target_page_size,
         "host page size is smaller than the target one - not implemented");
@@ -97,11 +97,10 @@ bool mem_protector::notify_page(void* access_addr) {
         return false;
 
     auto& page = m_protected_pages[page_addr];
-    for (const auto& tp : page.target_pages) {
+    for (const auto& tp : page.target_pages)
         tp.c->update_page(tp.page_addr);
-    }
 
-    if (unprotect_page(reinterpret_cast<void*>(page_addr))) {
+    if (unprotect_page(page_addr)) {
         page.locked = false;
         return true;
     }
@@ -123,9 +122,9 @@ void mem_protector::deregister_page(mem_protector_if* cpu, u64 page_addr) {
             ++target_page_it;
         }
         if (target_pages.empty() && host_page_it->second.locked) {
-            VCML_ERROR_ON(
-                !unprotect_page(reinterpret_cast<void*>(host_page_it->first)),
-                "failed to unprotect page: %s", std::strerror(errno));
+            VCML_ERROR_ON(!unprotect_page(host_page_it->first),
+                          "failed to unprotect page: %s",
+                          std::strerror(errno));
             host_page_it = m_protected_pages.erase(host_page_it);
             continue;
         }
@@ -152,9 +151,9 @@ void mem_protector::deregister_pages(mem_protector_if* cpu, u64 start,
             ++target_page_it;
         }
         if (target_pages.empty() && host_page_it->second.locked) {
-            VCML_ERROR_ON(
-                !unprotect_page(reinterpret_cast<void*>(host_page_it->first)),
-                "failed to unprotect page: %s", std::strerror(errno));
+            VCML_ERROR_ON(!unprotect_page(host_page_it->first),
+                          "failed to unprotect page: %s",
+                          std::strerror(errno));
             host_page_it = m_protected_pages.erase(host_page_it);
             continue;
         }
